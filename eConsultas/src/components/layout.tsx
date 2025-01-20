@@ -64,7 +64,9 @@ export default function Layout() {
               className="fixed top-14 left-0 bottom-0 w-64 bg-white shadow-lg z-50"
             >
               <div className="bg-[#0288d1] p-4">
-                <h1 className="text-white text-xl font-semibold">Mi OSEP</h1>
+                <h1 className="text-white text-xl font-semibold">
+                  E consultas
+                </h1>
               </div>
               <div className="p-2">
                 {navItems.map((item) => (
