@@ -17,6 +17,12 @@ const navItems = [
     label: "Paleta de colores y botones",
     icon: <Palette className="w-5 h-5" />,
   },
+
+  {
+    path: "/reset-password/:email/:code",
+    label: "Restablecer Contraseña",
+    icon: <UserPlus className="w-5 h-5" />,
+  }
 ];
 
 type SidebarProps = {

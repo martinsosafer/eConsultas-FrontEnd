@@ -5,6 +5,7 @@ import About from "../pages/about.tsx";
 import BloquePaciente from "../pages/paciente/index.tsx";
 import DatosPaciente from "../pages/paciente/[id].tsx";
 import ColorSystemShowcase from "../pages/colorshowcase/index.tsx";
+import PasswordCreate from "../pages/verificacionMail/PasswordCreate.tsx"; 
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
       {
         path: "colorshowcase",
         element: <ColorSystemShowcase />,
+      },
+      {
+        path: "reset-password/:email/:code",
+        element: <PasswordCreate />,
       },
     ],
   },
