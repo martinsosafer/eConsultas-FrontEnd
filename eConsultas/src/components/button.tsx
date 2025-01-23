@@ -28,15 +28,15 @@ const defaultStyle =
 
 const style: Record<string, string> = {
   primary:
-    "bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-md transition-all duration-300 disabled:bg-primary/50 disabled:cursor-not-allowed",
+    "bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-md transition-all duration-300 disabled:bg-primary/50 disabled:cursor-not-allowed  rounded-md ",
   secondary:
-    "bg-transparent border-2 border-primary text-primary hover:border-primary-hover hover:text-primary-hover hover:shadow-md transition-all duration-300 disabled:border-primary/50 disabled:text-primary/50 disabled:cursor-not-allowed",
+    "bg-transparent border-2 border-primary text-primary hover:border-primary-hover hover:text-primary-hover hover:shadow-md transition-all duration-300 disabled:border-primary/50 disabled:text-primary/50 disabled:cursor-not-allowed rounded-md",
   accent:
     "bg-accent text-white hover:bg-accent-hover shadow-sm hover:shadow-md transition-all duration-300 disabled:bg-accent/50 disabled:cursor-not-allowed",
-  "secondary-accent":
-    "bg-transparent border-2 border-accent text-accent hover:border-accent-hover hover:text-accent-hover hover:shadow-md transition-all duration-300 disabled:border-accent/50 disabled:text-accent/50 disabled:cursor-not-allowed",
+  "secondary-accent rounded-md":
+    "bg-transparent border-2 border-accent text-accent hover:border-accent-hover hover:text-accent-hover hover:shadow-md transition-all duration-300 disabled:border-accent/50 disabled:text-accent/50 disabled:cursor-not-allowed rounded-md",
   danger:
-    "bg-destructive text-white hover:bg-destructive-hover shadow-sm hover:shadow-md transition-all duration-300 disabled:bg-destructive/50 disabled:cursor-not-allowed",
+    "bg-destructive text-white hover:bg-destructive-hover shadow-sm hover:shadow-md transition-all duration-300 disabled:bg-destructive/50 disabled:cursor-not-allowed rounded-md",
   custom: "",
 };
 

@@ -13,12 +13,11 @@ export default function Layout() {
       <header className="bg-[#0288d1] text-white">
         <div className="flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center justify-center w-8 h-8 rounded-full">
-              <img
-                src={logo}
-                alt="App Logo"
-                className="w-10 h-8"
-              />
+            <Link
+              to="/"
+              className="flex items-center justify-center w-8 h-8 rounded-full"
+            >
+              <img src={logo} alt="App Logo" className="w-10 h-8" />
             </Link>
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -41,7 +40,7 @@ export default function Layout() {
 
       <Sidebar isOpen={isOpen} onClose={() => setIsOpen(false)} />
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="w-full h-full mx-auto  ">
         <Outlet />
       </main>
     </div>

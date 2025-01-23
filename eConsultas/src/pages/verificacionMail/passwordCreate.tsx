@@ -1,8 +1,10 @@
-// PasswordCreate.tsx
-import React, { useState } from "react";
+import type React from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import { updatePassword } from "../../api/passwordCreateApi";
 import Button from "../../components/button";
+import logo from "../../../public/logo.png";
 
 const PasswordCreate: React.FC = () => {
   const { email, code } = useParams<{ email: string; code: string }>();
@@ -31,42 +33,159 @@ const PasswordCreate: React.FC = () => {
   };
 
   return (
-    <div className="p-8 bg-background min-h-screen">
-      <h1 className="text-2xl font-semibold mb-8">Crear Contraseña</h1>
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Nueva Contraseña
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-            required
-          />
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-primary-light via-background to-secondary-light flex justify-center items-center  relative overflow-hidden">
+      {/* Animated background elements */}
+      <motion.div
+        className="absolute inset-0 z-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div
+          className="absolute top-0 left-0 w-64 h-64 bg-primary opacity-30 rounded-full mix-blend-multiply filter blur-xl"
+          animate={{
+            scale: [1, 1.1, 1],
+            x: [0, 30, 0],
+            y: [0, -50, 0],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+          }}
+        />
+        <motion.div
+          className="absolute top-0 right-0 w-64 h-64 bg-secondary opacity-30 rounded-full mix-blend-multiply filter blur-xl"
+          animate={{
+            scale: [1, 1.1, 1],
+            x: [0, -30, 0],
+            y: [0, 50, 0],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+            delay: 1,
+          }}
+        />
+        <motion.div
+          className="absolute bottom-0 left-0 w-64 h-64 bg-accent opacity-30 rounded-full mix-blend-multiply filter blur-xl"
+          animate={{
+            scale: [1, 1.1, 1],
+            x: [0, 50, 0],
+            y: [0, 30, 0],
+          }}
+          transition={{
+            duration: 7,
+            repeat: Number.POSITIVE_INFINITY,
+            repeatType: "reverse",
+            delay: 2,
+          }}
+        />
+      </motion.div>
 
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-            Confirmar Contraseña
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-            required
-          />
+      <motion.div
+        className="bg-gray-100 bg-opacity-80 backdrop-filter backdrop-blur-lg w-full max-w-md rounded-2xl shadow-xl p-8 relative z-10 transform transition-all duration-300 hover:scale-105 hover:border-2 hover:border-primary focus-within:border-2 focus-within:border-primary"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <div className="text-center mb-8">
+          <motion.div
+            className="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <img
+              src={logo || "/placeholder.svg"}
+              alt="App Logo"
+              className="w-16 h-16"
+            />
+          </motion.div>
+          <motion.h1
+            className="text-3xl font-bold text-primary-dark"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            Crear Contraseña
+          </motion.h1>
         </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Nueva Contraseña
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="block w-full px-4 py-3 border-2 border-primary-light rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              required
+            />
+          </motion.div>
 
-        <div className="flex flex-wrap gap-4 mb-4">
-          <Button label="Crear contraseña" type="primary" onClick={() => {}} />
-        </div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <label
+              htmlFor="confirmPassword"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Confirmar Contraseña
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="block w-full px-4 py-3 border-2 border-primary-light rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              required
+            />
+          </motion.div>
 
-      </form>
+          <motion.div
+            className="pt-2"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <Button
+              label="Crear contraseña"
+              type="primary"
+              onClick={() => {}}
+              className="w-full py-3 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
+            />
+          </motion.div>
+        </form>
+        <motion.div
+          className="mt-6 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.7 }}
+        >
+          <p className="text-sm text-primary-dark">
+            Al crear una contraseña, aceptas nuestros{" "}
+            <a href="#" className="font-medium hover:underline">
+              Términos y Condiciones
+            </a>
+          </p>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };
