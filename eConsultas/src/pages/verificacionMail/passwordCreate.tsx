@@ -1,10 +1,11 @@
-import type React from "react";
+import React from "react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { updatePassword } from "../../api/passwordCreateApi";
 import Button from "../../components/button";
 import logo from "../../../public/logo.png";
+import { Toaster, toast } from "sonner";
 
 const PasswordCreate: React.FC = () => {
   const { email, code } = useParams<{ email: string; code: string }>();
@@ -14,26 +15,28 @@ const PasswordCreate: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !code) {
-      alert("Faltan datos en la URL.");
+      toast.error("Faltan datos en la URL.");
       return;
     }
     if (password !== confirmPassword) {
-      alert("Las contraseñas no coinciden.");
+      toast.error("Las contraseñas no coinciden.");
       return;
     }
 
     try {
       const response = await updatePassword(email, password, code);
-      alert("Contraseña actualizada correctamente.");
+      toast.success("Contraseña actualizada correctamente.");
       console.log(response);
     } catch (error) {
-      alert("Error al actualizar la contraseña.");
+      toast.error("Error al actualizar la contraseña.");
       console.error(error);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-light via-background to-secondary-light flex justify-center items-center  relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-primary-light via-background to-secondary-light flex justify-center items-center relative overflow-hidden">
+      <Toaster richColors position="bottom-right" />
+
       {/* Animated background elements */}
       <motion.div
         className="absolute inset-0 z-0"

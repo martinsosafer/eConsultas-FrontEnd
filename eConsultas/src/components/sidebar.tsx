@@ -19,7 +19,7 @@ const navItems = [
   },
 
   {
-    path: "/reset-password/:email/:code",
+    path: "/crear-password/:email/:code",
     label: "Restablecer Contraseña",
     icon: <UserPlus className="w-5 h-5" />,
   }
