@@ -1,5 +1,11 @@
 import React from "react";
 import Button from "../../components/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const ColorSystemShowcase = () => {
   return (
@@ -134,6 +140,17 @@ const ColorSystemShowcase = () => {
             <span className="text-gray-700">Ring Color (Border)</span>
           </div>
         </div>
+      </div>
+      <div className="flex flex-col text-primary-dark font-bold leading-6 items-center">
+        <h3>SHADCN </h3>`
+        <Accordion type="single" collapsible>
+          <AccordionItem value="item-1">
+            <AccordionTrigger>Is it accessible?</AccordionTrigger>
+            <AccordionContent>
+              Yes. It adheres to the WAI-ARIA design pattern.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </div>
   );
