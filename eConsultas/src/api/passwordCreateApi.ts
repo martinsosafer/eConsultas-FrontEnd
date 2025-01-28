@@ -4,32 +4,38 @@ export const updatePassword = async (email: string, password: string, code: stri
     const myHeaders = new Headers();
     myHeaders.append("Accept", "*/*");
     myHeaders.append("Authorization", "");
-  
+    
+    // formato YYYY-MM-DD HH:MM:SS
+    const fechaFormateada = new Date().toISOString()
+      .replace('T', ' ')          // Reemplazamos T por espacio
+      .split('.')[0];             // Elimina milisegundos
+
     const requestOptions: RequestInit = {
       method: "PUT",
       headers: myHeaders,
       redirect: "follow" as RequestRedirect, 
     };
   
-    const url = urlApi + `/${email}?password=${password}&codigo=${code}`;
+    // // URL CODIFICADA
+    // const url = `${urlApi}/usuarios/agregar-password/${encodeURIComponent(email)}?password=${encodeURIComponent(password)}&codigo=${encodeURIComponent(code)}&fecha=${encodeURIComponent(fechaFormateada)}`;
   
     try {
       console.log("Preparando solicitud...");
-      console.log("URL:", url);
-      console.log("Headers:", myHeaders);
-  
-      const response = await fetch(url, requestOptions);
-      console.log("Respuesta recibida:", response);
-  
+      console.log("URL estructurada:", `{{baseUrl}}/usuarios/agregar-password/${email}?password=${password}&codigo=${code}&fecha=${fechaFormateada}`);
+      console.log("URL codificada:", urlApi);
+
+      const response = await fetch(urlApi, requestOptions);
+      
       if (!response.ok) {
-        throw new Error(`Error en la solicitud: ${response.status} - ${response.statusText}`);
+        const errorData = await response.text();
+        throw new Error(`HTTP error! status: ${response.status} - ${errorData}`);
       }
   
       const result = await response.text();
-      console.log("Resultado de la API:", result);
+      console.log("Actualización exitosa:", result);
       return result;
     } catch (error) {
-      console.error("Error al actualizar la contraseña:", error);
-      throw new Error("Error al actualizar la contraseña.");
+      console.error("Error en updatePassword:", error instanceof Error ? error.message : "Error desconocido");
+      throw error;
     }
-  };
+};
