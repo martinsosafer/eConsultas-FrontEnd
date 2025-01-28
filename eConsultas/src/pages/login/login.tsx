@@ -72,7 +72,9 @@ export default function SignInPage() {
             transition={{ delay: 0.4, duration: 0.6 }}
           >
             <div className="flex flex-col">
-              <label className="text-primary-dark font-medium mb-1">Email, DNI, o teléfono</label>
+              <label className="text-primary-dark font-medium mb-1">
+                Email, DNI, o teléfono
+              </label>
               <input
                 type="text"
                 className="p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -80,7 +82,9 @@ export default function SignInPage() {
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-primary-dark font-medium mb-1">Contraseña</label>
+              <label className="text-primary-dark font-medium mb-1">
+                Contraseña
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
