@@ -60,7 +60,7 @@ export interface Persona {
   export interface Archivo {
     id: string;
     nombre: string;
-    // Agregar más propiedades si son necesarias
+    // Por ahora tienen estas propiedades los archivos
   }
   
   // Ejemplo de uso:
@@ -75,9 +75,9 @@ export interface Persona {
       id: "54d45cf4-7a40-44be-8d85-d1dd94fa3b06",
       persona: null,
       tipoPersona: null,
-      email: "irvingmeza95@gmail.com",
-      username: "irvingmeza95@gmail.com",
-      password: "$2a$10$QS0D2TZaYVQIrSzm9uDS2.i6rkWm4Gu6wAXhKn6C6mAMCzl8BWUC2",
+      email: "pepito.com",
+      username: "pepito.com",
+      password: "$2a$10$QS0D2TZaYVQIrSzm9uDS2.i6rkWm4Gu6wAXhKn6C6mAMCzl8BWUC2", //Está encriptada :p
       codigoDeLlamada: "+52",
       celular: "8781112343",
       roles: [{ id: 1, nombre: "ROLE_ADMIN" }],

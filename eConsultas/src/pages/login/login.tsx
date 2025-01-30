@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import logo from "../../../public/logo.png";
 import Button from "@/components/button";
 import { authService } from "@/api/authService";
-import { toast, Toaster } from "sonner"
+import { personaApi } from "@/api/personaApi"; // Import the personaApi
+import { toast, Toaster } from "sonner";
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,10 +13,19 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const navigate = useNavigate();
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
+  };
+
+  // Función para desabilitar el botón. Esto decidimos hacerlo entre grupo para que muchas personas no spameen y nos tumben la Api jajaja
+  const disableButtonTemporarily = () => {
+    setIsButtonDisabled(true);
+    setTimeout(() => {
+      setIsButtonDisabled(false);
+    }, 5000); // modificar si quieren, está ahora en 5000 milesimas de segundos AKA 5 segundos
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,12 +34,26 @@ export default function SignInPage() {
     setError("");
 
     try {
+      // Primero verificamos al usuario con el login y su token
       await authService.login(username, password);
-      navigate("/");
+      console.log("Authentication successful!");
+
+      // Posteriormente, hacemos el getPersona ya con el token incluido!!
+      const persona = await personaApi.getPersona();
+      if (persona) {
+        console.log("Persona data successfully retrieved:", persona);
+        localStorage.setItem('personaData', JSON.stringify(persona));
+        navigate("/");
+      } else {
+        console.log("No persona data found");
+        toast.error("No se pudo obtener la información del usuario");
+        disableButtonTemporarily();
+      }
     } catch (err) {
+      console.error("Login error:", err);
       setError("Credenciales inválidas. Por favor intente nuevamente.");
       toast.warning("Credenciales inválidas. Por favor intente nuevamente.");
-      console.error("Error de inicio de sesión:", err);
+      disableButtonTemporarily();
     } finally {
       setIsLoading(false);
     }
@@ -38,7 +62,7 @@ export default function SignInPage() {
   return (
     <div className="flex items-center justify-center h-screen bg-primary-light">
       <div className="flex w-[80%] md:w-[70%] lg:w-[60%] xl:w-[50%] bg-white rounded-2xl overflow-hidden shadow-xl">
-        {/* Sección Izquierda con Logo */}
+        {/* Sección de la izquierda */}
         <motion.div
           className="flex-1 flex flex-col justify-center items-center bg-gradient-to-br from-primary to-primary-hover p-6"
           initial={{ x: -200, opacity: 0 }}
@@ -47,7 +71,7 @@ export default function SignInPage() {
         >
           <img 
             src={logo} 
-            alt="Logo de la empresa" 
+            alt="Company Logo" 
             className="w-48 h-48 mb-8 object-contain animate-float"
           />
           <motion.h1
@@ -60,7 +84,7 @@ export default function SignInPage() {
           </motion.h1>
         </motion.div>
 
-        {/* Sección Derecha - Formulario */}
+        {/* Sección de la derecha*/}
         <motion.div
           className="flex-1 p-8 flex flex-col justify-center"
           initial={{ x: 200, opacity: 0 }}
@@ -132,9 +156,9 @@ export default function SignInPage() {
             <Button
               label={isLoading ? "Procesando..." : "Iniciar sesión"}
               type="primary"
-              disabled={isLoading}
+              disabled={isLoading || isButtonDisabled}
               className="w-full py-3 font-bold rounded-md shadow-lg"
-              buttonType="submit"
+              buttonType="submit" //Ni idea el error del botón pero anda igual jajaj
             />
           </motion.form>
         </motion.div>
