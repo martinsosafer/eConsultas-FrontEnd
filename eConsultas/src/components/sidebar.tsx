@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ type: "spring", bounce: 0, duration: 0.3 }}
-            className="fixed top-14 left-0 bottom-0 w-64 bg-gradient-to-b from-[#E0F2FE] to-[#FFFFFF] shadow-lg z-50"
+            className="fixed top-0 left-0 bottom-0 w-64 bg-gradient-to-b from-[#E0F2FE] to-[#FFFFFF] shadow-lg z-50"
           >
             <div className="bg-[#0288d1] p-4">
               <h1 className="text-white text-xl font-semibold">eConsultas</h1>
