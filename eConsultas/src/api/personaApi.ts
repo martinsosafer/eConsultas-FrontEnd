@@ -57,4 +57,25 @@ export const personaApi = {
       throw error;
     }
   }
-};
+
+  , async updatePersona(email: string, data: Partial<Persona>): Promise<Persona> {
+    const token = Cookies.get('access_token');
+    if (!token) throw new Error('No authentication token found');
+
+    try {
+      const response = await api.put(`/usuarios/persona/${email}`, data, {
+        headers: {
+          'Accept': '*/*',
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      localStorage.setItem('personaData', JSON.stringify(response.data));
+      return response.data;
+    } catch (error) {
+      console.error('Error updating persona:', error);
+      throw error;
+    }
+    }
+    };
+
