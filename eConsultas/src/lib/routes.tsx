@@ -10,6 +10,7 @@ import Login from "@/pages/login/login.tsx";
 import Cuenta from "@/pages/cuenta/cuenta.tsx"; // Nuevo componente
 import EditarCuenta from "@/pages/cuenta/editarCuenta.tsx"; // Nuevo componente
 import ProfilePage from "@/pages/profile/index.tsx";
+import DashboardAdminPage from "@/pages/adminDashboard/index.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
       {
         path: "about",
         element: <About />,
+      },
+      {
+        path: "dashboard-admin",
+        element: <DashboardAdminPage />,
       },
 
       {

@@ -13,7 +13,7 @@ export default function Layout() {
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
       <header className="relative text-white backdrop-blur-md bg-opacity-80 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0288d1] via-[#0C8FD6] to-[#0EA5E9] animate-gradient-x z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary animate-gradient-x z-0"></div>
 
         <div className="relative z-10 flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-4">
