@@ -25,7 +25,7 @@ export interface Persona {
   // Modelo de Paciente que extiende Persona
   export interface Paciente extends Persona {
     tipoPersona: "PACIENTE";
-    obraSocial: string;
+    obraSocial: boolean;
   }
   
   // Interfaces auxiliares

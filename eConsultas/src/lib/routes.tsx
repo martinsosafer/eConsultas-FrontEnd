@@ -7,11 +7,12 @@ import DatosPaciente from "../pages/paciente/[id].tsx";
 import ColorSystemShowcase from "../pages/colorshowcase/index.tsx";
 import PasswordCreate from "@/pages/crearContraseña/index.tsx";
 import Login from "@/pages/login/index.tsx";
-import Cuenta from "@/pages/cuenta/cuenta.tsx"; // Nuevo componente
-import EditarCuenta from "@/pages/cuenta/editarCuenta.tsx"; // Nuevo componente
+
+
 import ProfilePage from "@/pages/profile/index.tsx";
 import DashboardAdminPage from "@/pages/adminDashboard/index.tsx";
 import ManejarPersonalPage from "@/pages/adminDashboard/manejarPersonalPage/index.tsx";
+import EditProfile from "@/pages/profile/profile/editProfile/editProfile.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -22,10 +23,7 @@ export const router = createBrowserRouter([
         index: true,
         element: <Home />,
       },
-      {
-        path: "profile",
-        element: <ProfilePage />,
-      },
+
       {
         path: "about",
         element: <About />,
@@ -67,16 +65,21 @@ export const router = createBrowserRouter([
         element: <Login />,
       },
       {
-        path: "cuenta",
+        path: "profile",
         children: [
           {
-            index: true,
-            element: <Cuenta />,
-          },
-          {
-            path: "editar/:id",
-            element: <EditarCuenta />,
-          },
+            path: ":username",
+            children: [
+              {
+                index: true,
+                element: <ProfilePage />,
+              },
+              {
+                path: "edit",
+                element: <EditProfile />,
+              }
+            ]
+          }
         ],
       },
     ],

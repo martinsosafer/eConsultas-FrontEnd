@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import Button from "@/components/button";
@@ -9,13 +9,19 @@ import { personaApi } from "@/api/personaApi";
 import { toast } from "sonner";
 import { Medico, Paciente, Persona } from "@/api/models/models";
 import { Toaster } from "@/components/ui/sonner";
+import { useAuth } from "@/context/AuthProvider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const EditarCuenta = () => {
-  const { email: routeEmail } = useParams();
+const EditProfile = () => {
+  const { username: encodedUsername } = useParams<{ username: string }>();
+  const username = encodedUsername ? decodeURIComponent(encodedUsername) : null;
   const navigate = useNavigate();
+  const { personaData } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cooldown, setCooldown] = useState(false);
   const [originalData, setOriginalData] = useState<Persona | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [userData, setUserData] = useState<Partial<Persona>>({
     pais: "",
@@ -34,54 +40,82 @@ const EditarCuenta = () => {
     nombre: "",
     apellido: "",
     fechaNacimiento: "",
-    archivos: [],
   });
 
+  // Verificar permisos
+  const isAdmin = personaData?.credenciales.roles?.some(r => r.id === 1 || r.id === 3);
+  const isEditingSelf = username === personaData?.credenciales.username;
+  const canEdit = isEditingSelf || isAdmin;
+
   useEffect(() => {
+    console.log("Parámetro username decodificado:", username);
+    console.log("Datos de autenticación:", personaData);
+    console.log("Permisos de edición:", canEdit);
+
     const loadData = async () => {
       try {
-        const persona = await personaApi.getPersona();
-        if (persona) {
-          setOriginalData(persona);
-          setUserData({
-            ...persona,
-            credenciales: { ...persona.credenciales },
-            // archivos: persona.archivos, // Comentado por ahora pq no está implementada la funcionalidad
-          });
+        if (!username) {
+          toast.error("Username no proporcionado");
+          navigate("/profile", { replace: true });
+          return;
         }
+
+        if (!personaData) {
+          console.log("Esperando datos de autenticación...");
+          return;
+        }
+
+        if (!canEdit) {
+          toast.error("No tienes permisos para editar este perfil");
+          navigate(`/profile/${encodeURIComponent(username)}`, { replace: true });
+          return;
+        }
+
+        const data = await personaApi.getPersonaByUsername(username);
+        console.log("Datos obtenidos de la API:", data);
+        setOriginalData(data);
+        setUserData(data);
+        
+        try {
+          const blob = await personaApi.fetchProfilePicture(data.credenciales.email);
+          setProfileImage(URL.createObjectURL(blob));
+        } catch (error) {
+          console.error("Error cargando imagen de perfil:", error);
+        }
+
       } catch (error) {
         toast.error("Error cargando datos del usuario");
-        console.error("Error loading persona data:", error);
+        console.error("Error loading user data:", error);
+        navigate(-1);
       }
     };
 
-    const userDTO = JSON.parse(localStorage.getItem("UserDTO") || "{}");
-    if (!userDTO?.correo) {
-      toast.error("Debe iniciar sesión primero");
-      navigate("/login");
-      return;
-    }
-
-    if (routeEmail && routeEmail !== userDTO.correo) {
-      toast.warning("No tienes permiso para editar este perfil");
-      navigate("/no-autorizado");
-      return;
-    }
-
     loadData();
-  }, [routeEmail, navigate]);
+  }, [username, personaData, canEdit, navigate]);
+
+  const handleFieldChange = (field: keyof Persona, value: string) => {
+    setUserData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleCredencialChange = (field: keyof Persona['credenciales'], value: string) => {
+    setUserData(prev => ({
+      ...prev,
+      credenciales: { ...prev.credenciales!, [field]: value }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (cooldown || !originalData) return;
+    if (!originalData || !canEdit) return;
 
     setIsSubmitting(true);
     try {
       const changes = getChangedFields(originalData, userData);
       console.log("Cambios a enviar:", changes);
       
-      const email = JSON.parse(localStorage.getItem("UserDTO") || "{}").correo;
-      const updated = await personaApi.updatePersona(email, changes);
+      const targetUsername = isEditingSelf ? personaData.credenciales.username : username;
+
+      const updated = await personaApi.updatePersona(targetUsername!, changes);
       
       setOriginalData(updated);
       localStorage.setItem("personaData", JSON.stringify(updated));
@@ -97,73 +131,93 @@ const EditarCuenta = () => {
   };
 
   const getChangedFields = (original: Persona, current: Partial<Persona>) => {
-    const changes: Record<string, any> = {};
+    const changes: Partial<Persona> = {};
     
-    // Comparar campos principales
-    const mainFields: (keyof Persona)[] = [
+    const editableFields: (keyof Persona)[] = [
       'pais', 'ciudad', 'direccion', 'numeroExterior', 
       'codigoPostal', 'dni', 'nombre', 'apellido', 'fechaNacimiento'
     ];
 
-    mainFields.forEach(field => {
+    const adminFields: (keyof Medico)[] = ['sueldo', 'especialidad'];
+
+    editableFields.forEach(field => {
       if (current[field] !== undefined && current[field] !== original[field]) {
         changes[field] = current[field];
       }
     });
 
-    // Campos específicos de Médico
-    if (original.credenciales.tipoPersona === "MEDICO") {
-      const medicoFields: (keyof Medico)[] = ['sueldo', 'especialidad'];
-      medicoFields.forEach(field => {
+    if (isAdmin) {
+      adminFields.forEach(field => {
         if (current[field] !== undefined && current[field] !== (original as Medico)[field]) {
-          changes[field] = current[field];
+          (changes as Medico)[field] = current[field] as never;
         }
       });
     }
 
-    // Campos de credenciales
-    const credencialFields: (keyof Persona['credenciales'])[] = [
-      'email', 'username', 'codigoDeLlamada', 'celular'
-    ];
-
+    const credencialFields: (keyof Persona['credenciales'])[] = ['email', 'username', 'codigoDeLlamada', 'celular'];
     credencialFields.forEach(field => {
-      const originalValue = original.credenciales[field];
-      const currentValue = current.credenciales?.[field];
-      if (currentValue !== undefined && currentValue !== originalValue) {
-        if (!changes.credenciales) changes.credenciales = {};
-        changes.credenciales[field] = currentValue;
+      if (current.credenciales?.[field] !== original.credenciales[field]) {
+        changes.credenciales = changes.credenciales || {};
+        changes.credenciales[field] = current.credenciales?.[field];
       }
     });
 
     return changes;
   };
 
-  const handleFieldChange = (field: keyof Persona, value: string) => {
-    setUserData(prev => ({ ...prev, [field]: value }));
+  const handleImageUpload = async (file: File) => {
+    try {
+      await personaApi.uploadProfilePicture({
+        file,
+        identifier: userData.credenciales?.email || username!,
+        tipo: 'PROFILE_PICTURE'
+      });
+      
+      const blob = await personaApi.fetchProfilePicture(userData.credenciales?.email || username!);
+      setProfileImage(URL.createObjectURL(blob));
+      toast.success("¡Imagen actualizada correctamente!");
+    } catch (error) {
+      toast.error("Error subiendo imagen");
+      console.error("Upload error:", error);
+    }
   };
-
-  const handleCredencialChange = (field: keyof Persona['credenciales'], value: string) => {
-    setUserData(prev => ({
-      ...prev,
-      credenciales: { ...prev.credenciales!, [field]: value }
-    }));
-  };
-
-  if (!userData) return <div>Cargando...</div>;
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gradient-to-b from-primary-lightest to-white min-h-screen">
       <Toaster richColors />
       <Card className="border-none shadow-xl rounded-2xl overflow-hidden">
         <CardHeader className="bg-primary-dark text-white pb-4">
-          <CardTitle className="text-3xl font-bold font-mono text-center tracking-wide">
-            ✏️ Editar Perfil
-          </CardTitle>
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative group cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}>
+              <Avatar className="w-32 h-32 border-4 border-white">
+                {profileImage ? (
+                  <AvatarImage src={profileImage} />
+                ) : (
+                  <AvatarFallback className="text-3xl bg-primary text-white">
+                    {userData.nombre?.[0]}{userData.apellido?.[0]}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                <EditIcon className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+            />
+            <CardTitle className="text-3xl font-bold font-mono text-center tracking-wide">
+              ✏️ Editar Perfil de {userData.nombre}
+            </CardTitle>
+          </div>
         </CardHeader>
 
         <CardContent className="p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Sección Información Personal */}
             <div className="space-y-6">
               <h3 className="text-xl font-semibold text-primary-dark border-b-2 border-primary-light pb-2">
                 Información Personal
@@ -175,7 +229,6 @@ const EditarCuenta = () => {
                   <Input
                     value={userData.nombre || ""}
                     onChange={(e) => handleFieldChange('nombre', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 
@@ -184,7 +237,6 @@ const EditarCuenta = () => {
                   <Input
                     value={userData.apellido || ""}
                     onChange={(e) => handleFieldChange('apellido', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -202,7 +254,6 @@ const EditarCuenta = () => {
                   <Input
                     value={userData.dni || ""}
                     onChange={(e) => handleFieldChange('dni', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -212,13 +263,11 @@ const EditarCuenta = () => {
                     type="date"
                     value={userData.fechaNacimiento || ""}
                     onChange={(e) => handleFieldChange('fechaNacimiento', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Sección Contacto */}
             <div className="space-y-6">
               <h3 className="text-xl font-semibold text-primary-dark border-b-2 border-primary-light pb-2">
                 Datos de Contacto
@@ -231,7 +280,6 @@ const EditarCuenta = () => {
                     type="email"
                     value={userData.credenciales?.email || ""}
                     onChange={(e) => handleCredencialChange('email', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -240,7 +288,6 @@ const EditarCuenta = () => {
                   <Input
                     value={userData.credenciales?.username || ""}
                     onChange={(e) => handleCredencialChange('username', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -250,7 +297,7 @@ const EditarCuenta = () => {
                     value={userData.credenciales?.codigoDeLlamada || "+52"}
                     onValueChange={(value) => handleCredencialChange('codigoDeLlamada', value)}
                   >
-                    <SelectTrigger className="border-primary-light focus:ring-2 focus:ring-primary">
+                    <SelectTrigger>
                       <SelectValue placeholder="Código" />
                     </SelectTrigger>
                     <SelectContent>
@@ -266,13 +313,11 @@ const EditarCuenta = () => {
                   <Input
                     value={userData.credenciales?.celular || ""}
                     onChange={(e) => handleCredencialChange('celular', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Sección Dirección */}
             <div className="space-y-6">
               <h3 className="text-xl font-semibold text-primary-dark border-b-2 border-primary-light pb-2">
                 Dirección
@@ -284,7 +329,6 @@ const EditarCuenta = () => {
                   <Input
                     value={userData.pais || ""}
                     onChange={(e) => handleFieldChange('pais', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -293,7 +337,6 @@ const EditarCuenta = () => {
                   <Input
                     value={userData.ciudad || ""}
                     onChange={(e) => handleFieldChange('ciudad', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -302,7 +345,6 @@ const EditarCuenta = () => {
                   <Input
                     value={userData.codigoPostal || ""}
                     onChange={(e) => handleFieldChange('codigoPostal', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -311,7 +353,6 @@ const EditarCuenta = () => {
                   <Input
                     value={userData.direccion || ""}
                     onChange={(e) => handleFieldChange('direccion', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
 
@@ -320,13 +361,11 @@ const EditarCuenta = () => {
                   <Input
                     value={userData.numeroExterior || ""}
                     onChange={(e) => handleFieldChange('numeroExterior', e.target.value)}
-                    className="border-primary-light focus:ring-2 focus:ring-primary"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Sección Médica */}
             {userData.tipoPersona === "MEDICO" && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-accent-dark border-b-2 border-accent-light pb-2">
@@ -339,7 +378,7 @@ const EditarCuenta = () => {
                     <Input
                       value={(userData as Medico).especialidad || ""}
                       onChange={(e) => handleFieldChange('especialidad', e.target.value)}
-                      className="border-accent-light focus:ring-2 focus:ring-accent"
+                      disabled={!isAdmin}
                     />
                   </div>
 
@@ -349,7 +388,7 @@ const EditarCuenta = () => {
                       type="number"
                       value={(userData as Medico).sueldo || ""}
                       onChange={(e) => handleFieldChange('sueldo', e.target.value)}
-                      className="border-accent-light focus:ring-2 focus:ring-accent"
+                      disabled={!isAdmin}
                     />
                   </div>
                 </div>
@@ -361,13 +400,13 @@ const EditarCuenta = () => {
                 type="secondary"
                 label="Cancelar"
                 onClick={() => navigate(-1)}
-                className="px-8 py-3 hover:shadow-lg"
+                className="px-8 py-3"
               />
               <Button
                 type="primary"
                 label={isSubmitting ? "Guardando..." : cooldown ? "Espere 5 segundos" : "Guardar Cambios"}
                 disabled={isSubmitting || cooldown}
-                className="bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary-darker px-8 py-3 text-white shadow-md hover:shadow-lg transition-all disabled:opacity-75"
+                className="px-8 py-3"
               />
             </CardFooter>
           </form>
@@ -377,4 +416,10 @@ const EditarCuenta = () => {
   );
 };
 
-export default EditarCuenta;
+const EditIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+  </svg>
+);
+
+export default EditProfile;

@@ -7,99 +7,154 @@ import {
   MailIcon as IconMail,
   PhoneIcon as IconPhone,
   ShieldIcon as IconShield,
+  HomeIcon as IconHome,
+  EditIcon as IconEdit,
 } from "lucide-react";
-import type React from "react";
+import { Link } from "react-router-dom";
+import { Paciente, Medico } from "@/api/models/models";
+import { useEffect, useState } from "react";
+import { personaApi } from "@/api/personaApi"; 
 
-export default function Profile({ patient }: { patient: any }) {
+export default function Profile({ patient }: { patient: Medico | Paciente }) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [loadingImage, setLoadingImage] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadProfilePicture = async () => {
+      try {
+        if (patient.credenciales?.email) {
+          const blob = await personaApi.fetchProfilePicture(patient.credenciales.email);
+          const url = URL.createObjectURL(blob);
+          setImageUrl(url);
+        }
+      } catch (err) {
+        setError("Error al cargar la imagen de perfil");
+        console.error("Profile picture error:", err);
+      } finally {
+        setLoadingImage(false);
+      }
+    };
+
+    loadProfilePicture();
+
+    return () => {
+      if (imageUrl) URL.revokeObjectURL(imageUrl);
+    };
+  }, [patient.credenciales?.email]);
+
   return (
     <Card className="max-w-4xl mx-auto bg-card shadow-lg rounded-2xl overflow-hidden mt-6">
       <div className="bg-gradient-to-r from-primary to-secondary h-48"></div>
       <CardHeader className="relative text-center pb-0 pt-32">
-        {" "}
-        {/* Increased padding-top */}
-        <Avatar className="w-40 h-40 mx-auto border-4 border-white rounded-full absolute -top-20 inset-x-0">
-          {" "}
-          {/* Adjusted positioning */}
-          <AvatarImage
-            src="/placeholder.svg"
-            alt={`${patient.nombre} ${patient.apellido}`}
-            className="rounded-full"
-          />
-          <AvatarFallback className="text-5xl bg-primary text-white rounded-full">
-            {`${patient.nombre?.[0]}${patient.apellido?.[0]}`}
-          </AvatarFallback>
-        </Avatar>
-        <CardTitle className="text-3xl font-bold text-primary-dark ">
-          {" "}
-          {patient.nombre} {patient.apellido}
-        </CardTitle>
-        <Badge
-          variant="outline"
-          className="mt-2 text-sm px-3 py-1 rounded-full flex justify-center items-center w-full"
-        >
-          {patient.tipoPersona}
-        </Badge>
+        <div className="flex justify-center items-center gap-4">
+          <Avatar className="w-40 h-40 mx-auto border-4 border-white rounded-full absolute -top-20 inset-x-0">
+            {!loadingImage && imageUrl && (
+              <AvatarImage
+                src={imageUrl}
+                alt={`${patient.nombre} ${patient.apellido}`}
+                className="rounded-full"
+              />
+            )}
+            <AvatarFallback className="text-5xl bg-primary text-white rounded-full">
+              {loadingImage ? (
+                <div className="animate-pulse bg-gray-300 w-full h-full rounded-full" />
+              ) : (
+                `${patient.nombre?.[0]}${patient.apellido?.[0]}`
+              )}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <CardTitle className="text-3xl font-bold text-primary-dark">
+              {patient.nombre} {patient.apellido}
+              <Link 
+                to={`/profile/${patient.id}/edit`}
+                className="ml-4 inline-block hover:text-primary transition-colors"
+              >
+                <IconEdit className="w-6 h-6" />
+              </Link>
+            </CardTitle>
+            <Badge
+              variant="outline"
+              className="mt-2 text-sm px-3 py-1 rounded-full flex justify-center items-center w-full"
+            >
+              {patient.tipoPersona}
+            </Badge>
+          </div>
+        </div>
       </CardHeader>
+
       <CardContent className="space-y-8 mt-6">
+        {/* Información! */}
+
+
         <section className="bg-background rounded-xl p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-secondary-dark mb-4 flex items-center">
-            <IconUser className="mr-2" /> Informacion basica
+            <IconHome className="mr-2" /> Dirección
           </h3>
           <Separator className="mb-4" />
           <div className="grid grid-cols-2 gap-6">
-            <InfoItem label="DNI" value={patient.dni} />
-            <InfoItem
-              label="Fecha de nacimiento "
-              value={patient.fechaNacimiento}
-            />
-
-            <InfoItem
-              label="Obra Social"
-              value={patient.obraSocial ? "Yes" : "No"}
+            <InfoItem label="País" value={patient.pais} />
+            <InfoItem label="Ciudad" value={patient.ciudad} />
+            <InfoItem label="Código Postal" value={patient.codigoPostal} />
+            <InfoItem 
+              label="Dirección" 
+              value={`${patient.direccion} ${patient.numeroExterior ?? ''}`.trim()} 
             />
           </div>
         </section>
 
         <section className="bg-background rounded-xl p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-secondary-dark mb-4 flex items-center">
-            <IconMail className="mr-2" /> Informacion de Contacto
+            <IconPhone className="mr-2" /> Contacto
           </h3>
           <Separator className="mb-4" />
           <div className="grid grid-cols-2 gap-6">
+            <InfoItem
+              label="Teléfono"
+              value={`${patient.credenciales.codigoDeLlamada} ${patient.credenciales.celular}`}
+              icon={<IconPhone className="text-primary" />}
+            />
             <InfoItem
               label="Email"
               value={patient.credenciales.email}
               icon={<IconMail className="text-primary" />}
             />
-            <InfoItem
-              label="Telefono"
-              value={`${patient.credenciales.codigoDeLlamada} ${patient.credenciales.celular}`}
-              icon={<IconPhone className="text-primary" />}
-            />
           </div>
         </section>
 
+
         <section className="bg-background rounded-xl p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-secondary-dark mb-4 flex items-center">
-            <IconShield className="mr-2" /> Informacion adicional
+            <IconUser className="mr-2" /> Información Personal
           </h3>
           <Separator className="mb-4" />
           <div className="grid grid-cols-2 gap-6">
-            <InfoItem label="Username" value={patient.credenciales.username} />
-            <InfoItem
-              label="Verification Level"
-              value={patient.credenciales.nivelDeVerificacion}
+            <InfoItem label="DNI" value={patient.dni} />
+            <InfoItem 
+              label="Fecha de Nacimiento" 
+              value={patient.fechaNacimiento} 
             />
-            <InfoItem
-              label="Verificacion de 2 pasos "
-              value={patient.credenciales.verificacion2Factores ? "Yes" : "No"}
-            />
+            {patient.tipoPersona === 'PACIENTE' && (
+              <InfoItem 
+                label="Obra social" 
+                value={patient.obraSocial ? "Sí" : "No"} 
+              />
+            )}
+            {patient.tipoPersona === 'MEDICO' && (
+              <InfoItem 
+                label="Especialidad" 
+                value={patient.especialidad} 
+              />
+            )}
           </div>
         </section>
       </CardContent>
     </Card>
   );
 }
+
+
 
 function InfoItem({
   label,
