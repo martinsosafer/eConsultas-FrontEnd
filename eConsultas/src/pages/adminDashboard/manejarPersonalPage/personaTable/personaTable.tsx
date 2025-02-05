@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,165 +31,33 @@ import {
   Edit,
   Trash2,
 } from "lucide-react";
+import { personaDashboardApi } from "@/api/dashboard/personaDashboardApi";
+import { Medico, Paciente } from "@/api/models/personaModels";
 
-interface User {
-  id: string;
-  nombre: string;
-  apellido: string;
-  dni: string;
-  credenciales: {
-    email: string;
-  };
-}
-
-const users: User[] = [
-  {
-    id: "0f5959ae-e4e3-42f5-ae7d-91796a76a47b",
-    pais: null,
-    ciudad: null,
-    direccion: null,
-    numeroExterior: null,
-    codigoPostal: null,
-    credenciales: {
-      id: "66ba7d4a-b225-400c-8793-db939ee706ac",
-      persona: null,
-      tipoPersona: null,
-      email: "iamf_095@hotmail.com",
-      username: "iamf_095@hotmail.com",
-      password: "$2a$10$2oXmU4SQr8OabLKXtggvrejUJ7IlMMoH5elT/IIaK7UkhG6MHx6RS",
-      codigoDeLlamada: "+52",
-      celular: "8787912322",
-      roles: [
-        {
-          id: 2,
-          nombre: "ROLE_USER",
-        },
-      ],
-      enabled: true,
-      intentos: 0,
-      codigoDeVerificacion: 2731,
-      vencimientoDeCodigoDeVerificacion: null,
-      fechaDeSolicitudDeCodigoDeVerificacion: null,
-      nivelDeVerificacion: "SIN_VERIFICAR",
-      emailVerificado: false,
-      celularVerificado: false,
-      verificacion2Factores: false,
-      nombre: null,
-      apellido: null,
-    },
-    verificado: false,
-    tipoPersona: "PACIENTE",
-    archivos: null,
-    dni: "654321",
-    nombre: "alfonso",
-    apellido: "meza",
-    fechaNacimiento: "01/01/1973",
-    obraSocial: null,
-    sueldo: 0.0,
-    especialidad: null,
-    turnos: null,
-    consultas: null,
-  },
-  {
-    id: "029ad233-9451-47e8-b6ed-cea1607af9ed",
-    pais: null,
-    ciudad: null,
-    direccion: null,
-    numeroExterior: null,
-    codigoPostal: null,
-    credenciales: {
-      id: "720ac65e-eb59-4637-9ca5-c9e53d154cbf",
-      persona: null,
-      tipoPersona: null,
-      email: "irvingmeza95@gmail.com",
-      username: "irvingmeza95@gmail.com",
-      password: "$2a$10$kmO62MCyhNSLI1OJQgIMp.sEjnhGoVJsGYpNg/.K3871msaMPAVbm",
-      codigoDeLlamada: "+52",
-      celular: "8781112343",
-      roles: [
-        {
-          id: 3,
-          nombre: "ROLE_SUPER_ADMIN",
-        },
-      ],
-      enabled: true,
-      intentos: 0,
-      codigoDeVerificacion: 7938,
-      vencimientoDeCodigoDeVerificacion: null,
-      fechaDeSolicitudDeCodigoDeVerificacion: null,
-      nivelDeVerificacion: "SIN_VERIFICAR",
-      emailVerificado: false,
-      celularVerificado: false,
-      verificacion2Factores: false,
-      nombre: null,
-      apellido: null,
-    },
-    verificado: false,
-    tipoPersona: "MEDICO",
-    archivos: null,
-    dni: "123456",
-    nombre: "irving",
-    apellido: "meza",
-    fechaNacimiento: "01/01/1973",
-    obraSocial: null,
-    sueldo: 0.0,
-    especialidad: null,
-    turnos: null,
-    consultas: null,
-  },
-  {
-    id: "359e20ba-d04b-486b-b531-d7f1c7f2d496",
-    pais: "Argentina",
-    ciudad: null,
-    direccion: null,
-    numeroExterior: null,
-    codigoPostal: null,
-    credenciales: {
-      id: "ac0f738e-201e-4e9a-9960-b60024e4a46a",
-      persona: null,
-      tipoPersona: null,
-      email: "francarri3pro@gmail.com",
-      username: "francarri3pro@gmail.com",
-      password: "$2a$10$BZcJJe4CUO4niZ2LP1dNZOzSNySYjQAeTbVeHDQ7D8s2.bIBdeMim",
-      codigoDeLlamada: "",
-      celular: "8787912321231232",
-      roles: [
-        {
-          id: 1,
-          nombre: "ROLE_ADMIN",
-        },
-      ],
-      enabled: true,
-      intentos: 0,
-      codigoDeVerificacion: 2961,
-      vencimientoDeCodigoDeVerificacion: null,
-      fechaDeSolicitudDeCodigoDeVerificacion: null,
-      nivelDeVerificacion: "SIN_VERIFICAR",
-      emailVerificado: false,
-      celularVerificado: false,
-      verificacion2Factores: false,
-      nombre: null,
-      apellido: null,
-    },
-    verificado: false,
-    tipoPersona: "MEDICO",
-    archivos: null,
-    dni: "65432232131",
-    nombre: "Francisco",
-    apellido: "Carrizo",
-    fechaNacimiento: "2025-02-05",
-    obraSocial: null,
-    sueldo: 0.0,
-    especialidad: null,
-    turnos: null,
-    consultas: null,
-  },
-];
+import EditPersonaModal from "./EditPersonaModal/EditPersonaModal";
+import { personaApi } from "@/api/classes apis/personaApi";
 
 export default function PersonaTable() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState(users);
+  const [users, setUsers] = useState<(Medico | Paciente)[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<(Medico | Paciente)[]>([]);
+  const [editingUser, setEditingUser] = useState<Medico | Paciente | null>(
+    null
+  );
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const personas = await personaDashboardApi.getAllPersonas();
+        setUsers(personas);
+        setFilteredUsers(personas);
+      } catch (error) {
+        console.error("Error loading users:", error);
+        // Handle error (e.g., show error message)
+      }
+    };
 
+    fetchUsers();
+  }, []);
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value.toLowerCase();
     setSearchTerm(term);
@@ -201,6 +69,30 @@ export default function PersonaTable() {
         user.dni.toLowerCase().includes(term)
     );
     setFilteredUsers(filtered);
+  };
+
+  const handleEditClick = (user: Medico | Paciente) => {
+    setEditingUser(user);
+  };
+  const handleSave = async (updatedUser: Medico | Paciente) => {
+    try {
+      const savedUser = await personaApi.updatePersona(
+        updatedUser.credenciales.email,
+        updatedUser
+      );
+
+      setUsers(
+        users.map((user) => (user.id === savedUser.id ? savedUser : user))
+      );
+      setFilteredUsers(
+        filteredUsers.map((user) =>
+          user.id === savedUser.id ? savedUser : user
+        )
+      );
+      setEditingUser(null);
+    } catch (error) {
+      console.error("Error saving user:", error);
+    }
   };
 
   return (
@@ -232,8 +124,11 @@ export default function PersonaTable() {
             <TableHead>Nombre</TableHead>
             <TableHead>DNI</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Obra Social</TableHead>
+            <TableHead>Sueldo</TableHead>
+            <TableHead>Especialidad</TableHead>
             <TableHead>Turnos</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead>Editar/Eliminar</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -243,6 +138,28 @@ export default function PersonaTable() {
               <TableCell>{user.nombre}</TableCell>
               <TableCell>{user.dni}</TableCell>
               <TableCell>{user.credenciales.email}</TableCell>
+              <TableCell>
+                {user.tipoPersona === "PACIENTE"
+                  ? (user as Paciente).obraSocial
+                    ? "Yes"
+                    : "No"
+                  : ""}
+              </TableCell>
+
+              {/* Sueldo (Medico only) */}
+              <TableCell>
+                {user.tipoPersona === "MEDICO"
+                  ? `$${(user as Medico).sueldo.toLocaleString()}`
+                  : ""}
+              </TableCell>
+
+              {/* Especialidad (Medico only) */}
+              <TableCell>
+                {user.tipoPersona === "MEDICO"
+                  ? (user as Medico).especialidad
+                  : ""}
+              </TableCell>
+
               <TableCell>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -272,7 +189,7 @@ export default function PersonaTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleEditClick(user)}>
                       <Edit className="mr-2 h-4 w-4" />
                       <span>Edit</span>
                     </DropdownMenuItem>
@@ -287,6 +204,15 @@ export default function PersonaTable() {
           ))}
         </TableBody>
       </Table>
+      {editingUser && (
+        <EditPersonaModal
+          open={true}
+          onOpenChange={(open) => !open && setEditingUser(null)}
+          persona={editingUser}
+          onSave={handleSave}
+          onChange={setEditingUser}
+        />
+      )}
     </div>
   );
 }

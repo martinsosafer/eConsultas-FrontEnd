@@ -13,7 +13,7 @@ import {
 import { Link } from "react-router-dom";
 import { Paciente, Medico } from "@/api/models/personaModels";
 import { useEffect, useState } from "react";
-import { personaApi } from "@/api/personaApi"; 
+import { personaApi } from "@/api/classes apis/personaApi";
 
 export default function Profile({ patient }: { patient: Medico | Paciente }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -24,7 +24,9 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
     const loadProfilePicture = async () => {
       try {
         if (patient.credenciales?.email) {
-          const blob = await personaApi.fetchProfilePicture(patient.credenciales.email);
+          const blob = await personaApi.fetchProfilePicture(
+            patient.credenciales.email
+          );
           const url = URL.createObjectURL(blob);
           setImageUrl(url);
         }
@@ -67,7 +69,7 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
           <div>
             <CardTitle className="text-3xl font-bold text-primary-dark">
               {patient.nombre} {patient.apellido}
-              <Link 
+              <Link
                 to={`edit`}
                 className="ml-4 inline-block hover:text-primary transition-colors"
               >
@@ -87,7 +89,6 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
       <CardContent className="space-y-8 mt-6">
         {/* Información! */}
 
-
         <section className="bg-background rounded-xl p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-secondary-dark mb-4 flex items-center">
             <IconHome className="mr-2" /> Dirección
@@ -97,9 +98,11 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
             <InfoItem label="País" value={patient.pais} />
             <InfoItem label="Ciudad" value={patient.ciudad} />
             <InfoItem label="Código Postal" value={patient.codigoPostal} />
-            <InfoItem 
-              label="Dirección" 
-              value={`${patient.direccion} ${patient.numeroExterior ?? ''}`.trim()} 
+            <InfoItem
+              label="Dirección"
+              value={`${patient.direccion} ${
+                patient.numeroExterior ?? ""
+              }`.trim()}
             />
           </div>
         </section>
@@ -123,7 +126,6 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
           </div>
         </section>
 
-
         <section className="bg-background rounded-xl p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-secondary-dark mb-4 flex items-center">
             <IconUser className="mr-2" /> Información Personal
@@ -131,21 +133,18 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
           <Separator className="mb-4" />
           <div className="grid grid-cols-2 gap-6">
             <InfoItem label="DNI" value={patient.dni} />
-            <InfoItem 
-              label="Fecha de Nacimiento" 
-              value={patient.fechaNacimiento} 
+            <InfoItem
+              label="Fecha de Nacimiento"
+              value={patient.fechaNacimiento}
             />
-            {patient.tipoPersona === 'PACIENTE' && (
-              <InfoItem 
-                label="Obra social" 
-                value={patient.obraSocial ? "Sí" : "No"} 
+            {patient.tipoPersona === "PACIENTE" && (
+              <InfoItem
+                label="Obra social"
+                value={patient.obraSocial ? "Sí" : "No"}
               />
             )}
-            {patient.tipoPersona === 'MEDICO' && (
-              <InfoItem 
-                label="Especialidad" 
-                value={patient.especialidad} 
-              />
+            {patient.tipoPersona === "MEDICO" && (
+              <InfoItem label="Especialidad" value={patient.especialidad} />
             )}
           </div>
         </section>
@@ -153,8 +152,6 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
     </Card>
   );
 }
-
-
 
 function InfoItem({
   label,

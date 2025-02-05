@@ -119,4 +119,8 @@ export default {
     },
   },
   plugins: [require("tailwindcss-animate")],
+
+  function({ addVariant }) {
+    addVariant("success", ["&.success", ".success &"]);
+  },
 };
