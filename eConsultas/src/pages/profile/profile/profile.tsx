@@ -11,7 +11,7 @@ import {
   EditIcon as IconEdit,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Paciente, Medico } from "@/api/models/models";
+import { Paciente, Medico } from "@/api/models/personaModels";
 import { useEffect, useState } from "react";
 import { personaApi } from "@/api/personaApi"; 
 

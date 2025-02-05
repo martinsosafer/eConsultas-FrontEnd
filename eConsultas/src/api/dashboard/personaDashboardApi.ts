@@ -1,6 +1,6 @@
 // personaDashboardApi.ts
 import { api } from '../axios';
-import { Medico, Paciente, Persona } from '../models/models';
+import { Medico, Paciente, Persona } from '../models/personaModels';
 
 export const personaDashboardApi = {
   async getAllPersonas(): Promise<(Medico | Paciente)[]> {

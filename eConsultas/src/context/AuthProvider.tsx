@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { api } from "../api/axios";
 import { personaApi } from "@/api/personaApi";
-import { Medico, Paciente, Persona } from "../api/models/models";
+import { Medico, Paciente, Persona } from "../api/models/personaModels";
 import { authService } from "@/api/authService";
 interface UserDTO {
   correo: string;

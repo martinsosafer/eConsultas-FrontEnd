@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { personaApi } from "@/api/personaApi";
 import { toast } from "sonner";
-import { Medico, Paciente, Persona } from "@/api/models/models";
+import { Medico, Paciente, Persona } from "@/api/models/personaModels";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/context/AuthProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

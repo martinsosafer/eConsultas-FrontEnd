@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthProvider";
 import { personaApi } from "@/api/personaApi";
 import ProfileComponent from "./profile/profile";
-import { Medico, Paciente } from "@/api/models/models";
+import { Medico, Paciente } from "@/api/models/personaModels";
 
 function ProfilePage() {
   const { username } = useParams<{ username: string }>();
