@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import Button from "@/components/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ const EditProfile = () => {
   const [cooldown, setCooldown] = useState(false);
   const [originalData, setOriginalData] = useState<Persona | null>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [userData, setUserData] = useState<Partial<Persona>>({
@@ -48,12 +50,9 @@ const EditProfile = () => {
   const canEdit = isEditingSelf || isAdmin;
 
   useEffect(() => {
-    console.log("Parámetro username decodificado:", username);
-    console.log("Datos de autenticación:", personaData);
-    console.log("Permisos de edición:", canEdit);
-
     const loadData = async () => {
       try {
+        setLoading(true);
         if (!username) {
           toast.error("Username no proporcionado");
           navigate("/profile", { replace: true });
@@ -72,7 +71,6 @@ const EditProfile = () => {
         }
 
         const data = await personaApi.getPersonaByUsername(username);
-        console.log("Datos obtenidos de la API:", data);
         setOriginalData(data);
         setUserData(data);
         
@@ -87,6 +85,8 @@ const EditProfile = () => {
         toast.error("Error cargando datos del usuario");
         console.error("Error loading user data:", error);
         navigate(-1);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -182,6 +182,7 @@ const EditProfile = () => {
     }
   };
 
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gradient-to-b from-primary-lightest to-white min-h-screen">
       <Toaster richColors />
@@ -190,18 +191,24 @@ const EditProfile = () => {
           <div className="flex flex-col items-center space-y-4">
             <div className="relative group cursor-pointer"
               onClick={() => fileInputRef.current?.click()}>
-              <Avatar className="w-32 h-32 border-4 border-white">
-                {profileImage ? (
-                  <AvatarImage src={profileImage} />
-                ) : (
-                  <AvatarFallback className="text-3xl bg-primary text-white">
-                    {userData.nombre?.[0]}{userData.apellido?.[0]}
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                <EditIcon className="w-8 h-8 text-white" />
-              </div>
+              {loading ? (
+                <Skeleton className="w-32 h-32 rounded-full" />
+              ) : (
+                <Avatar className="w-32 h-32 border-4 border-white">
+                  {profileImage ? (
+                    <AvatarImage src={profileImage} />
+                  ) : (
+                    <AvatarFallback className="text-3xl bg-primary text-white">
+                      {userData.nombre?.[0]}{userData.apellido?.[0]}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+              )}
+              {!loading && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                  <EditIcon className="w-8 h-8 text-white" />
+                </div>
+              )}
             </div>
             <input
               type="file"
@@ -211,7 +218,11 @@ const EditProfile = () => {
               onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
             />
             <CardTitle className="text-3xl font-bold font-mono text-center tracking-wide">
-              ✏️ Editar Perfil de {userData.nombre}
+              {loading ? (
+                <Skeleton className="h-8 w-64 mx-auto" />
+              ) : (
+                `✏️ Editar Perfil de ${userData.nombre}`
+              )}
             </CardTitle>
           </div>
         </CardHeader>
@@ -224,46 +235,49 @@ const EditProfile = () => {
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">Nombre</Label>
-                  <Input
-                    value={userData.nombre || ""}
-                    onChange={(e) => handleFieldChange('nombre', e.target.value)}
-                  />
-                </div>
+                {[...Array(4)].map((_, i) => (
+                  <div className="space-y-2" key={i}>
+                    {loading ? (
+                      <>
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                      </>
+                    ) : (
+                      <>
+                        <Label className="text-primary-dark">
+                          {i === 0 ? 'Nombre' : i === 1 ? 'Apellido' : i === 2 ? 'DNI' : 'Fecha Nacimiento'}
+                        </Label>
+                        <Input
+                          value={
+                            i === 0 ? userData.nombre || "" :
+                            i === 1 ? userData.apellido || "" :
+                            i === 2 ? userData.dni || "" :
+                            userData.fechaNacimiento || ""
+                          }
+                          onChange={(e) => handleFieldChange(
+                            i === 0 ? 'nombre' :
+                            i === 1 ? 'apellido' :
+                            i === 2 ? 'dni' : 'fechaNacimiento', 
+                            e.target.value
+                          )}
+                          type={i === 3 ? "date" : "text"}
+                        />
+                      </>
+                    )}
+                  </div>
+                ))}
                 
                 <div className="space-y-2">
-                  <Label className="text-primary-dark">Apellido</Label>
-                  <Input
-                    value={userData.apellido || ""}
-                    onChange={(e) => handleFieldChange('apellido', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <Label className="text-primary-dark">Rol</Label>
-                  <div className="flex items-center h-10 px-3 border border-primary-light rounded-md bg-gray-50">
-                    <span className="font-bold text-primary-dark">
-                      {userData.tipoPersona}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">DNI</Label>
-                  <Input
-                    value={userData.dni || ""}
-                    onChange={(e) => handleFieldChange('dni', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">Fecha de Nacimiento</Label>
-                  <Input
-                    type="date"
-                    value={userData.fechaNacimiento || ""}
-                    onChange={(e) => handleFieldChange('fechaNacimiento', e.target.value)}
-                  />
+                  {loading ? (
+                    <Skeleton className="h-10 w-full" />
+                  ) : (
+                    <div className="flex items-center h-10 px-3 border border-primary-light rounded-md bg-gray-50">
+                      <span className="font-bold text-primary-dark">
+                        {userData.tipoPersona}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -274,47 +288,55 @@ const EditProfile = () => {
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">Email</Label>
-                  <Input
-                    type="email"
-                    value={userData.credenciales?.email || ""}
-                    onChange={(e) => handleCredencialChange('email', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">Username</Label>
-                  <Input
-                    value={userData.credenciales?.username || ""}
-                    onChange={(e) => handleCredencialChange('username', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">Código de Llamada</Label>
-                  <Select
-                    value={userData.credenciales?.codigoDeLlamada || "+52"}
-                    onValueChange={(value) => handleCredencialChange('codigoDeLlamada', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Código" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="+52">🇲🇽 +52</SelectItem>
-                      <SelectItem value="+1">🇺🇸 +1</SelectItem>
-                      <SelectItem value="+34">🇪🇸 +34</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">Celular</Label>
-                  <Input
-                    value={userData.credenciales?.celular || ""}
-                    onChange={(e) => handleCredencialChange('celular', e.target.value)}
-                  />
-                </div>
+                {[...Array(4)].map((_, i) => (
+                  <div className="space-y-2" key={i}>
+                    {loading ? (
+                      <>
+                        <Skeleton className="h-4 w-24" />
+                        {i === 2 ? (
+                          <Skeleton className="h-10 w-full" />
+                        ) : (
+                          <Skeleton className="h-10 w-full" />
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <Label className="text-primary-dark">
+                          {i === 0 ? 'Email' : i === 1 ? 'Username' : i === 2 ? 'Código Llamada' : 'Celular'}
+                        </Label>
+                        {i === 2 ? (
+                          <Select
+                            value={userData.credenciales?.codigoDeLlamada || "+52"}
+                            onValueChange={(value) => handleCredencialChange('codigoDeLlamada', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Código" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="+52">🇲🇽 +52</SelectItem>
+                              <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                              <SelectItem value="+34">🇪🇸 +34</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            value={
+                              i === 0 ? userData.credenciales?.email || "" :
+                              i === 1 ? userData.credenciales?.username || "" :
+                              userData.credenciales?.celular || ""
+                            }
+                            onChange={(e) => handleCredencialChange(
+                              i === 0 ? 'email' :
+                              i === 1 ? 'username' : 'celular', 
+                              e.target.value
+                            )}
+                            type={i === 0 ? "email" : "text"}
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -324,90 +346,107 @@ const EditProfile = () => {
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">País</Label>
-                  <Input
-                    value={userData.pais || ""}
-                    onChange={(e) => handleFieldChange('pais', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">Ciudad</Label>
-                  <Input
-                    value={userData.ciudad || ""}
-                    onChange={(e) => handleFieldChange('ciudad', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">Código Postal</Label>
-                  <Input
-                    value={userData.codigoPostal || ""}
-                    onChange={(e) => handleFieldChange('codigoPostal', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">Dirección</Label>
-                  <Input
-                    value={userData.direccion || ""}
-                    onChange={(e) => handleFieldChange('direccion', e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-primary-dark">Número Exterior</Label>
-                  <Input
-                    value={userData.numeroExterior || ""}
-                    onChange={(e) => handleFieldChange('numeroExterior', e.target.value)}
-                  />
-                </div>
+                {[...Array(5)].map((_, i) => (
+                  <div className="space-y-2" key={i}>
+                    {loading ? (
+                      <>
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-10 w-full" />
+                      </>
+                    ) : (
+                      <>
+                        <Label className="text-primary-dark">
+                          {i === 0 ? 'País' : 
+                           i === 1 ? 'Ciudad' : 
+                           i === 2 ? 'Código Postal' : 
+                           i === 3 ? 'Dirección' : 'Número Exterior'}
+                        </Label>
+                        <Input
+                          value={
+                            i === 0 ? userData.pais || "" :
+                            i === 1 ? userData.ciudad || "" :
+                            i === 2 ? userData.codigoPostal || "" :
+                            i === 3 ? userData.direccion || "" :
+                            userData.numeroExterior || ""
+                          }
+                          onChange={(e) => handleFieldChange(
+                            i === 0 ? 'pais' :
+                            i === 1 ? 'ciudad' :
+                            i === 2 ? 'codigoPostal' :
+                            i === 3 ? 'direccion' : 'numeroExterior', 
+                            e.target.value
+                          )}
+                        />
+                      </>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
-            {userData.tipoPersona === "MEDICO" && (
+            {loading ? (
               <div className="space-y-6">
-                <h3 className="text-xl font-semibold text-accent-dark border-b-2 border-accent-light pb-2">
-                  Información Médica
-                </h3>
-                
+                <Skeleton className="h-8 w-64" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="text-accent-dark">Especialidad</Label>
-                    <Input
-                      value={(userData as Medico).especialidad || ""}
-                      onChange={(e) => handleFieldChange('especialidad', e.target.value)}
-                      disabled={!isAdmin}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-accent-dark">Sueldo (MXN)</Label>
-                    <Input
-                      type="number"
-                      value={(userData as Medico).sueldo || ""}
-                      onChange={(e) => handleFieldChange('sueldo', e.target.value)}
-                      disabled={!isAdmin}
-                    />
-                  </div>
+                  {[...Array(2)].map((_, i) => (
+                    <div className="space-y-2" key={i}>
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  ))}
                 </div>
               </div>
+            ) : (
+              userData.tipoPersona === "MEDICO" && (
+                <div className="space-y-6">
+                  <h3 className="text-xl font-semibold text-accent-dark border-b-2 border-accent-light pb-2">
+                    Información Médica
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-accent-dark">Especialidad</Label>
+                      <Input
+                        value={(userData as Medico).especialidad || ""}
+                        onChange={(e) => handleFieldChange('especialidad', e.target.value)}
+                        disabled={!isAdmin}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-accent-dark">Sueldo (MXN)</Label>
+                      <Input
+                        type="number"
+                        value={(userData as Medico).sueldo || ""}
+                        onChange={(e) => handleFieldChange('sueldo', e.target.value)}
+                        disabled={!isAdmin}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )
             )}
 
             <CardFooter className="flex justify-end gap-4 pt-8">
-              <Button
-                type="secondary"
-                label="Cancelar"
-                onClick={() => navigate(-1)}
-                className="px-8 py-3"
-              />
-              <Button
-                type="primary"
-                label={isSubmitting ? "Guardando..." : cooldown ? "Espere 5 segundos" : "Guardar Cambios"}
-                disabled={isSubmitting || cooldown}
-                className="px-8 py-3"
-              />
+              {loading ? (
+                <>
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-10 w-36" />
+                </>
+              ) : (
+                <>
+                  <Button
+                    type="secondary"
+                    label="Cancelar"
+                    onClick={() => navigate(-1)}
+                    className="px-8 py-3"
+                  />
+                  <Button
+                    type="primary"
+                    label={isSubmitting ? "Guardando..." : cooldown ? "Espere 5 segundos" : "Guardar Cambios"}
+                    disabled={isSubmitting || cooldown}
+                    className="px-8 py-3"
+                  />
+                </>
+              )}
             </CardFooter>
           </form>
         </CardContent>
@@ -415,7 +454,6 @@ const EditProfile = () => {
     </div>
   );
 };
-
 const EditIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />

@@ -68,7 +68,7 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
             <CardTitle className="text-3xl font-bold text-primary-dark">
               {patient.nombre} {patient.apellido}
               <Link 
-                to={`/profile/${patient.id}/edit`}
+                to={`edit`}
                 className="ml-4 inline-block hover:text-primary transition-colors"
               >
                 <IconEdit className="w-6 h-6" />

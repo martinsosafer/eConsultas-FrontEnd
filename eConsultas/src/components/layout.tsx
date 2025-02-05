@@ -7,8 +7,7 @@ import { useAuth } from "@/context/AuthProvider";
 
 export default function Layout() {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated } = useAuth(); // Get authentication state
-
+  const { isAuthenticated, personaData } = useAuth(); 
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
@@ -23,7 +22,7 @@ export default function Layout() {
             >
               <img src={logo} alt="App Logo" className="w-10 h-8" />
             </Link>
-            {isAuthenticated && ( // Only show menu button when authenticated
+            {isAuthenticated && (
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -33,20 +32,23 @@ export default function Layout() {
               </button>
             )}
           </div>
-          {isAuthenticated && ( // Only show notification/user when authenticated
+          {isAuthenticated && (
             <div className="flex items-center gap-4">
               <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
                 <Bell className="w-6 h-6" />
               </button>
-              <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+              <Link
+                to={`/profile/${encodeURIComponent(personaData?.credenciales?.username || "")}`}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
                 <User className="w-6 h-6" />
-              </button>
+              </Link>
             </div>
           )}
         </div>
       </header>
 
-      {isAuthenticated && ( // Only show sidebar when authenticated
+      {isAuthenticated && (
         <Sidebar isOpen={isOpen} onClose={() => setIsOpen(false)} />
       )}
 
