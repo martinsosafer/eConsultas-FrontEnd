@@ -16,12 +16,11 @@ export const updatePassword = async (email: string, password: string, code: stri
       redirect: "follow" as RequestRedirect, 
     };
   
-    // // URL CODIFICADA
-    // const url = `${urlApi}/usuarios/agregar-password/${encodeURIComponent(email)}?password=${encodeURIComponent(password)}&codigo=${encodeURIComponent(code)}&fecha=${encodeURIComponent(fechaFormateada)}`;
+   
   
     try {
       console.log("Preparando solicitud...");
-      console.log("URL estructurada:", `{{baseUrl}}/usuarios/agregar-password/${email}?password=${password}&codigo=${code}&fecha=${fechaFormateada}`);
+      console.log("URL estructurada:", `${urlApi}/usuarios/agregar-password/${email}?password=${password}&codigo=${code}&fecha=${fechaFormateada}`);
       console.log("URL codificada:", urlApi);
 
       const response = await fetch(urlApi, requestOptions);

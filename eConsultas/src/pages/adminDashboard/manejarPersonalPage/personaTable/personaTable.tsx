@@ -30,20 +30,30 @@ import {
   MoreVertical,
   Edit,
   Trash2,
+  Copy,
 } from "lucide-react";
+import { toast, Toaster } from "sonner";
 import { personaDashboardApi } from "@/api/dashboard/personaDashboardApi";
-import { Medico, Paciente } from "@/api/models/personaModels";
-
-import EditPersonaModal from "./EditPersonaModal/EditPersonaModal";
 import { personaApi } from "@/api/classes apis/personaApi";
+import { Medico, Paciente } from "@/api/models/personaModels";
+import EditPersonaModal from "./EditPersonaModal/EditPersonaModal";
+import { useAuth } from "@/context/AuthProvider"; 
 
 export default function PersonaTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<(Medico | Paciente)[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<(Medico | Paciente)[]>([]);
-  const [editingUser, setEditingUser] = useState<Medico | Paciente | null>(
-    null
+  const [editingUser, setEditingUser] = useState<Medico | Paciente | null>(null);
+
+
+  const personaData = useAuth();
+
+  // Chequeamos si es superadmin para mostrar el de eliminar.
+  // En este caso podemos verificar si es role 3 (SUPERADMIN).
+  const isSuperAdmin = personaData.personaData?.credenciales.roles.some(
+    (role) => role.id === 3
   );
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -51,13 +61,13 @@ export default function PersonaTable() {
         setUsers(personas);
         setFilteredUsers(personas);
       } catch (error) {
-        console.error("Error loading users:", error);
-        // Handle error (e.g., show error message)
+        toast.error("Error loading users");
       }
     };
 
     fetchUsers();
   }, []);
+
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value.toLowerCase();
     setSearchTerm(term);
@@ -74,29 +84,62 @@ export default function PersonaTable() {
   const handleEditClick = (user: Medico | Paciente) => {
     setEditingUser(user);
   };
+
   const handleSave = async (updatedUser: Medico | Paciente) => {
     try {
       const savedUser = await personaApi.updatePersona(
         updatedUser.credenciales.email,
         updatedUser
       );
-
-      setUsers(
-        users.map((user) => (user.id === savedUser.id ? savedUser : user))
-      );
+      setUsers(users.map((user) => (user.id === savedUser.id ? savedUser : user)));
       setFilteredUsers(
-        filteredUsers.map((user) =>
-          user.id === savedUser.id ? savedUser : user
-        )
+        filteredUsers.map((user) => (user.id === savedUser.id ? savedUser : user))
       );
       setEditingUser(null);
+      toast.success("Usuario actualizado con éxito");
     } catch (error) {
-      console.error("Error saving user:", error);
+      toast.error("Error saving user");
+    }
+  };
+
+  const handleDeleteClick = async (user: Medico | Paciente) => {
+    if (!confirm(`Are you sure you want to delete ${user.nombre} ${user.apellido}?`)) {
+      return;
+    }
+    try {
+      await personaApi.deletePersona(user.credenciales.username);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+      setFilteredUsers((prev) => prev.filter((u) => u.id !== user.id));
+      toast.success("Eliminamos al usuario con éxito");
+    } catch (error) {
+      toast.error("Error deleting user");
+    }
+  };
+
+  const handleCopyUserId = async (user: Medico | Paciente) => {
+    try {
+      await navigator.clipboard.writeText(user.id);
+      toast.success("ID del usuario copiado al portapapeles");
+    } catch (error) {
+      toast.error("Error copiando el ID");
     }
   };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+
+        <Toaster 
+          theme="system"
+          toastOptions={{
+            classNames: {
+              toast: 'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
+              description: 'group-[.toast]:text-muted-foreground',
+              success: 'group-[.toast]:bg-green-100 group-[.toast]:text-green-800 group-[.toast]:border-green-200',
+              error: 'group-[.toast]:bg-red-100 group-[.toast]:text-red-800 group-[.toast]:border-red-200',
+            }
+          }}
+        />
+
       <div className="flex justify-between items-center">
         <div className="relative w-64">
           <Input
@@ -145,21 +188,16 @@ export default function PersonaTable() {
                     : "No"
                   : ""}
               </TableCell>
-
               {/* Sueldo (Medico only) */}
               <TableCell>
                 {user.tipoPersona === "MEDICO"
                   ? `$${(user as Medico).sueldo.toLocaleString()}`
                   : ""}
               </TableCell>
-
               {/* Especialidad (Medico only) */}
               <TableCell>
-                {user.tipoPersona === "MEDICO"
-                  ? (user as Medico).especialidad
-                  : ""}
+                {user.tipoPersona === "MEDICO" ? (user as Medico).especialidad : ""}
               </TableCell>
-
               <TableCell>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -189,14 +227,23 @@ export default function PersonaTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    {/* Abrir el editar modal del usuario :D*/}
                     <DropdownMenuItem onClick={() => handleEditClick(user)}>
                       <Edit className="mr-2 h-4 w-4" />
                       <span>Edit</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span>Delete</span>
+                    {/* Copiar id al portapapeles*/}
+                    <DropdownMenuItem onClick={() => handleCopyUserId(user)}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      <span>Copy ID</span>
                     </DropdownMenuItem>
+                    {/* Solo vamos a mostrar el borrar si es superadmin */}
+                    {isSuperAdmin && (
+                      <DropdownMenuItem onClick={() => handleDeleteClick(user)}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Delete</span>
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
