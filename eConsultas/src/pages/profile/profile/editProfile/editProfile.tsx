@@ -1,12 +1,24 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import Button from "@/components/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { personaApi } from "@/api/personaApi";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { personaApi } from "@/api/classes apis/personaApi";
 import { toast } from "sonner";
 import { Medico, Paciente, Persona } from "@/api/models/personaModels";
 import { Toaster } from "@/components/ui/sonner";
@@ -24,7 +36,7 @@ const EditProfile = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [userData, setUserData] = useState<Partial<Persona>>({
     pais: "",
     ciudad: "",
@@ -45,7 +57,9 @@ const EditProfile = () => {
   });
 
   // Verificar permisos
-  const isAdmin = personaData?.credenciales.roles?.some(r => r.id === 1 || r.id === 3);
+  const isAdmin = personaData?.credenciales.roles?.some(
+    (r) => r.id === 1 || r.id === 3
+  );
   const isEditingSelf = username === personaData?.credenciales.username;
   const canEdit = isEditingSelf || isAdmin;
 
@@ -66,21 +80,24 @@ const EditProfile = () => {
 
         if (!canEdit) {
           toast.error("No tienes permisos para editar este perfil");
-          navigate(`/profile/${encodeURIComponent(username)}`, { replace: true });
+          navigate(`/profile/${encodeURIComponent(username)}`, {
+            replace: true,
+          });
           return;
         }
 
         const data = await personaApi.getPersonaByUsername(username);
         setOriginalData(data);
         setUserData(data);
-        
+
         try {
-          const blob = await personaApi.fetchProfilePicture(data.credenciales.email);
+          const blob = await personaApi.fetchProfilePicture(
+            data.credenciales.email
+          );
           setProfileImage(URL.createObjectURL(blob));
         } catch (error) {
           console.error("Error cargando imagen de perfil:", error);
         }
-
       } catch (error) {
         toast.error("Error cargando datos del usuario");
         console.error("Error loading user data:", error);
@@ -94,13 +111,16 @@ const EditProfile = () => {
   }, [username, personaData, canEdit, navigate]);
 
   const handleFieldChange = (field: keyof Persona, value: string) => {
-    setUserData(prev => ({ ...prev, [field]: value }));
+    setUserData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleCredencialChange = (field: keyof Persona['credenciales'], value: string) => {
-    setUserData(prev => ({
+  const handleCredencialChange = (
+    field: keyof Persona["credenciales"],
+    value: string
+  ) => {
+    setUserData((prev) => ({
       ...prev,
-      credenciales: { ...prev.credenciales!, [field]: value }
+      credenciales: { ...prev.credenciales!, [field]: value },
     }));
   };
 
@@ -112,11 +132,13 @@ const EditProfile = () => {
     try {
       const changes = getChangedFields(originalData, userData);
       console.log("Cambios a enviar:", changes);
-      
-      const targetUsername = isEditingSelf ? personaData.credenciales.username : username;
+
+      const targetUsername = isEditingSelf
+        ? personaData.credenciales.username
+        : username;
 
       const updated = await personaApi.updatePersona(targetUsername!, changes);
-      
+
       setOriginalData(updated);
       localStorage.setItem("personaData", JSON.stringify(updated));
       toast.success("¡Cambios guardados exitosamente!");
@@ -132,30 +154,45 @@ const EditProfile = () => {
 
   const getChangedFields = (original: Persona, current: Partial<Persona>) => {
     const changes: Partial<Persona> = {};
-    
+
     const editableFields: (keyof Persona)[] = [
-      'pais', 'ciudad', 'direccion', 'numeroExterior', 
-      'codigoPostal', 'dni', 'nombre', 'apellido', 'fechaNacimiento'
+      "pais",
+      "ciudad",
+      "direccion",
+      "numeroExterior",
+      "codigoPostal",
+      "dni",
+      "nombre",
+      "apellido",
+      "fechaNacimiento",
     ];
 
-    const adminFields: (keyof Medico)[] = ['sueldo', 'especialidad'];
+    const adminFields: (keyof Medico)[] = ["sueldo", "especialidad"];
 
-    editableFields.forEach(field => {
+    editableFields.forEach((field) => {
       if (current[field] !== undefined && current[field] !== original[field]) {
         changes[field] = current[field];
       }
     });
 
     if (isAdmin) {
-      adminFields.forEach(field => {
-        if (current[field] !== undefined && current[field] !== (original as Medico)[field]) {
+      adminFields.forEach((field) => {
+        if (
+          current[field] !== undefined &&
+          current[field] !== (original as Medico)[field]
+        ) {
           (changes as Medico)[field] = current[field] as never;
         }
       });
     }
 
-    const credencialFields: (keyof Persona['credenciales'])[] = ['email', 'username', 'codigoDeLlamada', 'celular'];
-    credencialFields.forEach(field => {
+    const credencialFields: (keyof Persona["credenciales"])[] = [
+      "email",
+      "username",
+      "codigoDeLlamada",
+      "celular",
+    ];
+    credencialFields.forEach((field) => {
       if (current.credenciales?.[field] !== original.credenciales[field]) {
         changes.credenciales = changes.credenciales || {};
         changes.credenciales[field] = current.credenciales?.[field];
@@ -170,10 +207,12 @@ const EditProfile = () => {
       await personaApi.uploadProfilePicture({
         file,
         identifier: userData.credenciales?.email || username!,
-        tipo: 'PROFILE_PICTURE'
+        tipo: "PROFILE_PICTURE",
       });
-      
-      const blob = await personaApi.fetchProfilePicture(userData.credenciales?.email || username!);
+
+      const blob = await personaApi.fetchProfilePicture(
+        userData.credenciales?.email || username!
+      );
       setProfileImage(URL.createObjectURL(blob));
       toast.success("¡Imagen actualizada correctamente!");
     } catch (error) {
@@ -182,15 +221,16 @@ const EditProfile = () => {
     }
   };
 
-
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gradient-to-b from-primary-lightest to-white min-h-screen">
       <Toaster richColors />
       <Card className="border-none shadow-xl rounded-2xl overflow-hidden">
         <CardHeader className="bg-primary-dark text-white pb-4">
           <div className="flex flex-col items-center space-y-4">
-            <div className="relative group cursor-pointer"
-              onClick={() => fileInputRef.current?.click()}>
+            <div
+              className="relative group cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+            >
               {loading ? (
                 <Skeleton className="w-32 h-32 rounded-full" />
               ) : (
@@ -199,7 +239,8 @@ const EditProfile = () => {
                     <AvatarImage src={profileImage} />
                   ) : (
                     <AvatarFallback className="text-3xl bg-primary text-white">
-                      {userData.nombre?.[0]}{userData.apellido?.[0]}
+                      {userData.nombre?.[0]}
+                      {userData.apellido?.[0]}
                     </AvatarFallback>
                   )}
                 </Avatar>
@@ -215,7 +256,9 @@ const EditProfile = () => {
               ref={fileInputRef}
               className="hidden"
               accept="image/*"
-              onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
+              onChange={(e) =>
+                e.target.files?.[0] && handleImageUpload(e.target.files[0])
+              }
             />
             <CardTitle className="text-3xl font-bold font-mono text-center tracking-wide">
               {loading ? (
@@ -233,7 +276,7 @@ const EditProfile = () => {
               <h3 className="text-xl font-semibold text-primary-dark border-b-2 border-primary-light pb-2">
                 Información Personal
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[...Array(4)].map((_, i) => (
                   <div className="space-y-2" key={i}>
@@ -245,28 +288,43 @@ const EditProfile = () => {
                     ) : (
                       <>
                         <Label className="text-primary-dark">
-                          {i === 0 ? 'Nombre' : i === 1 ? 'Apellido' : i === 2 ? 'DNI' : 'Fecha Nacimiento'}
+                          {i === 0
+                            ? "Nombre"
+                            : i === 1
+                            ? "Apellido"
+                            : i === 2
+                            ? "DNI"
+                            : "Fecha Nacimiento"}
                         </Label>
                         <Input
                           value={
-                            i === 0 ? userData.nombre || "" :
-                            i === 1 ? userData.apellido || "" :
-                            i === 2 ? userData.dni || "" :
-                            userData.fechaNacimiento || ""
+                            i === 0
+                              ? userData.nombre || ""
+                              : i === 1
+                              ? userData.apellido || ""
+                              : i === 2
+                              ? userData.dni || ""
+                              : userData.fechaNacimiento || ""
                           }
-                          onChange={(e) => handleFieldChange(
-                            i === 0 ? 'nombre' :
-                            i === 1 ? 'apellido' :
-                            i === 2 ? 'dni' : 'fechaNacimiento', 
-                            e.target.value
-                          )}
+                          onChange={(e) =>
+                            handleFieldChange(
+                              i === 0
+                                ? "nombre"
+                                : i === 1
+                                ? "apellido"
+                                : i === 2
+                                ? "dni"
+                                : "fechaNacimiento",
+                              e.target.value
+                            )
+                          }
                           type={i === 3 ? "date" : "text"}
                         />
                       </>
                     )}
                   </div>
                 ))}
-                
+
                 <div className="space-y-2">
                   <Label className="text-primary-dark">Rol</Label>
                   {loading ? (
@@ -286,7 +344,7 @@ const EditProfile = () => {
               <h3 className="text-xl font-semibold text-primary-dark border-b-2 border-primary-light pb-2">
                 Datos de Contacto
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[...Array(4)].map((_, i) => (
                   <div className="space-y-2" key={i}>
@@ -302,12 +360,22 @@ const EditProfile = () => {
                     ) : (
                       <>
                         <Label className="text-primary-dark">
-                          {i === 0 ? 'Email' : i === 1 ? 'Username' : i === 2 ? 'Código Llamada' : 'Celular'}
+                          {i === 0
+                            ? "Email"
+                            : i === 1
+                            ? "Username"
+                            : i === 2
+                            ? "Código Llamada"
+                            : "Celular"}
                         </Label>
                         {i === 2 ? (
                           <Select
-                            value={userData.credenciales?.codigoDeLlamada || "+52"}
-                            onValueChange={(value) => handleCredencialChange('codigoDeLlamada', value)}
+                            value={
+                              userData.credenciales?.codigoDeLlamada || "+52"
+                            }
+                            onValueChange={(value) =>
+                              handleCredencialChange("codigoDeLlamada", value)
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Código" />
@@ -321,15 +389,22 @@ const EditProfile = () => {
                         ) : (
                           <Input
                             value={
-                              i === 0 ? userData.credenciales?.email || "" :
-                              i === 1 ? userData.credenciales?.username || "" :
-                              userData.credenciales?.celular || ""
+                              i === 0
+                                ? userData.credenciales?.email || ""
+                                : i === 1
+                                ? userData.credenciales?.username || ""
+                                : userData.credenciales?.celular || ""
                             }
-                            onChange={(e) => handleCredencialChange(
-                              i === 0 ? 'email' :
-                              i === 1 ? 'username' : 'celular', 
-                              e.target.value
-                            )}
+                            onChange={(e) =>
+                              handleCredencialChange(
+                                i === 0
+                                  ? "email"
+                                  : i === 1
+                                  ? "username"
+                                  : "celular",
+                                e.target.value
+                              )
+                            }
                             type={i === 0 ? "email" : "text"}
                           />
                         )}
@@ -344,7 +419,7 @@ const EditProfile = () => {
               <h3 className="text-xl font-semibold text-primary-dark border-b-2 border-primary-light pb-2">
                 Dirección
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[...Array(5)].map((_, i) => (
                   <div className="space-y-2" key={i}>
@@ -356,26 +431,42 @@ const EditProfile = () => {
                     ) : (
                       <>
                         <Label className="text-primary-dark">
-                          {i === 0 ? 'País' : 
-                           i === 1 ? 'Ciudad' : 
-                           i === 2 ? 'Código Postal' : 
-                           i === 3 ? 'Dirección' : 'Número Exterior'}
+                          {i === 0
+                            ? "País"
+                            : i === 1
+                            ? "Ciudad"
+                            : i === 2
+                            ? "Código Postal"
+                            : i === 3
+                            ? "Dirección"
+                            : "Número Exterior"}
                         </Label>
                         <Input
                           value={
-                            i === 0 ? userData.pais || "" :
-                            i === 1 ? userData.ciudad || "" :
-                            i === 2 ? userData.codigoPostal || "" :
-                            i === 3 ? userData.direccion || "" :
-                            userData.numeroExterior || ""
+                            i === 0
+                              ? userData.pais || ""
+                              : i === 1
+                              ? userData.ciudad || ""
+                              : i === 2
+                              ? userData.codigoPostal || ""
+                              : i === 3
+                              ? userData.direccion || ""
+                              : userData.numeroExterior || ""
                           }
-                          onChange={(e) => handleFieldChange(
-                            i === 0 ? 'pais' :
-                            i === 1 ? 'ciudad' :
-                            i === 2 ? 'codigoPostal' :
-                            i === 3 ? 'direccion' : 'numeroExterior', 
-                            e.target.value
-                          )}
+                          onChange={(e) =>
+                            handleFieldChange(
+                              i === 0
+                                ? "pais"
+                                : i === 1
+                                ? "ciudad"
+                                : i === 2
+                                ? "codigoPostal"
+                                : i === 3
+                                ? "direccion"
+                                : "numeroExterior",
+                              e.target.value
+                            )
+                          }
                         />
                       </>
                     )}
@@ -407,7 +498,9 @@ const EditProfile = () => {
                       <Label className="text-accent-dark">Especialidad</Label>
                       <Input
                         value={(userData as Medico).especialidad || ""}
-                        onChange={(e) => handleFieldChange('especialidad', e.target.value)}
+                        onChange={(e) =>
+                          handleFieldChange("especialidad", e.target.value)
+                        }
                         disabled={!isAdmin}
                       />
                     </div>
@@ -416,7 +509,9 @@ const EditProfile = () => {
                       <Input
                         type="number"
                         value={(userData as Medico).sueldo || ""}
-                        onChange={(e) => handleFieldChange('sueldo', e.target.value)}
+                        onChange={(e) =>
+                          handleFieldChange("sueldo", e.target.value)
+                        }
                         disabled={!isAdmin}
                       />
                     </div>
@@ -441,7 +536,13 @@ const EditProfile = () => {
                   />
                   <Button
                     type="primary"
-                    label={isSubmitting ? "Guardando..." : cooldown ? "Espere 5 segundos" : "Guardar Cambios"}
+                    label={
+                      isSubmitting
+                        ? "Guardando..."
+                        : cooldown
+                        ? "Espere 5 segundos"
+                        : "Guardar Cambios"
+                    }
                     disabled={isSubmitting || cooldown}
                     className="px-8 py-3"
                   />
@@ -455,8 +556,18 @@ const EditProfile = () => {
   );
 };
 const EditIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+  <svg
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+    />
   </svg>
 );
 

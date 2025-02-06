@@ -7,7 +7,8 @@ import { useAuth } from "@/context/AuthProvider";
 
 export default function Layout() {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated, personaData } = useAuth(); 
+  const { isAuthenticated, personaData } = useAuth();
+  console.log(personaData, isAuthenticated, personaData);
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
@@ -38,7 +39,9 @@ export default function Layout() {
                 <Bell className="w-6 h-6" />
               </button>
               <Link
-                to={`/profile/${encodeURIComponent(personaData?.credenciales?.username || "")}`}
+                to={`/profile/${encodeURIComponent(
+                  personaData?.credenciales?.username || ""
+                )}`}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
               >
                 <User className="w-6 h-6" />

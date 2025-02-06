@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/context/AuthProvider";
-import { personaApi } from "@/api/personaApi";
+import { personaApi } from "@/api/classes apis/personaApi";
 import ProfileComponent from "./profile/profile";
 import { Medico, Paciente } from "@/api/models/personaModels";
 
 function ProfilePage() {
   const { username } = useParams<{ username: string }>();
   const { personaData } = useAuth();
-  const [profileData, setProfileData] = useState<Medico | Paciente | null>(null);
+  const [profileData, setProfileData] = useState<Medico | Paciente | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,11 +19,9 @@ function ProfilePage() {
       try {
         if (!username) throw new Error("Username no proporcionado");
 
-
         if (personaData?.credenciales.username === username) {
           setProfileData(personaData);
         } else {
-
           const data = await personaApi.getPersonaByUsername(username);
           setProfileData(data);
         }
