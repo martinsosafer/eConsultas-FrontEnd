@@ -7,9 +7,9 @@ export interface Consulta {
     horario: string;
     medico: Medico;
     paciente: Paciente;
-    idServicioMedico: number | null;
-    idPaquete: number;
+    idServicioMedico: number | null;  // Presente cuando es servicio individual
+    idPaquete: number | null;         // Presente cuando es paquete
     total: number;
     pagado: boolean;
-    serviciosContratados: ServicioContratado[];
+    serviciosContratados?: ServicioContratado[]; // Solo existe cuando es paquete recordemos
   }
