@@ -103,16 +103,19 @@ export default function PersonaTable() {
   };
 
   const handleDeleteClick = async (user: Medico | Paciente) => {
-    if (!confirm(`Are you sure you want to delete ${user.nombre} ${user.apellido}?`)) {
+    if (!confirm(`¿Estás seguro de eliminar a ${user.nombre} ${user.apellido}?`)) {
       return;
     }
     try {
-      await personaApi.deletePersona(user.credenciales.username);
+
+      await personaApi.deletePersona(user.credenciales.email); 
+  
       setUsers((prev) => prev.filter((u) => u.id !== user.id));
       setFilteredUsers((prev) => prev.filter((u) => u.id !== user.id));
       toast.success("Eliminamos al usuario con éxito");
     } catch (error) {
-      toast.error("Error deleting user");
+      toast.error("Error al eliminar el usuario");
+      console.error("Error deleting user:", error);
     }
   };
 
@@ -227,23 +230,20 @@ export default function PersonaTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {/* Abrir el editar modal del usuario :D*/}
-                    <DropdownMenuItem onClick={() => handleEditClick(user)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      <span>Edit</span>
-                    </DropdownMenuItem>
-                    {/* Copiar id al portapapeles*/}
-                    <DropdownMenuItem onClick={() => handleCopyUserId(user)}>
-                      <Copy className="mr-2 h-4 w-4" />
-                      <span>Copy ID</span>
-                    </DropdownMenuItem>
-                    {/* Solo vamos a mostrar el borrar si es superadmin */}
-                    {isSuperAdmin && (
-                      <DropdownMenuItem onClick={() => handleDeleteClick(user)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        <span>Delete</span>
+                      <DropdownMenuItem onClick={() => handleCopyUserId(user.id)}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        <span>Copiar ID</span>
                       </DropdownMenuItem>
-                    )}
+                      <DropdownMenuItem onClick={() => handleEditClick(user)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        <span>Editar</span>
+                      </DropdownMenuItem>
+                      {isSuperAdmin && (
+                        <DropdownMenuItem onClick={() => handleDeleteClick(user)}>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Eliminar</span>
+                        </DropdownMenuItem>
+                      )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

@@ -115,26 +115,22 @@ export const personaApi = {
       throw new Error("No se pudo obtener el perfil");
     }
   },
-  async deletePersona(username: string) {
+  async deletePersona(email: string) {
     const token = Cookies.get("access_token");
     if (!token) throw new Error("No authentication token found");
   
     try {
-      const response = await api.delete(`/usuarios/persona/${username}`, {
+      const response = await api.delete(`/usuarios/persona/${email}`, { 
         headers: {
           Accept: "*/*",
           Authorization: `Bearer ${token}`,
         },
       });
   
-      if (response.status !== 200) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-  
-      return response.data; 
+      return response.data;
     } catch (error) {
       console.error("Error deleting:", error);
-      throw error; 
+      throw error;
     }
   },
   async uploadProfilePicture(payload: {
