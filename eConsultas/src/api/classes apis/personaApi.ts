@@ -4,7 +4,7 @@ import Cookies from "js-cookie";
 import { Medico, Paciente, Persona } from "../models/personaModels";
 import { urlApi } from "../constant";
 
-//Recuerden que acá estan: Funcion de getPersona, updatePersona y extraer/Subir fotos de perfil
+//Recuerden que acá estan todas las funciones crud de persona
 export const personaApi = {
   async getPersona(): Promise<Medico | Paciente | null> {
     const token = Cookies.get("access_token");

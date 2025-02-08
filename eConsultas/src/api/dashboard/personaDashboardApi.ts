@@ -24,6 +24,26 @@ export const personaDashboardApi = {
     }
   },
 
+  async getAllPersonasByTipo(tipo: string): Promise<(Medico | Paciente)[]> {
+    try {
+      const response = await api.get(`/persona/get-all/${tipo}`, {
+        headers: {
+          'Accept': '*/*'
+        }
+      });
+
+      return response.data.map((persona: Persona) => {
+        if (persona.credenciales.tipoPersona === "MEDICO") {
+          return persona as Medico;
+        }
+        return persona as Paciente;
+      });
+      
+    } catch (error) {
+      console.error('Error fetching all personas by tipo:', error);
+      throw error;
+    }
+  },
   async updatePersonaStatus(id: string, enabled: boolean): Promise<void> {
     try {
       await api.patch(`/usuarios/usuarios/${id}/estado`, { enabled });
