@@ -2,7 +2,7 @@ import React from "react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { updatePassword } from "../../api/passwordCreateApi";
+import { passwordManagement }  from "../../api/passwordManagement";
 import Button from "../../components/button";
 import logo from "../../../public/logo.png";
 import { Toaster, toast } from "sonner";
@@ -24,7 +24,7 @@ const PasswordCreate: React.FC = () => {
     }
 
     try {
-      const response = await updatePassword(email, password, code);
+      const response = await passwordManagement.createPassword(email, password, code);
       toast.success("Contraseña actualizada correctamente.");
       console.log(response);
     } catch (error) {

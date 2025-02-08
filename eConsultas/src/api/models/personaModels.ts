@@ -63,6 +63,23 @@ export interface Persona {
     // Por ahora tienen estas propiedades los archivos
   }
   
+  export interface CreatePersona {
+    tipoPersona: "MEDICO" | "PACIENTE";
+    dni: string;
+    nombre: string;
+    apellido: string;
+    fechaNacimiento: string;
+    credenciales: {
+      email: string;
+      codigoDeLlamada: string;
+      celular: string;
+      roles: Array<{ id: number }>;
+      fechaDeSolicitudDeCodigoDeVerificacion?: string;
+    };
+    obraSocial?: boolean;
+    sueldo?: number;
+    especialidad?: string;
+  }
   // Ejemplo de uso:
   const usuarioPersona: Persona = {
     id: "dffade8b-1205-44e6-88c8-65002b458eb0",
