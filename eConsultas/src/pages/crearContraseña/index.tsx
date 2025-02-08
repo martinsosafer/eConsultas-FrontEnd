@@ -6,6 +6,7 @@ import { passwordManagement }  from "../../api/passwordManagement";
 import Button from "../../components/button";
 import logo from "../../../public/logo.png";
 import { Toaster, toast } from "sonner";
+import { extractErrorMessage } from "@/api/errorHandler";
 
 const PasswordCreate: React.FC = () => {
   const { email, code } = useParams<{ email: string; code: string }>();
@@ -14,6 +15,8 @@ const PasswordCreate: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+  
+    // Basic validation
     if (!email || !code) {
       toast.error("Faltan datos en la URL.");
       return;
@@ -22,14 +25,14 @@ const PasswordCreate: React.FC = () => {
       toast.error("Las contraseñas no coinciden.");
       return;
     }
-
+  
     try {
-      const response = await passwordManagement.createPassword(email, password, code);
+      await passwordManagement.createPassword(email, password, code);
       toast.success("Contraseña actualizada correctamente.");
-      console.log(response);
     } catch (error) {
-      toast.error("Error al actualizar la contraseña.");
-      console.error(error);
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error: " + errorMessage);
+      console.error("Password update error:", error);
     }
   };
 
