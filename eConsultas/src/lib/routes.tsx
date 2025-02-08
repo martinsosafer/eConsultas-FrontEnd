@@ -8,11 +8,13 @@ import ColorSystemShowcase from "../pages/colorshowcase/index.tsx";
 import PasswordCreate from "@/pages/crearContraseña/index.tsx";
 import Login from "@/pages/login/index.tsx";
 
-
 import ProfilePage from "@/pages/profile/index.tsx";
 import DashboardAdminPage from "@/pages/adminDashboard/index.tsx";
 import ManejarPersonalPage from "@/pages/adminDashboard/manejarPersonalPage/index.tsx";
 import EditProfile from "@/pages/profile/profile/editProfile/editProfile.tsx";
+import ServiciosPage from "@/pages/adminDashboard/todosServicios/index.tsx";
+
+import PaquetesPage from "@/pages/adminDashboard/paquetes/index.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -36,6 +38,14 @@ export const router = createBrowserRouter([
           {
             path: "manejar-personal",
             element: <ManejarPersonalPage />,
+          },
+          {
+            path: "servicios",
+            element: <ServiciosPage />,
+          },
+          {
+            path: "paquetes",
+            element: <PaquetesPage />,
           },
         ],
       },
@@ -77,9 +87,9 @@ export const router = createBrowserRouter([
               {
                 path: "edit",
                 element: <EditProfile />,
-              }
-            ]
-          }
+              },
+            ],
+          },
         ],
       },
     ],

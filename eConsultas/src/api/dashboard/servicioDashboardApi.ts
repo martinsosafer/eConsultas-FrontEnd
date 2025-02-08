@@ -1,24 +1,21 @@
-import { api } from '../axios';
-import { Servicio } from '../models/servicioModels';
+import { api } from "../axios";
+import { Servicio } from "../models/servicioModels";
 
 export const servicioDashboardApi = {
-  async getAllServicios(): Promise<(Servicio)[]> {
+  async getAllServicios(): Promise<Servicio[]> {
     try {
-      const response = await api.get("/servicios/get-all", {
+      const response = await api.get("/consultas/servicios/get-all", {
         headers: {
-          'Accept': '*/*'
-        }
+          Accept: "*/*",
+        },
       });
 
       return response.data.map((servicio: Servicio) => {
-          return servicio as Servicio;        
+        return servicio as Servicio;
       });
-      
     } catch (error) {
-      console.error('Error fetching all servicios:', error);
+      console.error("Error fetching all servicios:", error);
       throw error;
     }
   },
-
-
 };

@@ -40,10 +40,17 @@
     }
   }
 
+  @layer base {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
   html {
     font-weight: 400;
     /* 400 is the same as font-normal */
   }
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -86,6 +93,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }

@@ -12,9 +12,38 @@ import {
   BarChart2,
 } from "lucide-react";
 import Button from "@/components/button";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 export default function AdminDashboard() {
+  const location = useLocation();
+  const outletRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
+  const [isAnimating, setIsAnimating] = useState(false);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    // Use requestAnimationFrame for better timing
+    const scrollToOutlet = () => {
+      requestAnimationFrame(() => {
+        outletRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      });
+    };
+
+    // Delay scroll slightly to ensure DOM update
+    const timer = setTimeout(scrollToOutlet, 100);
+
+    return () => clearTimeout(timer);
+  }, [location.key]);
+
   return (
     <div className="p-8 bg-background min-h-screen">
       <h1 className="text-4xl font-bold text-primary-dark mb-8">
@@ -97,14 +126,16 @@ export default function AdminDashboard() {
           onClick={() => console.log("Tracking click event")}
         />
         <QuickActionCard
-          title="Manejar Turnos"
-          description="Mirar y modificar seccion de turnos "
+          title="Servicios"
+          description="Ver todos los Servicios"
           icon={<Calendar className="h-6 w-6" />}
+          href="/dashboard-admin/servicios"
         />
         <QuickActionCard
-          title="Reportes Financieros "
-          description="Generar y ver reportes financieros "
+          title="Paquetes "
+          description="Lista de los paquetes disponibles"
           icon={<FileText className="h-6 w-6" />}
+          href="/dashboard-admin/paquetes"
         />
         <QuickActionCard
           title="Configurar secciones de sistema "
@@ -112,7 +143,37 @@ export default function AdminDashboard() {
           icon={<Settings className="h-6 w-6" />}
         />
       </div>
-      <Outlet />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={location.key}
+          ref={outletRef}
+          initial={{ opacity: 0, y: -20, scaleY: 0.5 }}
+          animate={{
+            opacity: 1,
+            y: 0,
+            scaleY: 1,
+            transition: { duration: 0.3, ease: "easeInOut" },
+          }}
+          exit={{
+            opacity: 0,
+            y: -20,
+            scaleY: 0.5,
+            transition: { duration: 0.2, ease: "easeInOut" },
+          }}
+          className="origin-top"
+          onAnimationStart={() => setIsAnimating(true)}
+          onAnimationComplete={() => {
+            setIsAnimating(false);
+            // Smooth scroll after animation
+            outletRef.current?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }}
+        >
+          <Outlet context={{ isAnimating }} />
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

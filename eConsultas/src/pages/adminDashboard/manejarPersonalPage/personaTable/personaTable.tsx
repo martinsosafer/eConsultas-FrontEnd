@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,16 +35,26 @@ import {
 import { toast, Toaster } from "sonner";
 import { personaDashboardApi } from "@/api/dashboard/personaDashboardApi";
 import { personaApi } from "@/api/classes apis/personaApi";
-import { Medico, Paciente } from "@/api/models/personaModels";
+import type { Medico, Paciente } from "@/api/models/personaModels";
 import EditPersonaModal from "./EditPersonaModal/EditPersonaModal";
-import { useAuth } from "@/context/AuthProvider"; 
+import { useAuth } from "@/context/AuthProvider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useOutletContext } from "react-router-dom";
 
 export default function PersonaTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<(Medico | Paciente)[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<(Medico | Paciente)[]>([]);
-  const [editingUser, setEditingUser] = useState<Medico | Paciente | null>(null);
-
+  const [editingUser, setEditingUser] = useState<Medico | Paciente | null>(
+    null
+  );
+  const [filter, setFilter] = useState<"all" | "PACIENTE" | "MEDICO">("all");
 
   const personaData = useAuth();
 
@@ -59,24 +69,28 @@ export default function PersonaTable() {
       try {
         const personas = await personaDashboardApi.getAllPersonas();
         setUsers(personas);
-        setFilteredUsers(personas);
+        const filtered = personas.filter((user) =>
+          filter === "all" ? true : user.tipoPersona === filter
+        );
+        setFilteredUsers(filtered);
       } catch (error) {
         toast.error("Error loading users");
       }
     };
 
     fetchUsers();
-  }, []);
+  }, [filter]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value.toLowerCase();
     setSearchTerm(term);
     const filtered = users.filter(
       (user) =>
-        user.nombre.toLowerCase().includes(term) ||
-        user.apellido.toLowerCase().includes(term) ||
-        user.credenciales.email.toLowerCase().includes(term) ||
-        user.dni.toLowerCase().includes(term)
+        (filter === "all" || user.tipoPersona === filter) &&
+        (user.nombre.toLowerCase().includes(term) ||
+          user.apellido.toLowerCase().includes(term) ||
+          user.credenciales.email.toLowerCase().includes(term) ||
+          user.dni.toLowerCase().includes(term))
     );
     setFilteredUsers(filtered);
   };
@@ -91,9 +105,13 @@ export default function PersonaTable() {
         updatedUser.credenciales.email,
         updatedUser
       );
-      setUsers(users.map((user) => (user.id === savedUser.id ? savedUser : user)));
+      setUsers(
+        users.map((user) => (user.id === savedUser.id ? savedUser : user))
+      );
       setFilteredUsers(
-        filteredUsers.map((user) => (user.id === savedUser.id ? savedUser : user))
+        filteredUsers.map((user) =>
+          user.id === savedUser.id ? savedUser : user
+        )
       );
       setEditingUser(null);
       toast.success("Usuario actualizado con éxito");
@@ -103,13 +121,14 @@ export default function PersonaTable() {
   };
 
   const handleDeleteClick = async (user: Medico | Paciente) => {
-    if (!confirm(`¿Estás seguro de eliminar a ${user.nombre} ${user.apellido}?`)) {
+    if (
+      !confirm(`¿Estás seguro de eliminar a ${user.nombre} ${user.apellido}?`)
+    ) {
       return;
     }
     try {
+      await personaApi.deletePersona(user.credenciales.email);
 
-      await personaApi.deletePersona(user.credenciales.email); 
-  
       setUsers((prev) => prev.filter((u) => u.id !== user.id));
       setFilteredUsers((prev) => prev.filter((u) => u.id !== user.id));
       toast.success("Eliminamos al usuario con éxito");
@@ -127,36 +146,100 @@ export default function PersonaTable() {
       toast.error("Error copiando el ID");
     }
   };
+  const tableRef = useRef<HTMLDivElement>(null);
+  const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
+  const [initialLoad, setInitialLoad] = useState(true);
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const personas = await personaDashboardApi.getAllPersonas();
+        setUsers(personas);
+        const filtered = personas.filter((user) =>
+          filter === "all" ? true : user.tipoPersona === filter
+        );
+        setFilteredUsers(filtered);
+
+        // Scroll after data loads
+        if (!isAnimating && tableRef.current) {
+          tableRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
+      } catch (error) {
+        toast.error("Error loading users");
+      }
+    };
+
+    fetchUsers();
+  }, [filter, isAnimating]);
   return (
-    <div className="container mx-auto p-6 space-y-6">
-
-        <Toaster 
-          theme="system"
-          toastOptions={{
-            classNames: {
-              toast: 'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
-              description: 'group-[.toast]:text-muted-foreground',
-              success: 'group-[.toast]:bg-green-100 group-[.toast]:text-green-800 group-[.toast]:border-green-200',
-              error: 'group-[.toast]:bg-red-100 group-[.toast]:text-red-800 group-[.toast]:border-red-200',
-            }
-          }}
-        />
+    <div
+      ref={tableRef}
+      className="container mx-auto p-6 space-y-6"
+      style={{
+        opacity: initialLoad ? 0 : 1,
+        transition: "opacity 0.2s ease",
+      }}
+      onTransitionEnd={() => setInitialLoad(false)}
+    >
+      <Toaster
+        theme="system"
+        toastOptions={{
+          classNames: {
+            toast:
+              "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+            description: "group-[.toast]:text-muted-foreground",
+            success:
+              "group-[.toast]:bg-green-100 group-[.toast]:text-green-800 group-[.toast]:border-green-200",
+            error:
+              "group-[.toast]:bg-red-100 group-[.toast]:text-red-800 group-[.toast]:border-red-200",
+          },
+        }}
+      />
 
       <div className="flex justify-between items-center">
-        <div className="relative w-64">
-          <Input
-            type="text"
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={handleSearch}
-            className="pl-10"
-          />
-          <Search
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={20}
-          />
+        <div className="flex items-center">
+          <div className="relative w-64">
+            <Input
+              type="text"
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="pl-10"
+            />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+          </div>
+          <div className="flex items-center space-x-4 ml-4">
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-full bg-secondary mr-2"></div>
+              <span className="text-sm">Paciente</span>
+            </div>
+            <div className="flex items-center">
+              <div className="w-4 h-4 rounded-full bg-accent mr-2"></div>
+              <span className="text-sm">Medico</span>
+            </div>
+          </div>
         </div>
+        <Select
+          value={filter}
+          onValueChange={(value: "all" | "PACIENTE" | "MEDICO") =>
+            setFilter(value)
+          }
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Users</SelectItem>
+            <SelectItem value="PACIENTE">Pacientes</SelectItem>
+            <SelectItem value="MEDICO">Medicos</SelectItem>
+          </SelectContent>
+        </Select>
         <Button className="bg-primary hover:bg-primary-hover text-white">
           <UserPlus className="mr-2" size={20} />
           Add Person
@@ -179,7 +262,12 @@ export default function PersonaTable() {
         </TableHeader>
         <TableBody>
           {filteredUsers.map((user) => (
-            <TableRow key={user.id}>
+            <TableRow
+              key={user.id}
+              className={
+                user.tipoPersona === "PACIENTE" ? "bg-secondary" : "bg-accent"
+              }
+            >
               <TableCell>{user.apellido}</TableCell>
               <TableCell>{user.nombre}</TableCell>
               <TableCell>{user.dni}</TableCell>
@@ -199,7 +287,9 @@ export default function PersonaTable() {
               </TableCell>
               {/* Especialidad (Medico only) */}
               <TableCell>
-                {user.tipoPersona === "MEDICO" ? (user as Medico).especialidad : ""}
+                {user.tipoPersona === "MEDICO"
+                  ? (user as Medico).especialidad
+                  : ""}
               </TableCell>
               <TableCell>
                 <Popover>
@@ -230,20 +320,20 @@ export default function PersonaTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleCopyUserId(user.id)}>
-                        <Copy className="mr-2 h-4 w-4" />
-                        <span>Copiar ID</span>
+                    <DropdownMenuItem onClick={() => handleCopyUserId(user.id)}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      <span>Copiar ID</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleEditClick(user)}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      <span>Editar</span>
+                    </DropdownMenuItem>
+                    {isSuperAdmin && (
+                      <DropdownMenuItem onClick={() => handleDeleteClick(user)}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Eliminar</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleEditClick(user)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        <span>Editar</span>
-                      </DropdownMenuItem>
-                      {isSuperAdmin && (
-                        <DropdownMenuItem onClick={() => handleDeleteClick(user)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          <span>Eliminar</span>
-                        </DropdownMenuItem>
-                      )}
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
