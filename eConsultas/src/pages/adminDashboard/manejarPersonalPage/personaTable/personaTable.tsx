@@ -320,6 +320,7 @@ export default function PersonaTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+<<<<<<< HEAD
                     <DropdownMenuItem onClick={() => handleCopyUserId(user.id)}>
                       <Copy className="mr-2 h-4 w-4" />
                       <span>Copiar ID</span>
@@ -332,6 +333,11 @@ export default function PersonaTable() {
                       <DropdownMenuItem onClick={() => handleDeleteClick(user)}>
                         <Trash2 className="mr-2 h-4 w-4" />
                         <span>Eliminar</span>
+=======
+                      <DropdownMenuItem onClick={() => handleCopyUserId(user)}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        <span>Copiar ID</span>
+>>>>>>> 51e7a80a070e7a916227f5f0e8dd51de87bcc2a3
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>

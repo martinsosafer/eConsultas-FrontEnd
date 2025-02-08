@@ -1,3 +1,6 @@
+import { Turno } from "./turnoModel";
+
+
 // Modelo base de Persona
 export interface Persona {
     id: string;
@@ -20,6 +23,8 @@ export interface Persona {
     tipoPersona: "MEDICO";
     sueldo: number;
     especialidad: string;
+    turnos: Turno[];  
+    consultas?: any[]; 
   }
   
   // Modelo de Paciente que extiende Persona
@@ -63,53 +68,20 @@ export interface Persona {
     // Por ahora tienen estas propiedades los archivos
   }
   
-  // Ejemplo de uso:
-  const usuarioPersona: Persona = {
-    id: "dffade8b-1205-44e6-88c8-65002b458eb0",
-    pais: null,
-    ciudad: null,
-    direccion: null,
-    numeroExterior: null,
-    codigoPostal: null,
+  export interface CreatePersona {
+    tipoPersona: "MEDICO" | "PACIENTE";
+    dni: string;
+    nombre: string;
+    apellido: string;
+    fechaNacimiento: string;
     credenciales: {
-      id: "54d45cf4-7a40-44be-8d85-d1dd94fa3b06",
-      persona: null,
-      tipoPersona: null,
-      email: "pepito.com",
-      username: "pepito.com",
-      password: "$2a$10$QS0D2TZaYVQIrSzm9uDS2.i6rkWm4Gu6wAXhKn6C6mAMCzl8BWUC2", //Está encriptada :p
-      codigoDeLlamada: "+52",
-      celular: "8781112343",
-      roles: [{ id: 1, nombre: "ROLE_ADMIN" }],
-      enabled: true,
-      intentos: 0,
-      codigoDeVerificacion: null,
-      vencimientoDeCodigoDeVerificacion: null,
-      fechaDeSolicitudDeCodigoDeVerificacion: null,
-      nivelDeVerificacion: "BASICO",
-      emailVerificado: true,
-      celularVerificado: false,
-      verificacion2Factores: false,
-      nombre: null,
-      apellido: null
-    },
-    verificado: false,
-    archivos: [],
-    dni: "123456",
-    nombre: "irving",
-    apellido: "meza",
-    fechaNacimiento: "01/01/1973"
-  };
-  
-  const medicoEjemplo: Medico = {
-    ...usuarioPersona,
-    tipoPersona: "MEDICO",
-    sueldo: 100.0,
-    especialidad: "cardiologia"
-  };
-  
-  const pacienteEjemplo: Paciente = {
-    ...usuarioPersona,
-    tipoPersona: "PACIENTE",
-    obraSocial: "Nombre de la obra social"
-  };
+      email: string;
+      codigoDeLlamada: string;
+      celular: string;
+      roles: Array<{ id: number }>;
+      fechaDeSolicitudDeCodigoDeVerificacion?: string;
+    };
+    obraSocial?: boolean;
+    sueldo?: number;
+    especialidad?: string;
+  }
