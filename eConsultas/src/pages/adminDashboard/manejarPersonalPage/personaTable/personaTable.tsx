@@ -230,7 +230,7 @@ export default function PersonaTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleCopyUserId(user.id)}>
+                      <DropdownMenuItem onClick={() => handleCopyUserId(user)}>
                         <Copy className="mr-2 h-4 w-4" />
                         <span>Copiar ID</span>
                       </DropdownMenuItem>
