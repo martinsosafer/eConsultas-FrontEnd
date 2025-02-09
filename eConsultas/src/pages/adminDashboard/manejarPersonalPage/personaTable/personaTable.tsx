@@ -46,6 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useOutletContext } from "react-router-dom";
+import CreatePersonaModal from "./CreatePersonaModal/CreatePersonaModal";
 
 export default function PersonaTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,7 +58,7 @@ export default function PersonaTable() {
   const [filter, setFilter] = useState<"all" | "PACIENTE" | "MEDICO">("all");
 
   const personaData = useAuth();
-
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   // Chequeamos si es superadmin para mostrar el de eliminar.
   // En este caso podemos verificar si es role 3 (SUPERADMIN).
   const isSuperAdmin = personaData.personaData?.credenciales.roles.some(
@@ -93,6 +94,17 @@ export default function PersonaTable() {
           user.dni.toLowerCase().includes(term))
     );
     setFilteredUsers(filtered);
+  };
+  const handleCreateUser = async (newUserData: CreatePersona) => {
+    try {
+      const createdUser = await personaDashboardApi.createPersona(newUserData);
+      setUsers((prev) => [...prev, createdUser]);
+      setFilteredUsers((prev) => [...prev, createdUser]);
+      toast.success("Usuario creado con éxito");
+    } catch (error) {
+      console.log("error", error);
+      toast.error("Error al crear el usuario");
+    }
   };
 
   const handleEditClick = (user: Medico | Paciente) => {
@@ -240,9 +252,12 @@ export default function PersonaTable() {
             <SelectItem value="MEDICO">Medicos</SelectItem>
           </SelectContent>
         </Select>
-        <Button className="bg-primary hover:bg-primary-hover text-white">
+        <Button
+          className="bg-primary hover:bg-primary-hover text-white"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
           <UserPlus className="mr-2" size={20} />
-          Add Person
+          Añadir Usuario
         </Button>
       </div>
 
@@ -320,26 +335,10 @@ export default function PersonaTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-<<<<<<< HEAD
-                    <DropdownMenuItem onClick={() => handleCopyUserId(user.id)}>
+                    <DropdownMenuItem onClick={() => handleCopyUserId(user)}>
                       <Copy className="mr-2 h-4 w-4" />
                       <span>Copiar ID</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleEditClick(user)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      <span>Editar</span>
-                    </DropdownMenuItem>
-                    {isSuperAdmin && (
-                      <DropdownMenuItem onClick={() => handleDeleteClick(user)}>
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        <span>Eliminar</span>
-=======
-                      <DropdownMenuItem onClick={() => handleCopyUserId(user)}>
-                        <Copy className="mr-2 h-4 w-4" />
-                        <span>Copiar ID</span>
->>>>>>> 51e7a80a070e7a916227f5f0e8dd51de87bcc2a3
-                      </DropdownMenuItem>
-                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
@@ -354,6 +353,13 @@ export default function PersonaTable() {
           persona={editingUser}
           onSave={handleSave}
           onChange={setEditingUser}
+        />
+      )}
+      {isCreateModalOpen && (
+        <CreatePersonaModal
+          open={isCreateModalOpen}
+          onOpenChange={setIsCreateModalOpen}
+          onSave={handleCreateUser}
         />
       )}
     </div>

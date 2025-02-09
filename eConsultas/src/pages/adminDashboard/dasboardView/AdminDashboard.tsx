@@ -138,9 +138,10 @@ export default function AdminDashboard() {
           href="/dashboard-admin/paquetes"
         />
         <QuickActionCard
-          title="Configurar secciones de sistema "
-          description="Configurar secciones de sistemas"
+          title="Consultas "
+          description="Listas de las proximas consultas "
           icon={<Settings className="h-6 w-6" />}
+          href="/dashboard-admin/consultas"
         />
       </div>
       <AnimatePresence mode="wait">

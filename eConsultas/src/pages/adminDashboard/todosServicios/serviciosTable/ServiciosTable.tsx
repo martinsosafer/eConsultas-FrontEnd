@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import CreateServicioModal from "./CreateServicioModal/CreateServicioModal";
 
 export default function ServicioTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,7 +50,7 @@ export default function ServicioTable() {
   const tableRef = useRef<HTMLDivElement>(null);
   const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
   const [initialLoad, setInitialLoad] = useState(true);
-
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const isSuperAdmin = personaData?.credenciales.roles.some(
     (role) => role.id === 3
   );
@@ -197,8 +198,10 @@ export default function ServicioTable() {
             <SelectItem value="Exámenes médicos">Exámenes médicos</SelectItem>
           </SelectContent>
         </Select>
-
-        <Button className="bg-primary hover:bg-primary-hover text-white">
+        <Button
+          className="bg-primary hover:bg-primary-hover text-white"
+          onClick={() => setCreateModalOpen(true)}
+        >
           <PlusCircle className="mr-2" size={20} />
           Nuevo Servicio
         </Button>
@@ -262,6 +265,21 @@ export default function ServicioTable() {
           ))}
         </TableBody>
       </Table>
+      <CreateServicioModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+        onSave={async (newServicio) => {
+          try {
+            const createdServicio = await servicioDashboardApi.createServicio(
+              newServicio
+            );
+            setServicios([...servicios, createdServicio]);
+            applyFilters([...servicios, createdServicio], filter);
+          } catch (error) {
+            toast.error("Error creando servicio");
+          }
+        }}
+      />
     </div>
   );
 }

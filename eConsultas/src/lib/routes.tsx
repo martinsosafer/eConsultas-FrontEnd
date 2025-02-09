@@ -15,6 +15,7 @@ import EditProfile from "@/pages/profile/profile/editProfile/editProfile.tsx";
 import ServiciosPage from "@/pages/adminDashboard/todosServicios/index.tsx";
 
 import PaquetesPage from "@/pages/adminDashboard/paquetes/index.tsx";
+import ConsultasPage from "@/pages/adminDashboard/consultas/index.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
           {
             path: "manejar-personal",
             element: <ManejarPersonalPage />,
+          },
+          {
+            path: "consultas",
+            element: <ConsultasPage />,
           },
           {
             path: "servicios",

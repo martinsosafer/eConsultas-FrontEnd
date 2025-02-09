@@ -36,7 +36,8 @@ export default function EditPersonaModal({
   const [loadingImage, setLoadingImage] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   useEffect(() => {
     const loadProfilePicture = async () => {
       try {
@@ -57,7 +58,7 @@ export default function EditPersonaModal({
     };
 
     if (open) {
-      setIsLoading(true); 
+      setIsLoading(true);
       loadProfilePicture();
       onChange({ ...persona });
     }
@@ -76,7 +77,9 @@ export default function EditPersonaModal({
     });
   };
 
-  const isAdmin = personaData?.credenciales.roles.some(role => [1, 3].includes(role.id));
+  const isAdmin = personaData?.credenciales.roles.some((role) =>
+    [1, 3].includes(role.id)
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -191,7 +194,9 @@ export default function EditPersonaModal({
                         <div>
                           <Label>Obra Social</Label>
                           <Input
-                            value={(persona as Paciente).obraSocial ? "Sí" : "No"}
+                            value={
+                              (persona as Paciente).obraSocial ? "Sí" : "No"
+                            }
                             onChange={(e) =>
                               onChange({
                                 ...persona,
@@ -244,13 +249,13 @@ export default function EditPersonaModal({
                 <AccordionItem value="turnos">
                   <AccordionTrigger>Gestión de Turnos</AccordionTrigger>
                   <AccordionContent>
-                    <MedicalSchedule 
+                    <MedicalSchedule
                       medicoEmail={persona.credenciales.email}
                       currentTurnos={(persona as Medico).turnos}
                       onUpdate={(updatedTurnos) => {
-                        const updatedMedico = { 
-                          ...persona, 
-                          turnos: updatedTurnos 
+                        const updatedMedico = {
+                          ...persona,
+                          turnos: updatedTurnos,
                         };
                         onChange(updatedMedico);
                       }}
