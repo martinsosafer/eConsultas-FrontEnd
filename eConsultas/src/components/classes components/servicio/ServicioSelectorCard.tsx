@@ -19,9 +19,9 @@ export const ServicioSelectorCard = ({
   isPaquete = false,
 }: ServicioSelectorCardProps) => {
   return (
-    <div className="relative">
+    <div className="relative min-h-[120px]">
       {selectedServicio ? (
-        <div className="border-2 border-primary rounded-lg p-4 relative">
+        <div className="border-2 border-primary rounded-lg p-4 relative h-full">
           <Button
             variant="ghost"
             size="icon"
@@ -53,11 +53,13 @@ export const ServicioSelectorCard = ({
       ) : (
         <Button
           variant="outline"
-          className="h-24 w-full border-2 border-dashed border-primary hover:bg-primary-light/20"
+          className="h-full w-full border-2 border-dashed border-primary hover:bg-primary-light/20 min-h-[120px]"
           onClick={onSelect}
         >
-          <Plus className="w-6 h-6 text-primary" />
-          <span className="ml-2 text-primary">Añadir Servicio</span>
+          <div className="flex flex-col items-center gap-2">
+            <Plus className="w-8 h-8 text-primary" />
+            <span className="text-primary">Añadir Servicio</span>
+          </div>
         </Button>
       )}
     </div>

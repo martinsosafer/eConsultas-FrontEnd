@@ -1,6 +1,8 @@
+import { toast } from 'sonner';
 import { api } from '../axios';
 import { Paquete } from '../models/paqueteModels';
 import Cookies from 'js-cookie';
+import { extractErrorMessage } from '../errorHandler';
 
 export const paqueteApi = {
   async getPaqueteById(id: number): Promise<Paquete> {
@@ -19,20 +21,22 @@ export const paqueteApi = {
   },
 
   async searchByMultipleServiciosIds(serviciosIds: number[]): Promise<Paquete[]> {
-    const token = Cookies.get("access_token");
     try {
       console.log(serviciosIds);
+      const token = Cookies.get("access_token");
       const response = await api.get("/consultas/paquetes", {
         headers: {
-          'Content-Type': 'application/json',
           'Accept': '*/*',
           'Authorization': `Bearer ${token}`
         },
-        data: serviciosIds // Nota: GET con body no es estándar, podría necesitar POST
+        params: {
+          serviceIds: serviciosIds.join(',')
+        }
       });
       return response.data;
     } catch (error) {
-      console.error('Error searching paquetes:', error);
+      const message = extractErrorMessage(error);
+      toast.error(message);
       throw error;
     }
   }
