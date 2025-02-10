@@ -8,8 +8,7 @@ const formatParameter = (value: string): string => {
 
 export const passwordManagement = {
   async createPassword(email: string, password: string, code: string): Promise<void> {
-    const token = Cookies.get("access_token");
-    if (!token) throw new Error("No authentication token found");
+
 
 
     const formatedEmail = formatParameter(email);
@@ -29,7 +28,6 @@ export const passwordManagement = {
         {
           headers: {
             Accept: "*/*",
-            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -53,7 +51,6 @@ export const passwordManagement = {
         {
           headers: {
             Accept: "*/*",
-            Authorization: `Bearer ${token}`,
           },
         }
       );

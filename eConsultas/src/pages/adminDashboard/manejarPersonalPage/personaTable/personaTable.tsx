@@ -35,7 +35,7 @@ import {
 import { toast, Toaster } from "sonner";
 import { personaDashboardApi } from "@/api/dashboard/personaDashboardApi";
 import { personaApi } from "@/api/classes apis/personaApi";
-import type { Medico, Paciente } from "@/api/models/personaModels";
+import type { CreatePersona, Medico, Paciente } from "@/api/models/personaModels";
 import EditPersonaModal from "./EditPersonaModal/EditPersonaModal";
 import { useAuth } from "@/context/AuthProvider";
 import {
@@ -335,10 +335,21 @@ export default function PersonaTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleCopyUserId(user)}>
-                      <Copy className="mr-2 h-4 w-4" />
-                      <span>Copiar ID</span>
-                    </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleCopyUserId(user)}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        <span>Copiar ID</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEditClick(user)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        <span>Editar</span>
+                      </DropdownMenuItem>
+                      {isSuperAdmin && (
+                        <DropdownMenuItem onClick={() => handleDeleteClick(user)}>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Eliminar</span>
+                        </DropdownMenuItem>
+                      )}
+                    
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

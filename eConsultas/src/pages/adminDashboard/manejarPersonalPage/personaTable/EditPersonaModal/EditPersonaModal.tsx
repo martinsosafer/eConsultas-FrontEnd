@@ -249,15 +249,13 @@ export default function EditPersonaModal({
                 <AccordionItem value="turnos">
                   <AccordionTrigger>Gestión de Turnos</AccordionTrigger>
                   <AccordionContent>
-                    <MedicalSchedule
+                  <MedicalSchedule 
                       medicoEmail={persona.credenciales.email}
-                      currentTurnos={(persona as Medico).turnos}
+                      currentTurnos={persona.turnos}
                       onUpdate={(updatedTurnos) => {
-                        const updatedMedico = {
-                          ...persona,
-                          turnos: updatedTurnos,
-                        };
+                        const updatedMedico = { ...persona, turnos: updatedTurnos };
                         onChange(updatedMedico);
+                        onSave(updatedMedico);
                       }}
                     />
                   </AccordionContent>

@@ -9,7 +9,7 @@ export const turnoApi = {
     if (!token) throw new Error("No authentication token found");
 
     try {
-      const response = await api.get(`/usuarios/turnos/${encodeURIComponent(horario)}`, {
+      const response = await api.get(`/usuarios/turnos/${(horario)}`, {
         headers: {
           Accept: "*/*",
           Authorization: `Bearer ${token}`,
@@ -28,7 +28,7 @@ export const turnoApi = {
 
     try {
       const response = await api.put(
-        `/usuarios/turnos/habilitar-deshabilitar/${encodeURIComponent(horario)}`,
+        `/usuarios/turnos/habilitar-deshabilitar/${(horario)}`,
         null,
         {
           headers: {
@@ -49,7 +49,7 @@ export const turnoApi = {
     if (!token) throw new Error("No authentication token found");
 
     try {
-      await api.delete(`/usuarios/turnos/${encodeURIComponent(horario)}`, {
+      await api.delete(`/usuarios/turnos/${(horario)}`, {
         headers: {
           Accept: "*/*",
           Authorization: `Bearer ${token}`,
