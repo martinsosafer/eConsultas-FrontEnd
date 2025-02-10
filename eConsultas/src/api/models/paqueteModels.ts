@@ -16,4 +16,4 @@ export interface ServicioContratado {
 }
 
 // Para crear el paquete solamente hay que pasarle un array de Ids de servicios y se crea y pone precio automáticamente mediante el back!
-export type CreatePaqueteDTO = number[];
+export type CreatePaquete = number[];

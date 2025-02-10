@@ -249,15 +249,15 @@ export default function EditPersonaModal({
                 <AccordionItem value="turnos">
                   <AccordionTrigger>Gestión de Turnos</AccordionTrigger>
                   <AccordionContent>
+                  {console.log('Turnos en parent:', (persona as Medico).turnos, 'Fallback:', (persona as Medico).turnos || [])}
                   <MedicalSchedule 
-                      medicoEmail={persona.credenciales.email}
-                      currentTurnos={persona.turnos}
-                      onUpdate={(updatedTurnos) => {
-                        const updatedMedico = { ...persona, turnos: updatedTurnos };
-                        onChange(updatedMedico);
-                        onSave(updatedMedico);
-                      }}
-                    />
+                    medicoEmail={persona.credenciales.email}
+                    currentTurnos={(persona as Medico).turnos ?? []} 
+                    onUpdate={(updatedTurnos) => {
+                      const updatedMedico = { ...persona, turnos: updatedTurnos };
+                      onChange(updatedMedico);
+                    }}
+                  />
                   </AccordionContent>
                 </AccordionItem>
               )}

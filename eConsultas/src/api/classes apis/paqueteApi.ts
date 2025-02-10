@@ -19,12 +19,14 @@ export const paqueteApi = {
   },
 
   async searchByMultipleServiciosIds(serviciosIds: number[]): Promise<Paquete[]> {
+    const token = Cookies.get("access_token");
     try {
+      console.log(serviciosIds);
       const response = await api.get("/consultas/paquetes", {
         headers: {
           'Content-Type': 'application/json',
           'Accept': '*/*',
-          'Authorization': `Bearer ${Cookies.get('access_token')}`
+          'Authorization': `Bearer ${token}`
         },
         data: serviciosIds // Nota: GET con body no es estándar, podría necesitar POST
       });
