@@ -3,109 +3,96 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/context/AuthProvider";
+import { Turno } from "@/api/models/turnoModel";
 import { turnoApi } from "@/api/classes apis/turnoApi";
 import { toast } from "sonner";
-import { Turno } from "@/api/models/turnoModel";
-
 
 interface MedicalScheduleProps {
   medicoEmail: string;
-  currentTurnos: Turno[]; // Remove null
-  onUpdate: (updatedTurnos: Turno[]) => void;
 }
-export const MedicalSchedule = ({ medicoEmail, currentTurnos, onUpdate }: MedicalScheduleProps) => {
-  const { personaData } = useAuth();
+
+interface GroupedTurnos {
+  [key: string]: {
+    horario: string;
+    subHorarios: Turno[];
+    enabled: boolean;
+  };
+}
+
+export const MedicalSchedule = ({ medicoEmail }: MedicalScheduleProps) => {
   const [loading, setLoading] = useState(true);
-  const [timeSlots, setTimeSlots] = useState<Record<string, boolean>>({});
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [groupedTurnos, setGroupedTurnos] = useState<Record<string, Turno[]>>({});
+  const [groupedTurnos, setGroupedTurnos] = useState<GroupedTurnos>({});
+  const [processing, setProcessing] = useState<string[]>([]);
+
+  const loadData = async () => {
+    try {
+      const [allTurnos, medicoTurnos] = await Promise.all([
+        turnoApi.getAllTurnos(),
+        turnoApi.getTurnosByMedico(medicoEmail)
+      ]);
+
+      const grouped = allTurnos.reduce((acc: GroupedTurnos, turno) => {
+        const mainHour = turno.horario;
+        if (!acc[mainHour]) {
+          acc[mainHour] = {
+            horario: mainHour,
+            subHorarios: [],
+            enabled: false
+          };
+        }
+        
+        const isEnabled = medicoTurnos.some(mt => mt.id === turno.id);
+        acc[mainHour].subHorarios.push({ ...turno, enabled: isEnabled });
+        
+        return acc;
+      }, {});
+
+      Object.keys(grouped).forEach(key => {
+        grouped[key].enabled = grouped[key].subHorarios.every(sh => sh.enabled);
+      });
+
+      setGroupedTurnos(grouped);
+    } catch (error) {
+      toast.error('Error cargando horarios');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const checkAdmin = () => {
-      const isAdminUser = personaData?.credenciales.roles.some(role => [1, 3].includes(role.id));
-      setIsAdmin(!!isAdminUser);
-    };
-  
-    const processTurnos = () => {
-      console.log('Procesando turnos:', currentTurnos);
-      
-      const grouped: Record<string, Turno[]> = {};
-      const slots: Record<string, boolean> = {};
-      
-      if (currentTurnos && Array.isArray(currentTurnos)) {
-        currentTurnos.forEach(turno => {
-          if (!grouped[turno.horario]) {
-            grouped[turno.horario] = [];
-          }
-          grouped[turno.horario].push(turno);
-          slots[turno.subHorario] = turno.enabled;
-        });
-      } else {
-        console.warn('currentTurnos no es un array válido:', currentTurnos);
-      }
-      
-      setGroupedTurnos(grouped);
-      setTimeSlots(slots);
-      setLoading(false);
-    };
-  
-    checkAdmin();
-    processTurnos();
-  }, [currentTurnos, personaData]);
+    loadData();
+  }, [medicoEmail]);
 
-  const handleTimeSlotToggle = async (subHorario: string) => {
-    if (!isAdmin || !currentTurnos) return; // Chequear currentTurnos
-    
+  const handleToggle = async (horario: string, isMainHour: boolean) => {
     try {
-      await turnoApi.toggleTurnoStatus(subHorario);
-      setTimeSlots(prev => ({ ...prev, [subHorario]: !prev[subHorario] }));
+      setProcessing(prev => [...prev, horario]);
       
-      const updatedTurnos = currentTurnos.map(t => 
-        t.subHorario === subHorario ? { ...t, enabled: !t.enabled } : t
+      await turnoApi.asignarRemoverTurno(medicoEmail, horario);
+      await loadData();
+
+      toast.success(
+        isMainHour 
+          ? `Horario ${horario} actualizado`
+          : `Turno ${horario} actualizado`
       );
-      onUpdate(updatedTurnos);
-      
-      toast.success(`Turno ${subHorario} actualizado`);
     } catch (error) {
       toast.error('Error actualizando turno');
+      
+      await loadData();
+    } finally {
+      setProcessing(prev => prev.filter(h => h !== horario));
     }
   };
 
-  const handleHorarioGroupToggle = async (horario: string) => {
-    if (!isAdmin || !currentTurnos) return; // Chequear currentTurnos
-
-    try {
-      const turnosInGroup = groupedTurnos[horario] || [];
-      const allEnabled = turnosInGroup.every(t => t.enabled);
-      
-      await Promise.all(turnosInGroup.map(t => 
-        turnoApi.toggleTurnoStatus(t.subHorario)
-      ));
-
-      const newSlots = { ...timeSlots };
-      turnosInGroup.forEach(t => newSlots[t.subHorario] = !allEnabled);
-      
-      setTimeSlots(newSlots);
-      onUpdate(currentTurnos.map(t => 
-        t.horario === horario ? { ...t, enabled: !allEnabled } : t
-      ));
-      
-      toast.success(`Grupo ${horario} ${!allEnabled ? 'habilitado' : 'deshabilitado'}`);
-    } catch (error) {
-      toast.error('Error actualizando grupo de turnos');
-    }
-  };
-
-  if (loading || !currentTurnos) { // Mostrar skeleton si no hay datos
+  if (loading) {
     return (
-      <div className="grid grid-cols-4 gap-4">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+        {[...Array(6)].map((_, i) => (
           <div key={i} className="space-y-2">
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-12 w-full rounded-lg" />
             <div className="grid grid-cols-2 gap-2">
               {[...Array(4)].map((_, j) => (
-                <Skeleton key={j} className="h-10 w-full" />
+                <Skeleton key={j} className="h-10 rounded-md" />
               ))}
             </div>
           </div>
@@ -115,39 +102,48 @@ export const MedicalSchedule = ({ medicoEmail, currentTurnos, onUpdate }: Medica
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Object.entries(groupedTurnos).map(([horario, turnos]) => (
-          <div key={horario} className="space-y-2">
-            <Button
-              variant="ghost"
-              className={`w-full font-bold ${isAdmin ? 'hover:bg-accent' : ''}`}
-              onClick={() => handleHorarioGroupToggle(horario)}
-            >
-              {horario}
-            </Button>
-            
-            <div className="grid grid-cols-2 gap-2">
-              {turnos.map(turno => (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+      {Object.values(groupedTurnos).map(group => (
+        <div key={group.horario} className="space-y-2">
+          <Button
+            variant={group.enabled ? "default" : "outline"}
+            className={`w-full font-bold ${
+              processing.includes(group.horario) ? 'animate-pulse' : ''
+            }`}
+            onClick={() => handleToggle(group.horario, true)}
+            disabled={processing.includes(group.horario)}
+          >
+            {group.horario.split('-')[0]}
+            <span className="ml-2 text-sm">
+              {group.enabled ? '✓' : group.subHorarios.some(sh => sh.enabled) ? '~' : '✕'}
+            </span>
+          </Button>
+          
+          <div className="grid grid-cols-2 gap-2">
+            {group.subHorarios.map(sub => {
+              const [hora, minutos] = sub.subHorario.split(':');
+              const horaCompleta = `${hora.padStart(2, '0')}:${minutos}`;
+              
+              return (
                 <Button
-                  key={turno.subHorario}
-                  variant={timeSlots[turno.subHorario] ? 'default' : 'outline'}
-                  className={`relative ${isAdmin ? 'cursor-pointer' : 'cursor-default'}
-                    ${timeSlots[turno.subHorario] ? 
-                      'bg-primary/80 hover:bg-primary/90' : 
-                      'hover:bg-secondary/30'}`}
-                  onClick={() => handleTimeSlotToggle(turno.subHorario)}
+                  key={sub.id}
+                  variant={sub.enabled ? "default" : "outline"}
+                  className={`relative ${
+                    processing.includes(sub.subHorario) ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  onClick={() => handleToggle(sub.subHorario, false)}
+                  disabled={processing.includes(sub.subHorario)}
                 >
-                  {turno.subHorario}
-                  {timeSlots[turno.subHorario] && (
-                    <span className="absolute top-0 right-0 w-2 h-2 bg-green-400 rounded-full" />
+                  {horaCompleta}
+                  {sub.enabled && (
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full" />
                   )}
                 </Button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 };
