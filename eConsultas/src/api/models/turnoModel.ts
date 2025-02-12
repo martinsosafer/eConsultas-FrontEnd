@@ -1,14 +1,18 @@
 export interface Turno {
-    id: number;
-    horario: string;
-    enabled: boolean;
-  }
-  export interface CreateTurno {
-    horario: string;
-    enabled?: boolean;
-  }
+  id: number;
+  horario: string;
+  subHorario: string;
+  enabled: boolean;
+}
 
-  export interface UpdateTurno {
-    enabled?: boolean;
-    horario?: string;
-  }
+export interface CreateTurno {
+  horario: string;
+  subHorario: string;
+  enabled?: boolean;
+}
+
+export interface UpdateTurno {
+  horario?: string;
+  subHorario?: string;
+  enabled?: boolean;
+}

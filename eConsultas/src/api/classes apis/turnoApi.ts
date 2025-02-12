@@ -9,7 +9,7 @@ export const turnoApi = {
     if (!token) throw new Error("No authentication token found");
 
     try {
-      const response = await api.get(`/usuarios/turnos/${encodeURIComponent(horario)}`, {
+      const response = await api.get(`/usuarios/turnos/${(horario)}`, {
         headers: {
           Accept: "*/*",
           Authorization: `Bearer ${token}`,
@@ -28,8 +28,8 @@ export const turnoApi = {
 
     try {
       const response = await api.put(
-        `/usuarios/turnos/habilitar-deshabilitar/${encodeURIComponent(horario)}`,
-        null,
+        `/usuarios/turnos/habilitar-deshabilitar/:${(horario)}`,
+      
         {
           headers: {
             Accept: "*/*",
@@ -49,7 +49,7 @@ export const turnoApi = {
     if (!token) throw new Error("No authentication token found");
 
     try {
-      await api.delete(`/usuarios/turnos/${encodeURIComponent(horario)}`, {
+      await api.delete(`/usuarios/turnos/${(horario)}`, {
         headers: {
           Accept: "*/*",
           Authorization: `Bearer ${token}`,
@@ -97,4 +97,44 @@ export const turnoApi = {
       throw error;
     }
   },
+
+
+  
+  async getTurnosByMedico(
+    medicoEmail: string, 
+  ): Promise<Turno[]> {
+    const token = Cookies.get("access_token");
+    if (!token) throw new Error("No authentication token found");
+  
+    try {
+      const response = await api.get(`/usuarios/turnos/get-all?medicoEmail=${medicoEmail}`, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching medico turnos:", error);
+      throw error;
+    }
+  },
+
+  async asignarRemoverTurno(email: string, horario: string): Promise<void> {
+    const token = Cookies.get("access_token");
+    if (!token) throw new Error("No authentication token found");
+  
+    try {
+      await api.put(`/usuarios/medicos/asignar-remover-turno?email=${email}&horario=${horario}`, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error("Error updating turno:", error);
+      throw error;
+    }
+  }
 };

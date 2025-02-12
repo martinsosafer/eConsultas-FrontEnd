@@ -27,8 +27,8 @@ import {
 } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { servicioDashboardApi } from "@/api/dashboard/servicioDashboardApi";
-import type { Servicio } from "@/api/models/servicioModels";
-
+import type { Servicio, TipoServicio } from "@/api/models/servicioModels";
+import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/context/AuthProvider";
 import { useOutletContext } from "react-router-dom";
 import {
@@ -39,12 +39,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import CreateServicioModal from "./CreateServicioModal/CreateServicioModal";
+import { servicioApi } from "@/api/classes apis/servicioApi";
 
 export default function ServicioTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [tiposServicio, setTiposServicio] = useState<TipoServicio[]>([]);
   const [filteredServicios, setFilteredServicios] = useState<Servicio[]>([]);
-  const [editingServicio, setEditingServicio] = useState<Servicio | null>(null);
   const [filter, setFilter] = useState<string>("all");
   const { personaData } = useAuth();
   const tableRef = useRef<HTMLDivElement>(null);
@@ -56,24 +57,20 @@ export default function ServicioTable() {
   );
 
   useEffect(() => {
-    const fetchServicios = async () => {
+    const loadInitialData = async () => {
       try {
-        const serviciosData = await servicioDashboardApi.getAllServicios();
+        const [serviciosData, tiposData] = await Promise.all([
+          servicioDashboardApi.getAllServicios(),
+          servicioApi.getAllTiposServicio()
+        ]);
         setServicios(serviciosData);
+        setTiposServicio(tiposData);
         applyFilters(serviciosData, filter);
-
-        if (!isAnimating && tableRef.current) {
-          tableRef.current.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }
       } catch (error) {
-        toast.error("Error cargando servicios");
+        toast.error("Error cargando datos iniciales");
       }
     };
-
-    fetchServicios();
+    loadInitialData();
   }, [isAnimating]);
 
   const applyFilters = (data: Servicio[], currentFilter: string) => {
@@ -84,6 +81,17 @@ export default function ServicioTable() {
         servicio.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredServicios(filtered);
+  };
+
+  const handleToggleEnabled = async (servicio: Servicio, enabled: boolean) => {
+    try {
+      const updatedServicio = await servicioDashboardApi.editServicio(servicio.id, { enabled });
+      setServicios(prev => prev.map(s => s.id === servicio.id ? updatedServicio : s));
+      applyFilters(servicios.map(s => s.id === servicio.id ? updatedServicio : s), filter);
+      toast.success(`Servicio ${enabled ? "activado" : "desactivado"}`);
+    } catch (error) {
+      toast.error("Error actualizando servicio");
+    }
   };
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -174,7 +182,7 @@ export default function ServicioTable() {
           <Input
             placeholder="Buscar servicios..."
             value={searchTerm}
-            onChange={handleSearch}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
           <Search
@@ -189,13 +197,11 @@ export default function ServicioTable() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="Consultas generales">
-              Consultas generales
-            </SelectItem>
-            <SelectItem value="Consultas especializadas">
-              Consultas especializadas
-            </SelectItem>
-            <SelectItem value="Exámenes médicos">Exámenes médicos</SelectItem>
+            {tiposServicio.map(tipo => (
+              <SelectItem key={tipo.id} value={tipo.nombre}>
+                {tipo.nombre}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Button
@@ -224,15 +230,21 @@ export default function ServicioTable() {
               <TableCell>${servicio.precio.toFixed(2)}</TableCell>
               <TableCell>{servicio.tipoServicio.nombre}</TableCell>
               <TableCell>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs ${
-                    servicio.enabled
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {servicio.enabled ? "Activo" : "Inactivo"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={servicio.enabled}
+                    onCheckedChange={(enabled) => handleToggleEnabled(servicio, enabled)}
+                  />
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      servicio.enabled
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {servicio.enabled ? "Activo" : "Inactivo"}
+                  </span>
+                </div>
               </TableCell>
               <TableCell>
                 <DropdownMenu>

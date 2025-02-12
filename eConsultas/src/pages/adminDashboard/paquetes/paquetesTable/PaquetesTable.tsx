@@ -20,6 +20,7 @@ import {
 import { Search, MoreVertical, Trash2, Copy, PlusCircle } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { paqueteDashboardApi } from "@/api/dashboard/paqueteDashboardApi";
+import { servicioApi } from "@/api/classes apis/servicioApi";
 import type { Paquete } from "@/api/models/paqueteModels";
 import { useAuth } from "@/context/AuthProvider";
 import { useOutletContext } from "react-router-dom";
@@ -30,12 +31,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { CreatePaqueteModal } from "./CreatePaqueteModal/CreatePaqueteModal";
+import { Switch } from "@/components/ui/switch";
+import { TipoServicio } from "@/api/models/servicioModels";
 
 export default function PaqueteTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [paquetes, setPaquetes] = useState<Paquete[]>([]);
   const [filteredPaquetes, setFilteredPaquetes] = useState<Paquete[]>([]);
   const [filter, setFilter] = useState<string>("all");
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [tiposServicio, setTiposServicio] = useState<TipoServicio[]>([]);
   const { personaData } = useAuth();
   const tableRef = useRef<HTMLDivElement>(null);
   const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
@@ -46,26 +52,31 @@ export default function PaqueteTable() {
   );
 
   useEffect(() => {
-    const fetchPaquetes = async () => {
+    const loadInitialData = async () => {
       try {
-        const paquetesData = await paqueteDashboardApi.getAllPaquetes();
+        const [paquetesData, tiposData] = await Promise.all([
+          paqueteDashboardApi.getAllPaquetes(),
+          servicioApi.getAllTiposServicio()
+        ]);
         setPaquetes(paquetesData);
+        setTiposServicio(tiposData);
         applyFilters(paquetesData, filter);
-
-        if (!isAnimating && tableRef.current) {
-          tableRef.current.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }
       } catch (error) {
-        toast.error("Error cargando paquetes");
-        console.error("Loading error:", error);
+        toast.error("Error cargando datos iniciales");
       }
     };
-
-    fetchPaquetes();
+    loadInitialData();
   }, [isAnimating]);
+
+  const refreshPaquetes = async () => {
+    try {
+      const paquetesData = await paqueteDashboardApi.getAllPaquetes();
+      setPaquetes(paquetesData);
+      applyFilters(paquetesData, filter);
+    } catch (error) {
+      toast.error("Error actualizando paquetes");
+    }
+  };
 
   const applyFilters = (data: Paquete[], currentFilter: string) => {
     const filtered = data.filter((paquete) => {
@@ -99,12 +110,26 @@ export default function PaqueteTable() {
   const handleDeleteClick = async (paquete: Paquete) => {
     if (!confirm(`¿Eliminar el paquete #${paquete.id}?`)) return;
     try {
-      // Implement delete API call here
+      await paqueteDashboardApi.deletePaquete(paquete.id);
       setPaquetes(paquetes.filter((p) => p.id !== paquete.id));
       setFilteredPaquetes(filteredPaquetes.filter((p) => p.id !== paquete.id));
-      toast.success("Paquete eliminado");
+      toast.success("Paquete eliminado exitosamente");
     } catch (error) {
       toast.error("Error eliminando paquete");
+    }
+  };
+
+  const handleToggleEnabled = async (paquete: Paquete, enabled: boolean) => {
+    try {
+      await paqueteDashboardApi.editPaquete(paquete.id, { enabled });
+      const updatedPaquetes = paquetes.map(p => 
+        p.id === paquete.id ? { ...p, enabled } : p
+      );
+      setPaquetes(updatedPaquetes);
+      applyFilters(updatedPaquetes, filter);
+      toast.success(`Paquete ${enabled ? "activado" : "desactivado"}`);
+    } catch (error) {
+      toast.error("Error actualizando estado del paquete");
     }
   };
 
@@ -134,6 +159,12 @@ export default function PaqueteTable() {
       }}
       onTransitionEnd={() => setInitialLoad(false)}
     >
+      <CreatePaqueteModal
+        open={isCreateModalOpen}
+        onOpenChange={setCreateModalOpen}
+        onCreated={refreshPaquetes}
+      />
+
       <Toaster
         theme="system"
         toastOptions={{
@@ -169,17 +200,18 @@ export default function PaqueteTable() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="Consultas generales">
-              Consultas generales
-            </SelectItem>
-            <SelectItem value="Consultas especializadas">
-              Consultas especializadas
-            </SelectItem>
-            <SelectItem value="Exámenes médicos">Exámenes médicos</SelectItem>
+            {tiposServicio.map((tipo) => (
+              <SelectItem key={tipo.id} value={tipo.nombre}>
+                {tipo.nombre}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
-        <Button className="bg-primary hover:bg-primary-hover text-white">
+        <Button
+          className="bg-primary hover:bg-primary-hover text-white"
+          onClick={() => setCreateModalOpen(true)}
+        >
           <PlusCircle className="mr-2" size={20} />
           Nuevo Paquete
         </Button>
@@ -209,15 +241,23 @@ export default function PaqueteTable() {
                 </div>
               </TableCell>
               <TableCell>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs ${
-                    paquete.enabled
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {paquete.enabled ? "Activo" : "Inactivo"}
-                </span>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={paquete.enabled}
+                    onCheckedChange={(enabled) =>
+                      handleToggleEnabled(paquete, enabled)
+                    }
+                  />
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      paquete.enabled
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {paquete.enabled ? "Activo" : "Inactivo"}
+                  </span>
+                </div>
               </TableCell>
               <TableCell>
                 <DropdownMenu>
@@ -232,12 +272,14 @@ export default function PaqueteTable() {
                       Copiar ID
                     </DropdownMenuItem>
                     {isSuperAdmin && (
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteClick(paquete)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteClick(paquete)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
