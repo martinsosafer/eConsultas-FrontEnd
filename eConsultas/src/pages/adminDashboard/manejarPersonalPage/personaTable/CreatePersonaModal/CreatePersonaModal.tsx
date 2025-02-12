@@ -6,15 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { personaDashboardApi } from "@/api/dashboard/personaDashboardApi";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import type { CreatePersona } from "@/api/models/personaModels";
 
 interface CreatePersonaModalProps {
@@ -164,32 +159,29 @@ export default function CreatePersonaModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Fecha de Nacimiento</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full">
+              <DatePicker
+                selected={
+                  newPersona.fechaNacimiento
+                    ? new Date(newPersona.fechaNacimiento)
+                    : null
+                }
+                onChange={(date: Date) => {
+                  setNewPersona((prev) => ({
+                    ...prev,
+                    fechaNacimiento: format(date, "dd/MM/yyyy"),
+                  }));
+                }}
+                dateFormat="dd/MM/yyyy"
+                showYearDropdown
+                scrollableYearDropdown
+                yearDropdownItemNumber={100}
+                customInput={
+                  <Button variant="outline" className="w-full justify-start">
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {newPersona.fechaNacimiento || "Seleccionar fecha"}
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={
-                      newPersona.fechaNacimiento
-                        ? new Date(newPersona.fechaNacimiento)
-                        : undefined
-                    }
-                    onSelect={(date) => {
-                      if (date) {
-                        setNewPersona((prev) => ({
-                          ...prev,
-                          fechaNacimiento: format(date, "dd/MM/yyyy"),
-                        }));
-                      }
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
+                }
+              />
             </div>
           </div>
 
