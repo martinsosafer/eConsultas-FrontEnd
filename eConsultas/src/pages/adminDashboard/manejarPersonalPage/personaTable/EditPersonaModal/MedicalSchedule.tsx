@@ -15,7 +15,7 @@ interface GroupedTurnos {
   [key: string]: {
     horario: string;
     subHorarios: Turno[];
-    enabled: boolean;
+    hasTurno: boolean; 
   };
 }
 
@@ -37,18 +37,19 @@ export const MedicalSchedule = ({ medicoEmail }: MedicalScheduleProps) => {
           acc[mainHour] = {
             horario: mainHour,
             subHorarios: [],
-            enabled: false
+            hasTurno: false
           };
         }
         
-        const isEnabled = medicoTurnos.some(mt => mt.id === turno.id);
-        acc[mainHour].subHorarios.push({ ...turno, enabled: isEnabled });
+        const hasTurno = medicoTurnos.some(mt => mt.id === turno.id);
+        acc[mainHour].subHorarios.push({ ...turno, hasTurno });
         
         return acc;
       }, {});
 
+
       Object.keys(grouped).forEach(key => {
-        grouped[key].enabled = grouped[key].subHorarios.every(sh => sh.enabled);
+        grouped[key].hasTurno = grouped[key].subHorarios.some(sh => sh.hasTurno);
       });
 
       setGroupedTurnos(grouped);
@@ -106,7 +107,7 @@ export const MedicalSchedule = ({ medicoEmail }: MedicalScheduleProps) => {
       {Object.values(groupedTurnos).map(group => (
         <div key={group.horario} className="space-y-2">
           <Button
-            variant={group.enabled ? "default" : "outline"}
+            variant={group.hasTurno ? "default" : "outline"}
             className={`w-full font-bold ${
               processing.includes(group.horario) ? 'animate-pulse' : ''
             }`}
@@ -115,7 +116,7 @@ export const MedicalSchedule = ({ medicoEmail }: MedicalScheduleProps) => {
           >
             {group.horario.split('-')[0]}
             <span className="ml-2 text-sm">
-              {group.enabled ? '✓' : group.subHorarios.some(sh => sh.enabled) ? '~' : '✕'}
+              {group.hasTurno ? '✓' : '✕'}
             </span>
           </Button>
           
@@ -127,7 +128,7 @@ export const MedicalSchedule = ({ medicoEmail }: MedicalScheduleProps) => {
               return (
                 <Button
                   key={sub.id}
-                  variant={sub.enabled ? "default" : "outline"}
+                  variant={sub.hasTurno ? "default" : "outline"}
                   className={`relative ${
                     processing.includes(sub.subHorario) ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
@@ -135,9 +136,9 @@ export const MedicalSchedule = ({ medicoEmail }: MedicalScheduleProps) => {
                   disabled={processing.includes(sub.subHorario)}
                 >
                   {horaCompleta}
-                  {sub.enabled && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full" />
-                  )}
+                  <span className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
+                    sub.enabled ? 'bg-green-400' : 'bg-red-400'
+                  }`} />
                 </Button>
               );
             })}

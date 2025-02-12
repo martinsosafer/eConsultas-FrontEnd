@@ -274,11 +274,6 @@ export default function PaqueteTable() {
                     {isSuperAdmin && (
                       <>
                         <DropdownMenuItem
-                          onClick={() => handleToggleEnabled(paquete, !paquete.enabled)}
-                        >
-                          {paquete.enabled ? "Desactivar" : "Activar"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
                           onClick={() => handleDeleteClick(paquete)}
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
