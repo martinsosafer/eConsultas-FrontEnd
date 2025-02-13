@@ -1,14 +1,32 @@
-import { useState } from "react";
-import { Menu, Bell, User } from "lucide-react";
-import { Outlet, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Menu, Bell, User, LogOut, UserCircle } from "lucide-react";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import Sidebar from "./sidebar";
 import logo from "../../public/logo.png";
 import { useAuth } from "@/context/AuthProvider";
 
 export default function Layout() {
   const [isOpen, setIsOpen] = useState(false);
-  const { isAuthenticated, personaData } = useAuth();
-  console.log(personaData, isAuthenticated, personaData);
+  const { isAuthenticated, personaData, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Automatically check auth status when component mounts
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = Cookies.get("access_token");
+      if (token && !isAuthenticated) {
+        try {
+          // Add any necessary token validation or user data refresh here
+          navigate(0); // Refresh current page
+        } catch (error) {
+          console.error("Session validation error:", error);
+        }
+      }
+    };
+
+    checkAuth();
+  }, [isAuthenticated, navigate]);
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Navbar */}
@@ -33,21 +51,39 @@ export default function Layout() {
               </button>
             )}
           </div>
-          {isAuthenticated && (
-            <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                <Bell className="w-6 h-6" />
-              </button>
+
+          <div className="flex items-center gap-4">
+            {isAuthenticated ? (
+              <>
+                <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+                  <Bell className="w-6 h-6" />
+                </button>
+                <Link
+                  to={`/profile/${encodeURIComponent(
+                    personaData?.credenciales?.username || ""
+                  )}`}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                  <User className="w-6 h-6" />
+                </Link>
+                <button
+                  onClick={logout}
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                  aria-label="Sign out"
+                >
+                  <LogOut className="w-6 h-6" />
+                </button>
+              </>
+            ) : (
               <Link
-                to={`/profile/${encodeURIComponent(
-                  personaData?.credenciales?.username || ""
-                )}`}
+                to="/login"
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                aria-label="Sign in"
               >
-                <User className="w-6 h-6" />
+                <UserCircle className="w-6 h-6" />
               </Link>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </header>
 
