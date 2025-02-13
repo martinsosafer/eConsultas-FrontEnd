@@ -13,9 +13,9 @@ import DashboardAdminPage from "@/pages/adminDashboard/index.tsx";
 import ManejarPersonalPage from "@/pages/adminDashboard/manejarPersonalPage/index.tsx";
 import EditProfile from "@/pages/profile/profile/editProfile/editProfile.tsx";
 import ServiciosPage from "@/pages/adminDashboard/todosServicios/index.tsx";
-
 import PaquetesPage from "@/pages/adminDashboard/paquetes/index.tsx";
 import ConsultasPage from "@/pages/adminDashboard/consultas/index.tsx";
+import { FilesBrowserWrapper } from "@/pages/profile/profile/FilesOfUser/FilesBrowserWrapper.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -92,6 +92,10 @@ export const router = createBrowserRouter([
               {
                 path: "edit",
                 element: <EditProfile />,
+              },
+              {
+                path: "files",
+                element: <FilesBrowserWrapper />,
               },
             ],
           },

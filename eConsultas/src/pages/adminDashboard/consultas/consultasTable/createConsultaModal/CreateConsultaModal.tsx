@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PersonaSelectorCard } from "@/components/classes components/persona/PersonaSelectorCard";
 import { PersonaSelectionSlider } from "@/components/classes components/persona/PersonaSelectionSlider";
 import { ServicioSelectionSlider } from "@/components/classes components/servicio/ServicioSelectionSlider";
@@ -45,9 +45,32 @@ export const CreateConsultaModal = ({
   const [selectedPaquete, setSelectedPaquete] = useState<Paquete | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState("");
-  const [sliderType, setSliderType] = useState<"paciente" | "medico" | "servicio" | "paquete">("paciente");
-  const [sliderOpen, setSliderOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [sliderStates, setSliderStates] = useState({
+    paciente: false,
+    medico: false,
+    servicio: false,
+    paquete: false
+  });
+
+  useEffect(() => {
+    if (open) {
+      setSliderStates({
+        paciente: false,
+        medico: false,
+        servicio: false,
+        paquete: false
+      });
+      setActiveTab("paciente");
+      setSelectedPaciente(null);
+      setSelectedMedico(null);
+      setSelectedServicio(null);
+      setSelectedPaquete(null);
+      setSelectedDate(undefined);
+      setSelectedTime("");
+    }
+  }, [open]);
 
   const validateCurrentTab = () => {
     switch(activeTab) {
@@ -65,18 +88,13 @@ export const CreateConsultaModal = ({
       return;
     }
 
-    if (!selectedPaciente || !selectedMedico || !selectedDate || !selectedTime) {
-      toast.error("Faltan datos requeridos");
-      return;
-    }
-
     setLoading(true);
     try {
       const payload: CreateConsulta = {
-        fecha: selectedDate.toISOString().split('T')[0],
-        horario: selectedTime,
-        medico: { credenciales: { email: selectedMedico.credenciales.email } },
-        paciente: { credenciales: { email: selectedPaciente.credenciales.email } },
+        fecha: selectedDate?.toISOString().split('T')[0] || "",
+        horario: selectedTime.split(' ')[1],
+        medico: { credenciales: { email: selectedMedico?.credenciales.email || "" } },
+        paciente: { credenciales: { email: selectedPaciente?.credenciales.email || "" } },
         ...(selectedServicio && { idServicioMedico: selectedServicio.id }),
         ...(selectedPaquete && { idPaquete: selectedPaquete.id })
       };
@@ -98,24 +116,36 @@ export const CreateConsultaModal = ({
     setSelectedTime(time);
   };
 
-  const handleSliderClose = () => {
-    setSliderOpen(false);
-    setSliderType("paciente");
-  };
-
   return (
     <Dialog open={open} onOpenChange={(open) => {
       onOpenChange(open);
       if (!open) {
-        setSliderOpen(false);
+        setSliderStates({
+          paciente: false,
+          medico: false,
+          servicio: false,
+          paquete: false
+        });
       }
     }}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+      <DialogContent className="max-w-[90vw] w-[800px] h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-xl">Crear Nueva Consulta</DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} className="flex-1 flex flex-col">
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(tab) => {
+            setSliderStates({
+              paciente: false,
+              medico: false,
+              servicio: false,
+              paquete: false
+            });
+            setActiveTab(tab);
+          }}
+          className="flex-1 flex flex-col"
+        >
           <TabsList className="grid grid-cols-4 h-12">
             {showPaciente && <TabsTrigger value="paciente">Paciente</TabsTrigger>}
             {showMedico && <TabsTrigger value="medico">Médico</TabsTrigger>}
@@ -123,16 +153,14 @@ export const CreateConsultaModal = ({
             {showHorario && <TabsTrigger value="horario">Horario</TabsTrigger>}
           </TabsList>
 
+
           <ScrollArea className="flex-1 p-4">
             {showPaciente && (
               <TabsContent value="paciente">
                 <PersonaSelectorCard
                   tipoPersona="PACIENTE"
                   selectedPersona={selectedPaciente || undefined}
-                  onSelect={() => {
-                    setSliderType("paciente");
-                    setSliderOpen(true);
-                  }}
+                  onSelect={() => setSliderStates(prev => ({...prev, paciente: true}))}
                   onRemove={() => setSelectedPaciente(null)}
                 />
               </TabsContent>
@@ -143,10 +171,7 @@ export const CreateConsultaModal = ({
                 <PersonaSelectorCard
                   tipoPersona="MEDICO"
                   selectedPersona={selectedMedico || undefined}
-                  onSelect={() => {
-                    setSliderType("medico");
-                    setSliderOpen(true);
-                  }}
+                  onSelect={() => setSliderStates(prev => ({...prev, medico: true}))}
                   onRemove={() => setSelectedMedico(null)}
                 />
               </TabsContent>
@@ -163,11 +188,7 @@ export const CreateConsultaModal = ({
                   <TabsContent value="servicio" className="pt-4">
                     <ServicioSelectorCard
                       selectedServicio={selectedServicio || undefined}
-                      onSelect={() => {
-                        setSliderType("servicio");
-                        setSliderOpen(true);
-                        setSelectedPaquete(null);
-                      }}
+                      onSelect={() => setSliderStates(prev => ({...prev, servicio: true}))}
                       onRemove={() => setSelectedServicio(null)}
                     />
                   </TabsContent>
@@ -201,11 +222,7 @@ export const CreateConsultaModal = ({
                         <Button
                           variant="outline"
                           className="w-full h-full min-h-[120px]"
-                          onClick={() => {
-                            setSliderType("paquete");
-                            setSliderOpen(true);
-                            setSelectedServicio(null);
-                          }}
+                          onClick={() => setSliderStates(prev => ({...prev, paquete: true}))}
                         >
                           Seleccionar Paquete
                         </Button>
@@ -232,13 +249,10 @@ export const CreateConsultaModal = ({
             <Button
               variant="outline"
               disabled={activeTab === "paciente"}
-              onClick={() => {
-                setSliderOpen(false);
-                setActiveTab(prev => {
-                  const tabs = ["paciente", "medico", "tipo", "horario"];
-                  return tabs[tabs.indexOf(prev) - 1];
-                });
-              }}
+              onClick={() => setActiveTab(prev => {
+                const tabs = ["paciente", "medico", "tipo", "horario"];
+                return tabs[tabs.indexOf(prev) - 1];
+              })}
             >
               Anterior
             </Button>
@@ -246,13 +260,10 @@ export const CreateConsultaModal = ({
             {activeTab !== "horario" ? (
               <Button
                 disabled={!validateCurrentTab()}
-                onClick={() => {
-                  setSliderOpen(false);
-                  setActiveTab(prev => {
-                    const tabs = ["paciente", "medico", "tipo", "horario"];
-                    return tabs[tabs.indexOf(prev) + 1];
-                  });
-                }}
+                onClick={() => setActiveTab(prev => {
+                  const tabs = ["paciente", "medico", "tipo", "horario"];
+                  return tabs[tabs.indexOf(prev) + 1];
+                })}
               >
                 Siguiente
               </Button>
@@ -265,53 +276,45 @@ export const CreateConsultaModal = ({
           </div>
         </Tabs>
 
-        {sliderType === "paciente" && (
-          <PersonaSelectionSlider
-            open={sliderOpen}
-            onOpenChange={setSliderOpen}
-            tipoPersona="PACIENTE"
-            onSelect={(p) => {
-              setSelectedPaciente(p);
-              setSliderOpen(false);
-            }}
-          />
-        )}
+        <PersonaSelectionSlider
+          open={sliderStates.paciente}
+          onOpenChange={(open) => setSliderStates(prev => ({...prev, paciente: open}))}
+          tipoPersona="PACIENTE"
+          onSelect={(p) => {
+            setSelectedPaciente(p);
+            setSliderStates(prev => ({...prev, paciente: false}));
+          }}
+        />
 
-        {sliderType === "medico" && (
-          <PersonaSelectionSlider
-            open={sliderOpen}
-            onOpenChange={setSliderOpen}
-            tipoPersona="MEDICO"
-            onSelect={(m) => {
-              setSelectedMedico(m);
-              setSliderOpen(false);
-            }}
-          />
-        )}
+        <PersonaSelectionSlider
+          open={sliderStates.medico}
+          onOpenChange={(open) => setSliderStates(prev => ({...prev, medico: open}))}
+          tipoPersona="MEDICO"
+          onSelect={(m) => {
+            setSelectedMedico(m);
+            setSliderStates(prev => ({...prev, medico: false}));
+          }}
+        />
 
-        {sliderType === "servicio" && (
-          <ServicioSelectionSlider
-            open={sliderOpen}
-            onOpenChange={setSliderOpen}
-            onSelect={(s) => {
-              setSelectedServicio(s);
-              setSliderOpen(false);
-            }}
-            selectedIds={selectedServicio ? [selectedServicio.id] : []}
-          />
-        )}
+        <ServicioSelectionSlider
+          open={sliderStates.servicio}
+          onOpenChange={(open) => setSliderStates(prev => ({...prev, servicio: open}))}
+          onSelect={(s) => {
+            setSelectedServicio(s);
+            setSliderStates(prev => ({...prev, servicio: false}));
+          }}
+          selectedIds={selectedServicio ? [selectedServicio.id] : []}
+        />
 
-        {sliderType === "paquete" && (
-          <PaqueteSelectionSlider
-            open={sliderOpen}
-            onOpenChange={setSliderOpen}
-            onSelect={(p) => {
-              setSelectedPaquete(p);
-              setSliderOpen(false);
-            }}
-            selectedIds={selectedPaquete ? [selectedPaquete.id] : []}
-          />
-        )}
+        <PaqueteSelectionSlider
+          open={sliderStates.paquete}
+          onOpenChange={(open) => setSliderStates(prev => ({...prev, paquete: open}))}
+          onSelect={(p) => {
+            setSelectedPaquete(p);
+            setSliderStates(prev => ({...prev, paquete: false}));
+          }}
+          selectedIds={selectedPaquete ? [selectedPaquete.id] : []}
+        />
       </DialogContent>
     </Dialog>
   );
