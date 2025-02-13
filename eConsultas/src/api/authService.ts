@@ -26,10 +26,9 @@ export const authService = {
         secure: true,
         sameSite: "strict",
       });
-
+      
       // Local storage del refresh token y del DTO del usuario :)
       localStorage.setItem("refresh_token", response.data.refresh_token);
-
       const userDTO = {
         correo: response.data.correo,
         verificacion2Factores: response.data.verificacion2Factores,
@@ -38,7 +37,6 @@ export const authService = {
         jti: response.data.jti,
         scope: response.data.scope,
       };
-
       localStorage.setItem("UserDTO", JSON.stringify(userDTO));
 
       // Actualizamos las siguientes instancias de axios con el nuevo Bearer token yey!!! :D

@@ -2,7 +2,7 @@ import { api } from '../axios';
 import { Consulta, ConsultaDTO, CreateConsulta } from '../models/consultaModels';
 import Cookies from 'js-cookie';
 
-export const consultasDashboardApi = {
+export const consultaDashboardApi = {
   async getAllConsultas(): Promise<ConsultaDTO[]> {
     const token = Cookies.get('access_token');
     if (!token) throw new Error('No authentication token found');

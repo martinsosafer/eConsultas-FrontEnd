@@ -83,21 +83,29 @@ export const turnoApi = {
   async getAllTurnos(): Promise<Turno[]> {
     const token = Cookies.get("access_token");
     if (!token) throw new Error("No authentication token found");
-
+  
     try {
+      console.log("Fetching all turnos...");
       const response = await api.get("/usuarios/turnos/get-all", {
         headers: {
           Accept: "*/*",
           Authorization: `Bearer ${token}`,
         },
       });
+      
+      console.log("Respuesta de getAllTurnos:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching all turnos:", error);
+      if (error.response) {
+        console.error("Detalles del error:", {
+          status: error.response.status,
+          data: error.response.data
+        });
+      }
       throw error;
     }
   },
-
 
   
   async getTurnosByMedico(
