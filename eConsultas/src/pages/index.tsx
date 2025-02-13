@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthProvider";
 import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
@@ -18,21 +18,22 @@ import Button from "../components/button";
 import HeroBlock from "@/components/home/HeroBlock";
 
 const Home = () => {
-  const [esMedico, setEsMedico] = useState(false);
+  const { personaData, isAuthenticated, isLoading } = useAuth();
 
-  useEffect(() => {
-    // Función para verificar la cookie
-    const checkCookie = () => {
-      const cookies = document.cookie.split(";");
-      const medicoCookie = cookies.find((cookie) =>
-        cookie.trim().startsWith("esMédico=")
-      );
+  // Derived values from personaData
+  const esMedico = personaData?.tipoPersona === "MEDICO";
+  const esPaciente = personaData?.tipoPersona === "PACIENTE";
 
-      setEsMedico(!!medicoCookie);
-    };
+  if (isLoading) return <div>Loading authentication state...</div>;
 
-    checkCookie();
-  }, []);
+  // Check for Super Admin role
+  const isSuperAdmin =
+    isAuthenticated &&
+    personaData?.credenciales?.roles?.some(
+      (role) => role.nombre === "ROLE_SUPER_ADMIN"
+    );
+
+  if (isSuperAdmin) return <Navigate to="/dashboard-admin" replace />;
 
   const medicalServices = [
     { name: "Consulta General", icon: <Calendar className="w-6 h-6" /> },
@@ -49,75 +50,75 @@ const Home = () => {
 
   return (
     <div className="prose max-w-none">
-      {/* Hero Section */}
-      <HeroBlock TipoDePersona="" />
+      <HeroBlock TipoDePersona={personaData?.tipoPersona || ""} />
 
-      {/* Quick Actions Grid */}
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
-        {medicalServices.map((service, index) => (
-          <Card key={index} className="hover:border-primary transition-all">
-            <CardHeader>
-              <div className="bg-primary-light p-2 rounded-full w-max text-primary-dark">
-                {service.icon}
-              </div>
-              <CardTitle className="mt-4">{service.name}</CardTitle>
-            </CardHeader>
-            <CardFooter>
-              <Button
-                label="Ver detalles"
-                type="secondary"
-                onClick={() => {}}
-                fit
-              />
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-
-      {/* Stats Section */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        {stats.map((stat, index) => (
-          <Card
-            key={index}
-            className={`border-${stat.type} bg-${stat.type}-light`}
-          >
-            <CardContent className="p-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">{stat.title}</h3>
-                  <p className="text-3xl font-bold">{stat.value}</p>
+      {/* Conditional Sections */}
+      {esPaciente ? (
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          {medicalServices.map((service, index) => (
+            <Card key={index} className="hover:border-primary transition-all">
+              <CardHeader>
+                <div className="bg-primary-light p-2 rounded-full w-max text-primary-dark">
+                  {service.icon}
                 </div>
-                <BadgeDollarSign
-                  className={`w-12 h-12 text-${stat.type}-dark`}
+                <CardTitle className="mt-4">{service.name}</CardTitle>
+              </CardHeader>
+              <CardFooter>
+                <Button
+                  label="Ver detalles"
+                  type="secondary"
+                  onClick={() => {}}
+                  fit
                 />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      ) : esMedico ? (
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {stats.map((stat, index) => (
+            <Card
+              key={index}
+              className={`border-${stat.type} bg-${stat.type}-light`}
+            >
+              <CardContent className="p-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">{stat.title}</h3>
+                    <p className="text-3xl font-bold">{stat.value}</p>
+                  </div>
+                  <BadgeDollarSign
+                    className={`w-12 h-12 text-${stat.type}-dark`}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : null}
 
-      {/* Acceso diferenciado */}
+      {/* Differentiated Access - Updated Section */}
       <div className="grid md:grid-cols-2 gap-6">
         {esMedico ? (
-          <Card className="bg-secondary-light border-secondary">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Panel Médico</h3>
-              <Button
-                label="Acceder al Panel"
-                type="secondary"
-                onClick={() => {}}
-              />
-            </CardContent>
-          </Card>
-        ) : (
           <Card className="bg-primary-light border-primary">
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold mb-4">
                 Portal de Pacientes
               </h3>
               <Button
-                label="Acceder a Mi Historial"
+                label="Gestionar Pacientes"
                 type="primary"
+                onClick={() => {}}
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="bg-secondary-light border-secondary">
+            <CardContent className="p-6">
+              <h3 className="text-xl font-semibold mb-4">Panel Médico</h3>
+              <Button
+                label="Acceder al Panel"
+                type="secondary"
                 onClick={() => {}}
               />
             </CardContent>

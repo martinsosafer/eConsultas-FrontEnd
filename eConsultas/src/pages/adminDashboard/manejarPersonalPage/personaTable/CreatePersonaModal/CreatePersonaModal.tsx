@@ -6,10 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 import type { CreatePersona } from "@/api/models/personaModels";
 
 interface CreatePersonaModalProps {
@@ -39,11 +35,19 @@ export default function CreatePersonaModal({
   });
 
   const handleSubmit = async () => {
+    const dateParts = newPersona.fechaNacimiento.split("/");
+    const hasValidDate =
+      dateParts.length === 3 &&
+      dateParts.every((part) => part) &&
+      dateParts[0].length <= 2 &&
+      dateParts[1].length <= 2 &&
+      dateParts[2].length === 4;
+
     if (
       !newPersona.dni ||
       !newPersona.nombre ||
       !newPersona.apellido ||
-      !newPersona.fechaNacimiento ||
+      !hasValidDate ||
       !newPersona.credenciales.email ||
       !newPersona.credenciales.celular
     ) {
@@ -52,6 +56,22 @@ export default function CreatePersonaModal({
     }
 
     try {
+      // Format date with leading zeros
+      const [day, month, year] = dateParts;
+      const formattedDate = `${day.padStart(2, "0")}/${month.padStart(
+        "0",
+        2
+      )}/${year}`;
+
+      // Validate actual date
+      const dateObj = new Date(
+        `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+      );
+      if (isNaN(dateObj.getTime())) {
+        toast.error("Fecha de nacimiento inválida");
+        return;
+      }
+
       const fechaFormateada = new Date()
         .toISOString()
         .replace("T", " ")
@@ -59,6 +79,7 @@ export default function CreatePersonaModal({
 
       const personaToSave = {
         ...newPersona,
+        fechaNacimiento: formattedDate,
         credenciales: {
           ...newPersona.credenciales,
           fechaDeSolicitudDeCodigoDeVerificacion: fechaFormateada,
@@ -95,6 +116,27 @@ export default function CreatePersonaModal({
         roles: value === "MEDICO" ? [{ id: 3 }] : [{ id: 1 }],
       },
     }));
+  };
+
+  const handleDatePartChange = (value: string, partIndex: number) => {
+    const numericValue = value.replace(/\D/g, "");
+    let formattedValue = numericValue;
+
+    if (partIndex !== 2) {
+      formattedValue = numericValue.slice(0, 2);
+    } else {
+      formattedValue = numericValue.slice(0, 4);
+    }
+
+    setNewPersona((prev) => {
+      const parts = prev.fechaNacimiento.split("/");
+      while (parts.length < 3) parts.push("");
+      parts[partIndex] = formattedValue;
+      return {
+        ...prev,
+        fechaNacimiento: parts.join("/"),
+      };
+    });
   };
 
   return (
@@ -159,29 +201,35 @@ export default function CreatePersonaModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Fecha de Nacimiento</Label>
-              <DatePicker
-                selected={
-                  newPersona.fechaNacimiento
-                    ? new Date(newPersona.fechaNacimiento)
-                    : null
-                }
-                onChange={(date: Date) => {
-                  setNewPersona((prev) => ({
-                    ...prev,
-                    fechaNacimiento: format(date, "dd/MM/yyyy"),
-                  }));
-                }}
-                dateFormat="dd/MM/yyyy"
-                showYearDropdown
-                scrollableYearDropdown
-                yearDropdownItemNumber={100}
-                customInput={
-                  <Button variant="outline" className="w-full justify-start">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {newPersona.fechaNacimiento || "Seleccionar fecha"}
-                  </Button>
-                }
-              />
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="DD"
+                    value={newPersona.fechaNacimiento.split("/")[0] || ""}
+                    onChange={(e) => handleDatePartChange(e.target.value, 0)}
+                  />
+                </div>
+                <div>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="MM"
+                    value={newPersona.fechaNacimiento.split("/")[1] || ""}
+                    onChange={(e) => handleDatePartChange(e.target.value, 1)}
+                  />
+                </div>
+                <div>
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="AAAA"
+                    value={newPersona.fechaNacimiento.split("/")[2] || ""}
+                    onChange={(e) => handleDatePartChange(e.target.value, 2)}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -259,7 +307,7 @@ export default function CreatePersonaModal({
                 <Label>Sueldo</Label>
                 <Input
                   type="number"
-                  value={newPersona.sueldo}
+                  value={newPersona.sueldo || ""}
                   onChange={(e) =>
                     setNewPersona((prev) => ({
                       ...prev,
@@ -272,7 +320,7 @@ export default function CreatePersonaModal({
               <div>
                 <Label>Especialidad</Label>
                 <Input
-                  value={newPersona.especialidad}
+                  value={newPersona.especialidad || ""}
                   onChange={(e) =>
                     setNewPersona((prev) => ({
                       ...prev,

@@ -5,6 +5,10 @@ import { api } from "../api/axios";
 import { personaApi } from "@/api/classes apis/personaApi";
 import { Medico, Paciente, Persona } from "../api/models/personaModels";
 import { authService } from "@/api/authService";
+interface CredencialesDTO {
+  roles?: Array<{ id: number; nombre: string }>;
+  // Include other fields from the credenciales object as needed
+}
 interface UserDTO {
   correo: string;
   verificacion2Factores: boolean;
@@ -12,6 +16,8 @@ interface UserDTO {
   username: string;
   jti: string;
   scope: string;
+
+  credenciales?: CredencialesDTO;
 }
 
 interface AuthContextType {
@@ -20,11 +26,13 @@ interface AuthContextType {
   personaData: Medico | Paciente | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserDTO | null>(null);
   const [personaData, setPersonaData] = useState<Medico | Paciente | null>(
@@ -51,6 +59,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (error) {
           console.error("Auth initialization error:", error);
           logout();
+        } finally {
+          setIsLoading(false); // Ensure loading ends
         }
       }
     };
@@ -85,7 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, user, personaData, login, logout }}
+      value={{ isAuthenticated, user, personaData, login, logout, isLoading }}
     >
       {children}
     </AuthContext.Provider>

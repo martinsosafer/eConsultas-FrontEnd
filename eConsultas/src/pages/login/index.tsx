@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { LogIn } from "lucide-react"; // Changed icon import
 import logo from "../../../public/logo.png";
 import Button from "@/components/button";
-import { authService } from "@/api/authService";
-import { personaApi } from "@/api/classes apis/personaApi";
 import { toast, Toaster } from "sonner";
-
+import { useAuth } from "@/context/AuthProvider"; // Added Auth context
+import Cookies from "js-cookie";
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
@@ -15,17 +15,17 @@ export default function SignInPage() {
   const [error, setError] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth(); // Get login from context
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
   };
 
-  // Función para desabilitar el botón. Esto decidimos hacerlo entre grupo para que muchas personas no spameen y nos tumben la Api jajaja
   const disableButtonTemporarily = () => {
     setIsButtonDisabled(true);
     setTimeout(() => {
       setIsButtonDisabled(false);
-    }, 5000); // modificar si quieren, está ahora en 5000 milesimas de segundos AKA 5 segundos
+    }, 5000);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,21 +34,9 @@ export default function SignInPage() {
     setError("");
 
     try {
-      // Primero verificamos al usuario con el login y su token
-      await authService.login(username, password);
-      console.log("Authentication successful!");
-
-      // Posteriormente, hacemos el getPersona ya con el token incluido!!
-      const persona = await personaApi.getPersona();
-      if (persona) {
-        console.log("Persona data successfully retrieved:", persona);
-        localStorage.setItem("personaData", JSON.stringify(persona));
-        navigate("/");
-      } else {
-        console.log("No persona data found");
-        toast.error("No se pudo obtener la información del usuario");
-        disableButtonTemporarily();
-      }
+      // Use context login instead of direct service call
+      await login(username, password);
+      navigate("/"); // Redirect after successful login
     } catch (err) {
       console.error("Login error:", err);
       setError("Credenciales inválidas. Por favor intente nuevamente.");
@@ -59,10 +47,18 @@ export default function SignInPage() {
     }
   };
 
+  // Add auto-redirect if already logged in
+  useEffect(() => {
+    const token = Cookies.get("access_token");
+    if (token) {
+      navigate("/");
+    }
+  }, [navigate]);
+
   return (
     <div className="flex items-center justify-center h-screen bg-primary-light">
       <div className="flex w-[80%] md:w-[70%] lg:w-[60%] xl:w-[50%] bg-white rounded-2xl overflow-hidden shadow-xl">
-        {/* Sección de la izquierda */}
+        {/* Left Section */}
         <motion.div
           className="flex-1 flex flex-col justify-center items-center bg-gradient-to-br from-primary to-primary-hover p-6"
           initial={{ x: -200, opacity: 0 }}
@@ -84,7 +80,7 @@ export default function SignInPage() {
           </motion.h1>
         </motion.div>
 
-        {/* Sección de la derecha*/}
+        {/* Right Section */}
         <motion.div
           className="flex-1 p-8 flex flex-col justify-center"
           initial={{ x: 200, opacity: 0 }}
@@ -97,9 +93,11 @@ export default function SignInPage() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
+            <LogIn className="inline-block mr-2 h-8 w-8" /> {/* Added icon */}
             Iniciar sesión
           </motion.h2>
 
+          {/* ... (rest of the form remains unchanged) ... */}
           <motion.form
             onSubmit={handleSubmit}
             className="space-y-4"
@@ -107,6 +105,7 @@ export default function SignInPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
           >
+            {/* Email/DNI/Phone Input */}
             <div className="flex flex-col">
               <label className="text-primary-dark font-medium mb-1">
                 Email, DNI o teléfono
@@ -121,6 +120,7 @@ export default function SignInPage() {
               />
             </div>
 
+            {/* Password Input */}
             <div className="flex flex-col">
               <label className="text-primary-dark font-medium mb-1">
                 Contraseña
@@ -183,12 +183,12 @@ export default function SignInPage() {
               type="primary"
               disabled={isLoading || isButtonDisabled}
               className="w-full py-3 font-bold rounded-md shadow-lg"
-              buttonType="submit" //Ni idea el error del botón pero anda igual jajaj
+              buttonType="submit"
             />
           </motion.form>
         </motion.div>
       </div>
-      <Toaster richColors></Toaster>
+      <Toaster richColors />
     </div>
   );
 }
