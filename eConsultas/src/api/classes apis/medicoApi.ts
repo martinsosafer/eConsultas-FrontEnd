@@ -10,8 +10,8 @@ export const medicoApi = {
     try {
       const response = await api.get("/usuarios/medicos/disponibilidad-semanal", {
         params: {
-          email: encodeURIComponent(email),
-          fecha: encodeURIComponent(fecha)
+          email,
+          fecha
         },
         headers: {
           Accept: "*/*",
@@ -65,5 +65,30 @@ export const medicoApi = {
       console.error("Error removing turno from all medicos:", error);
       throw error;
     }
-  }
+  },
+
+  async getDisponibilidadPorFechaHorario(
+    email: string,
+    fecha: string,
+    horario: string
+  ): Promise<any> {
+    const token = Cookies.get("access_token");
+    if (!token) throw new Error("No authentication token found");
+
+    try {
+      const response = await api.get(
+        `/usuarios/medicos/disponibilidad-por-fecha-horario?fecha=${fecha}&email=${email}&horario=${horario}`, 
+        {
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching disponibilidad por horario:", error);
+      throw error;
+    }
+  },
 };

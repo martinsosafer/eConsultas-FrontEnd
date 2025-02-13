@@ -17,17 +17,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, MoreVertical, Trash2, Copy } from "lucide-react";
+import { Search, MoreVertical, Trash2, Copy, PlusCircle } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import { consultasDashboardApi } from "@/api/dashboard/consultaDashboardApi";
+import { consultaDashboardApi } from "@/api/dashboard/consultaDashboardApi";
 import type { ConsultaDTO } from "@/api/models/consultaModels";
 import { useAuth } from "@/context/AuthProvider";
 import { useOutletContext } from "react-router-dom";
+import { CreateConsultaModal } from "./createConsultaModal/CreateConsultaModal"; 
 
 export default function ConsultasTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [consultas, setConsultas] = useState<ConsultaDTO[]>([]);
   const [filteredConsultas, setFilteredConsultas] = useState<ConsultaDTO[]>([]);
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const { personaData } = useAuth();
   const tableRef = useRef<HTMLDivElement>(null);
   const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
@@ -40,7 +42,7 @@ export default function ConsultasTable() {
   useEffect(() => {
     const fetchConsultas = async () => {
       try {
-        const consultasData = await consultasDashboardApi.getAllConsultas();
+        const consultasData = await consultaDashboardApi.getAllConsultas();
         setConsultas(consultasData);
         applyFilters(consultasData);
 
@@ -58,6 +60,17 @@ export default function ConsultasTable() {
 
     fetchConsultas();
   }, [isAnimating]);
+
+  const refreshConsultas = async () => {
+    try {
+      const consultasData = await consultaDashboardApi.getAllConsultas();
+      setConsultas(consultasData);
+      applyFilters(consultasData);
+    } catch (error) {
+      toast.error("Error actualizando consultas");
+    }
+  };
+
 
   const applyFilters = (data: ConsultaDTO[]) => {
     const filtered = data.filter((consulta) => {
@@ -84,7 +97,7 @@ export default function ConsultasTable() {
   const handleDeleteClick = async (consulta: ConsultaDTO) => {
     if (!confirm(`¿Eliminar la consulta #${consulta.id}?`)) return;
     try {
-      await consultasDashboardApi.deleteConsulta(consulta.id);
+      await consultaDashboardApi.deleteConsulta(consulta.id);
       setConsultas(consultas.filter((c) => c.id !== consulta.id));
       setFilteredConsultas(
         filteredConsultas.filter((c) => c.id !== consulta.id)
@@ -114,6 +127,11 @@ export default function ConsultasTable() {
       }}
       onTransitionEnd={() => setInitialLoad(false)}
     >
+      <CreateConsultaModal
+        open={isCreateModalOpen}
+        onOpenChange={setCreateModalOpen}
+        onCreated={refreshConsultas}
+      />
       <Toaster
         theme="system"
         toastOptions={{
@@ -142,6 +160,14 @@ export default function ConsultasTable() {
             size={20}
           />
         </div>
+
+        <Button
+          className="bg-primary hover:bg-primary-hover text-white"
+          onClick={() => setCreateModalOpen(true)}
+        >
+          <PlusCircle className="mr-2" size={20} />
+          Nueva Consulta
+        </Button>
       </div>
 
       <Table>

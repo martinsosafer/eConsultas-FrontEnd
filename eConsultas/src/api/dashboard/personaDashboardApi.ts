@@ -30,7 +30,7 @@ export const personaDashboardApi = {
 
   async getAllPersonasByTipo(tipo: string): Promise<(Medico | Paciente)[]> {
     try {
-      const response = await api.get(`/persona/get-all/${tipo}`, {
+      const response = await api.get(`usuarios/persona/get-all/${tipo}`, {
         headers: {
           Accept: "*/*",
         },
