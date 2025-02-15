@@ -5,6 +5,7 @@ import Sidebar from "./sidebar";
 import logo from "../../public/logo.png";
 import { useAuth } from "@/context/AuthProvider";
 
+
 export default function Layout() {
   const [isOpen, setIsOpen] = useState(false);
   const { isAuthenticated, personaData, logout } = useAuth();

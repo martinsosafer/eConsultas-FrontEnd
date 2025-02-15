@@ -2,7 +2,7 @@ import { toast } from 'sonner';
 import { api } from '../axios';
 import { Paquete } from '../models/paqueteModels';
 import Cookies from 'js-cookie';
-import { extractErrorMessage } from '../errorHandler';
+import { extractErrorMessage } from '../misc/errorHandler';
 
 export const paqueteApi = {
   async getPaqueteById(id: number): Promise<Paquete> {

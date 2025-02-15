@@ -1,6 +1,6 @@
 import { api } from "../axios";
 import Cookies from "js-cookie";
-import { CreateTurno, Turno } from "../models/turnoModel";
+import { CreateTurno, Turno } from "../models/turnoModels";
 
 
 export const turnoApi = {

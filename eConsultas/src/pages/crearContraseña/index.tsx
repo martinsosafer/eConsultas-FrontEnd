@@ -6,7 +6,7 @@ import { passwordManagement }  from "../../api/passwordManagement";
 import Button from "../../components/button";
 import logo from "../../../public/logo.png";
 import { Toaster, toast } from "sonner";
-import { extractErrorMessage } from "@/api/errorHandler";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 const PasswordCreate: React.FC = () => {
   const { email, code } = useParams<{ email: string; code: string }>();
@@ -15,8 +15,7 @@ const PasswordCreate: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
-    // Basic validation
+
     if (!email || !code) {
       toast.error("Faltan datos en la URL.");
       return;
@@ -40,7 +39,7 @@ const PasswordCreate: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary-light via-background to-secondary-light flex justify-center items-center relative overflow-hidden">
       <Toaster richColors position="bottom-right" />
 
-      {/* Animated background elements */}
+
       <motion.div
         className="absolute inset-0 z-0"
         initial={{ opacity: 0 }}

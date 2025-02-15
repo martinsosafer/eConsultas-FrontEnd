@@ -1,4 +1,4 @@
-import { Turno } from "./turnoModel";
+import { Turno } from "./turnoModels";
 
 
 // Modelo base de Persona
