@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Menu, Bell, User, LogOut, UserCircle } from "lucide-react";
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import Sidebar from "./sidebar";
 import logo from "../../public/logo.png";
 import { useAuth } from "@/context/AuthProvider";
@@ -9,24 +9,6 @@ import { useAuth } from "@/context/AuthProvider";
 export default function Layout() {
   const [isOpen, setIsOpen] = useState(false);
   const { isAuthenticated, personaData, logout } = useAuth();
-  const navigate = useNavigate();
-
-  // Automatically check auth status when component mounts
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = Cookies.get("access_token");
-      if (token && !isAuthenticated) {
-        try {
-          // Add any necessary token validation or user data refresh here
-          navigate(0); // Refresh current page
-        } catch (error) {
-          console.error("Session validation error:", error);
-        }
-      }
-    };
-
-    checkAuth();
-  }, [isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-100">

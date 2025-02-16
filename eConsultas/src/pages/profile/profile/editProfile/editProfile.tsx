@@ -26,6 +26,7 @@ import { Medico, Paciente, Persona } from "@/api/models/personaModels";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/context/AuthProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 const EditProfile = () => {
   const { username: encodedUsername } = useParams<{ username: string }>();
@@ -63,7 +64,7 @@ const EditProfile = () => {
   );
   const isEditingSelf = username === personaData?.credenciales.username;
   const canEdit = isEditingSelf || isAdmin;
-  const isMedico = userData.tipoPersona === "MEDICO";
+  const isMedico = userData.credenciales?.tipoPersona === "MEDICO";
   const canEditMedicalInfo = isAdmin && !isEditingSelf;
 
   useEffect(() => {
@@ -95,7 +96,8 @@ const EditProfile = () => {
           console.error("Error cargando imagen de perfil:", error);
         }
       } catch (error) {
-        toast.error("Error cargando datos del usuario");
+        const errorMessage = extractErrorMessage(error);
+        toast.error("Error cargando datos del usuario: " + errorMessage);
         navigate(-1);
       } finally {
         setLoading(false);
@@ -135,7 +137,8 @@ const EditProfile = () => {
       setCooldown(true);
       setTimeout(() => setCooldown(false), 5000);
     } catch (error) {
-      toast.error("Error al guardar los cambios");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error al guardar los cambios: " + errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -368,7 +371,7 @@ const EditProfile = () => {
                   />
                   <Button
                     type="primary"
-                    label={isSubmitting ? "Guardando..." : cooldown ? "Espere 5s" : "Guardar Cambios"}
+                    label={isSubmitting ? "Guardando..." : cooldown ? "Espere" : "Guardar Cambios"}
                     disabled={isSubmitting || cooldown}
                     className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-dark transition-all"
                   />
