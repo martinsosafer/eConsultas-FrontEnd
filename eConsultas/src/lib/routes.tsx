@@ -5,9 +5,8 @@ import About from "../pages/about.tsx";
 import BloquePaciente from "../pages/paciente/index.tsx";
 import DatosPaciente from "../pages/paciente/[id].tsx";
 import ColorSystemShowcase from "../pages/colorshowcase/index.tsx";
-import PasswordCreate from "@/pages/crearContraseña/index.tsx";
+import PasswordCreate from "@/pages/passwordManagement/index.tsx";
 import Login from "@/pages/login/index.tsx";
-
 import ProfilePage from "@/pages/profile/index.tsx";
 import DashboardAdminPage from "@/pages/adminDashboard/index.tsx";
 import ManejarPersonalPage from "@/pages/adminDashboard/manejarPersonalPage/index.tsx";
@@ -17,6 +16,7 @@ import PaquetesPage from "@/pages/adminDashboard/paquetes/index.tsx";
 import ConsultasPage from "@/pages/adminDashboard/consultas/index.tsx";
 import { FilesBrowserWrapper } from "@/pages/profile/profile/FilesOfUser/FilesBrowserWrapper.tsx";
 import ReportesManagement from "@/pages/adminDashboard/reportes/index.tsx";
+import ForgotPassword from "@/pages/passwordManagement/forgotPassword.tsx/index.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -27,7 +27,6 @@ export const router = createBrowserRouter([
         index: true,
         element: <Home />,
       },
-
       {
         path: "about",
         element: <About />,
@@ -35,7 +34,6 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard-admin",
         element: <DashboardAdminPage />,
-
         children: [
           {
             path: "manejar-personal",
@@ -77,8 +75,21 @@ export const router = createBrowserRouter([
         element: <ColorSystemShowcase />,
       },
       {
-        path: "crear-password/:email/:code",
-        element: <PasswordCreate />,
+        path: "password",
+        children: [
+          {
+            path: "create/:email/:code",
+            element: <PasswordCreate isChangeMode={false} />,
+          },
+          {
+            path: "change/:email/:code",
+            element: <PasswordCreate isChangeMode={true} />,
+          },
+          {
+            path: "forgot",
+            element: <ForgotPassword />,
+          },
+        ],
       },
       {
         path: "login",

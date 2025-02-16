@@ -1,44 +1,71 @@
+// components/PasswordCreate.tsx
 import React from "react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { passwordManagement }  from "../../api/passwordManagement";
+import { passwordManagement } from "../../api/passwordManagement";
 import Button from "../../components/button";
 import logo from "../../../public/logo.png";
 import { Toaster, toast } from "sonner";
 import { extractErrorMessage } from "@/api/misc/errorHandler";
+import Cookies from "js-cookie";
 
-const PasswordCreate: React.FC = () => {
+interface PasswordCreateProps {
+  isChangeMode?: boolean;
+}
+
+const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false }) => {
   const { email, code } = useParams<{ email: string; code: string }>();
+  const [oldPassword, setOldPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email || !code) {
-      toast.error("Faltan datos en la URL.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      toast.error("Las contraseñas no coinciden.");
-      return;
-    }
-  
-    try {
-      await passwordManagement.createPassword(email, password, code);
-      toast.success("Contraseña actualizada correctamente.");
-    } catch (error) {
-      const errorMessage = extractErrorMessage(error);
-      toast.error("Error: " + errorMessage);
-      console.error("Password update error:", error);
+    if (isChangeMode) {
+      const username = Cookies.get("username");
+      if (!username) {
+        toast.error("Usuario no autenticado.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        toast.error("Las contraseñas nuevas no coinciden.");
+        return;
+      }
+      
+      try {
+        await passwordManagement.changePassword(username, oldPassword, password);
+        toast.success("Contraseña cambiada exitosamente.");
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error);
+        toast.error("Error: " + errorMessage);
+        console.error("Password change error:", error);
+      }
+    } else {
+      if (!email || !code) {
+        toast.error("Faltan datos en la URL.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        toast.error("Las contraseñas no coinciden.");
+        return;
+      }
+      
+      try {
+        await passwordManagement.createPassword(email, password, code);
+        toast.success("Contraseña creada exitosamente.");
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error);
+        toast.error("Error: " + errorMessage);
+        console.error("Password creation error:", error);
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-light via-background to-secondary-light flex justify-center items-center relative overflow-hidden">
       <Toaster richColors position="bottom-right" />
-
 
       <motion.div
         className="absolute inset-0 z-0"
@@ -113,26 +140,48 @@ const PasswordCreate: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            Crear Contraseña
+            {isChangeMode ? "Cambiar Contraseña" : "Crear Contraseña"}
           </motion.h1>
         </div>
+        
         <form onSubmit={handleSubmit} className="space-y-6">
+          {isChangeMode && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <label
+                htmlFor="oldPassword"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Contraseña Actual
+              </label>
+              <input
+                type="password"
+                id="oldPassword"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                className="block w-full px-4 py-3 border-2 border-primary-light rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                required
+              />
+            </motion.div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
+            transition={{ duration: 0.5, delay: isChangeMode ? 0.4 : 0.3 }}
           >
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Nueva Contraseña
+              {isChangeMode ? "Nueva Contraseña" : "Contraseña"}
             </label>
             <input
               type="password"
               id="password"
-              name="password"
-              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="block w-full px-4 py-3 border-2 border-primary-light rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
@@ -143,19 +192,17 @@ const PasswordCreate: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.5 }}
+            transition={{ duration: 0.5, delay: isChangeMode ? 0.5 : 0.4 }}
           >
             <label
               htmlFor="confirmPassword"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Confirmar Contraseña
+              {isChangeMode ? "Confirmar Nueva Contraseña" : "Confirmar Contraseña"}
             </label>
             <input
               type="password"
               id="confirmPassword"
-              name="confirmPassword"
-              autoComplete="new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="block w-full px-4 py-3 border-2 border-primary-light rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
@@ -170,7 +217,7 @@ const PasswordCreate: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.6 }}
           >
             <Button
-              label="Crear contraseña"
+              label={isChangeMode ? "Cambiar contraseña" : "Crear contraseña"}
               type="primary"
               onClick={() => {}}
               className="w-full py-3 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
