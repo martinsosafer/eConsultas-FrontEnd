@@ -192,7 +192,7 @@ export default function SignInPage() {
               transition={{ delay: 0.6, duration: 0.6 }}
             >
               <button
-                onClick={() => navigate("/forgot-password")}
+                onClick={() => navigate("/forgot")}
                 className="text-primary-dark hover:underline"
               >
                 ¿Olvidaste tu contraseña?

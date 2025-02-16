@@ -111,7 +111,6 @@ export default function ServicioTable() {
 
   const handleSave = async (updatedServicio: Servicio) => {
     try {
-      // Implement your update API call here
       setServicios(
         servicios.map((s) =>
           s.id === updatedServicio.id ? updatedServicio : s
@@ -132,7 +131,6 @@ export default function ServicioTable() {
   const handleDeleteClick = async (servicio: Servicio) => {
     if (!confirm(`¿Eliminar el servicio: ${servicio.descripcion}?`)) return;
     try {
-      // Implement your delete API call here
       setServicios(servicios.filter((s) => s.id !== servicio.id));
       setFilteredServicios(
         filteredServicios.filter((s) => s.id !== servicio.id)
@@ -254,7 +252,7 @@ export default function ServicioTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleCopyId(servicio.id)}>
+                    <DropdownMenuItem onClick={() => handleCopyId(servicio.id.toString())}>
                       <Copy className="mr-2 h-4 w-4" />
                       Copiar ID
                     </DropdownMenuItem>
