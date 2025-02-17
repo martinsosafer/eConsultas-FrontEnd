@@ -118,15 +118,15 @@ export const personaApi = {
   async deletePersona(email: string) {
     const token = Cookies.get("access_token");
     if (!token) throw new Error("No authentication token found");
-  
+
     try {
-      const response = await api.delete(`/usuarios/persona/${email}`, { 
+      const response = await api.delete(`/usuarios/persona/${email}`, {
         headers: {
           Accept: "*/*",
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       return response.data;
     } catch (error) {
       console.error("Error deleting:", error);
@@ -190,5 +190,25 @@ export const personaApi = {
       throw error;
     }
   },
-  
+  async getAllPersonas(
+    tipoPersona: "MEDICO" | "PACIENTE",
+    filters?: Record<string, string>
+  ): Promise<(Medico | Paciente)[]> {
+    try {
+      const params = new URLSearchParams(filters);
+      const response = await api.get(
+        `/usuarios/persona/get-all/${tipoPersona}?${params}`,
+        {
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${Cookies.get("access_token")}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching personas:", error);
+      throw error;
+    }
+  },
 };

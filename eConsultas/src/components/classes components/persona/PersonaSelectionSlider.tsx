@@ -2,6 +2,7 @@
 
 import { Medico, Paciente } from "@/api/models/personaModels";
 import { personaApi } from "@/api/classes apis/personaApi";
+import { medicoApi } from "@/api/classes apis/medicoApi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,13 +11,13 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { personaDashboardApi } from "@/api/dashboard/personaDashboardApi";
 
 interface PersonaSelectionSliderProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (persona: Medico | Paciente) => void;
   tipoPersona: "MEDICO" | "PACIENTE";
+  filters?: Record<string, string>;
 }
 
 export const PersonaSelectionSlider = ({
@@ -24,21 +25,57 @@ export const PersonaSelectionSlider = ({
   onOpenChange,
   onSelect,
   tipoPersona,
+  filters,
 }: PersonaSelectionSliderProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [personas, setPersonas] = useState<(Medico | Paciente)[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
 
+  const fetchPersonas = async () => {
+    try {
+      setLoading(true);
+      let data;
+
+      // Handle MEDICO with specialty filter
+      if (tipoPersona === "MEDICO" && filters?.especialidadMedico) {
+        data = await medicoApi.getMedicosBySpecialty(
+          filters.especialidadMedico
+        );
+      } else {
+        data = await personaApi.getAllPersonas(tipoPersona, filters);
+      }
+
+      setPersonas(data);
+    } catch (error) {
+      toast.error("Error cargando datos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSearch = async () => {
     if (!searchTerm) return;
-    
+
     try {
       setSearchLoading(true);
-      const persona = await personaApi.getPersonaByUsername(searchTerm);
-      
-      if (persona) {
-        setPersonas([persona]);
+      let response;
+
+      // Handle MEDICO with specialty filter search
+      if (tipoPersona === "MEDICO" && filters?.especialidadMedico) {
+        response = await medicoApi.getMedicosBySpecialty(
+          filters.especialidadMedico,
+          searchTerm
+        );
+      } else {
+        response = await personaApi.getAllPersonas(tipoPersona, {
+          ...filters,
+          search: searchTerm,
+        });
+      }
+
+      if (response.length > 0) {
+        setPersonas(response);
       } else {
         setPersonas([]);
         toast.info(`No se encontró ${tipoPersona.toLowerCase()}`);
@@ -50,40 +87,30 @@ export const PersonaSelectionSlider = ({
     }
   };
 
-  const fetchAll = async () => {
-    try {
-      setLoading(true);
-      const data = await personaDashboardApi.getAllPersonasByTipo(tipoPersona);
-      setPersonas(data);
-    } catch (error) {
-      toast.error("Error cargando datos");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (open) {
-      fetchAll();
+      fetchPersonas();
     } else {
       setPersonas([]);
       setSearchTerm("");
     }
-  }, [open]);
+  }, [open, filters]);
 
-  const truncarTexto = (texto: string, longitud: number) => 
+  const truncarTexto = (texto: string, longitud: number) =>
     texto.length > longitud ? `${texto.substring(0, longitud)}...` : texto;
 
   return (
-    <div className={cn(
-      "fixed top-0 right-0 h-screen w-[500px] bg-background border-l shadow-xl transform transition-transform duration-300 z-[1000]",
-      open ? "translate-x-0" : "translate-x-full"
-    )}>
+    <div
+      className={cn(
+        "fixed top-0 right-0 h-screen w-[500px] bg-background border-l shadow-xl transform transition-transform duration-300 z-[1000]",
+        open ? "translate-x-0" : "translate-x-full"
+      )}
+    >
       <div className="p-6 h-full flex flex-col">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Seleccionar {tipoPersona}</h2>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             onClick={() => onOpenChange(false)}
             className="hover:bg-gray-100 rounded-full h-8 w-8"
           >
@@ -108,17 +135,20 @@ export const PersonaSelectionSlider = ({
             </Button>
           </div>
 
-          <Button variant="outline" onClick={fetchAll} disabled={loading}>
-            {loading ? "Cargando..." : "Traer todos"}
-          </Button>
-
           <ScrollArea className="flex-1 w-full pr-4">
             <div className="space-y-2 pb-4">
-              {personas.length === 0 ? (
+              {loading ? (
+                <div className="flex justify-center items-center h-full">
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+              ) : personas.length === 0 ? (
                 <div className="text-center py-8">No hay resultados</div>
               ) : (
                 personas.map((persona) => {
-                  const emailTruncado = truncarTexto(persona.credenciales.email, 15);
+                  const emailTruncado = truncarTexto(
+                    persona.credenciales.email,
+                    15
+                  );
                   return (
                     <div
                       key={persona.id}
@@ -141,11 +171,12 @@ export const PersonaSelectionSlider = ({
                         </h3>
                         {tipoPersona === "MEDICO" && (
                           <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800">
-                            {(persona as Medico).especialidad || "Sin especialidad"}
+                            {(persona as Medico).especialidad ||
+                              "Sin especialidad"}
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-2 mt-2">
                         <span className="text-sm text-muted-foreground">
                           {emailTruncado}
@@ -156,7 +187,9 @@ export const PersonaSelectionSlider = ({
                           className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigator.clipboard.writeText(persona.credenciales.email);
+                            navigator.clipboard.writeText(
+                              persona.credenciales.email
+                            );
                             toast.success("Email copiado");
                           }}
                         >
@@ -165,24 +198,30 @@ export const PersonaSelectionSlider = ({
                       </div>
 
                       <div className="flex flex-wrap gap-2 mt-2">
-                        <span className={cn(
-                          "text-xs px-2 py-1 rounded-full",
-                          persona.credenciales.enabled
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        )}>
-                          {persona.credenciales.enabled ? "Habilitado" : "Deshabilitado"}
-                        </span>
-                        
-                        {tipoPersona === "PACIENTE" && (
-                          <span className={cn(
+                        <span
+                          className={cn(
                             "text-xs px-2 py-1 rounded-full",
-                            (persona as Paciente).obraSocial
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          )}>
-                            {(persona as Paciente).obraSocial 
-                              ? "Obra social" 
+                            persona.credenciales.enabled
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          )}
+                        >
+                          {persona.credenciales.enabled
+                            ? "Habilitado"
+                            : "Deshabilitado"}
+                        </span>
+
+                        {tipoPersona === "PACIENTE" && (
+                          <span
+                            className={cn(
+                              "text-xs px-2 py-1 rounded-full",
+                              (persona as Paciente).obraSocial
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            )}
+                          >
+                            {(persona as Paciente).obraSocial
+                              ? "Obra social"
                               : "Sin obra social"}
                           </span>
                         )}
