@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Turno } from "@/api/models/turnoModel";
+import { Turno } from "@/api/models/turnoModels";
 import { turnoApi } from "@/api/classes apis/turnoApi";
 import { toast } from "sonner";
 

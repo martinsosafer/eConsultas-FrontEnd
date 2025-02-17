@@ -1,21 +1,22 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { LogIn } from "lucide-react"; // Changed icon import
+import { LogIn } from "lucide-react";
 import logo from "../../../public/logo.png";
 import Button from "@/components/button";
 import { toast, Toaster } from "sonner";
-import { useAuth } from "@/context/AuthProvider"; // Added Auth context
+import { useAuth } from "@/context/AuthProvider";
 import Cookies from "js-cookie";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
+
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth(); // Get login from context
+  const { login } = useAuth();
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
@@ -31,23 +32,22 @@ export default function SignInPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
 
     try {
-      // Use context login instead of direct service call
       await login(username, password);
-      navigate("/"); // Redirect after successful login
+      toast.success("Inicio de sesión exitoso.");
+      navigate("/");
     } catch (err) {
+      const errorMessage = extractErrorMessage(err);
+      toast.error("Error: " + errorMessage);
       console.error("Login error:", err);
-      setError("Credenciales inválidas. Por favor intente nuevamente.");
-      toast.warning("Credenciales inválidas. Por favor intente nuevamente.");
       disableButtonTemporarily();
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Add auto-redirect if already logged in
+  // Autoredirección si el usuario ya está logueado!
   useEffect(() => {
     const token = Cookies.get("access_token");
     if (token) {
@@ -93,11 +93,10 @@ export default function SignInPage() {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <LogIn className="inline-block mr-2 h-8 w-8" /> {/* Added icon */}
+            <LogIn className="inline-block mr-2 h-8 w-8" />
             Iniciar sesión
           </motion.h2>
 
-          {/* ... (rest of the form remains unchanged) ... */}
           <motion.form
             onSubmit={handleSubmit}
             className="space-y-4"
@@ -105,7 +104,7 @@ export default function SignInPage() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
           >
-            {/* Email/DNI/Phone Input */}
+            {/* Sección de inputs */}
             <div className="flex flex-col">
               <label className="text-primary-dark font-medium mb-1">
                 Email, DNI o teléfono
@@ -120,7 +119,6 @@ export default function SignInPage() {
               />
             </div>
 
-            {/* Password Input */}
             <div className="flex flex-col">
               <label className="text-primary-dark font-medium mb-1">
                 Contraseña
@@ -185,6 +183,20 @@ export default function SignInPage() {
               className="w-full py-3 font-bold rounded-md shadow-lg"
               buttonType="submit"
             />
+
+            <motion.div
+              className="mt-4 text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+            >
+              <button
+                onClick={() => navigate("/forgot")}
+                className="text-primary-dark hover:underline"
+              >
+                ¿Olvidaste tu contraseña?
+              </button>
+            </motion.div>
           </motion.form>
         </motion.div>
       </div>

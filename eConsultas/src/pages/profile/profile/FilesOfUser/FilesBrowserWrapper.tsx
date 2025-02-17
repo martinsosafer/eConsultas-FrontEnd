@@ -6,4 +6,8 @@ import { FilesBrowser } from "./FileBrowser";
 export const FilesBrowserWrapper = () => {
   const { username } = useParams<{ username: string }>();
   return <FilesBrowser email={username} />;
-};
+
+
+};  
+
+export default FilesBrowserWrapper

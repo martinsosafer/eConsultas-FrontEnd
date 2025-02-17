@@ -9,7 +9,8 @@ import {
   ShieldIcon as IconShield,
   HomeIcon as IconHome,
   EditIcon as IconEdit,
-} from "lucide-react";
+  FolderIcon as IconFolder,
+} from "lucide-react"; // Añadí FolderIcon para el botón
 import { Link } from "react-router-dom";
 import { Paciente, Medico } from "@/api/models/personaModels";
 import { useEffect, useState } from "react";
@@ -82,6 +83,14 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
             >
               {patient.tipoPersona}
             </Badge>
+
+            <Link
+              to={`files`}
+              className="mt-4 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 transform duration-300"
+            >
+              <IconFolder className="w-5 h-5" />
+              <span className="font-semibold">Ver archivos</span>
+            </Link>
           </div>
         </div>
       </CardHeader>

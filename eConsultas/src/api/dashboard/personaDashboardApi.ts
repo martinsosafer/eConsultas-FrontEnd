@@ -56,13 +56,13 @@ export const personaDashboardApi = {
     }
   },
 
-  async disableOrEnableUser(celular: string): Promise<void> {
+  async disableOrEnableUser(param: string): Promise<void> {
     const token = Cookies.get("access_token");
     if (!token) throw new Error("No authentication token found");
 
     try {
       await api.put(
-        `/usuarios/deshabilitar-habilitar/${encodeURIComponent(celular)}`,
+        `/usuarios/usuarios/deshabilitar-habilitar/${(param)}`,
         null,
         {
           headers: {

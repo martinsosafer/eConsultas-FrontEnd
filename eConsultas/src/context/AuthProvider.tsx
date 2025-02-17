@@ -7,7 +7,6 @@ import { Medico, Paciente, Persona } from "../api/models/personaModels";
 import { authService } from "@/api/authService";
 interface CredencialesDTO {
   roles?: Array<{ id: number; nombre: string }>;
-  // Include other fields from the credenciales object as needed
 }
 interface UserDTO {
   correo: string;
@@ -38,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [personaData, setPersonaData] = useState<Medico | Paciente | null>(
     null
   );
-  // Initialize auth state on app load
+  // Carga del auth parcial!
   useEffect(() => {
     const initializeAuth = async () => {
       const token = Cookies.get("access_token");
@@ -48,8 +47,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           const parsedUser = JSON.parse(userData);
           api.defaults.headers.Authorization = `Bearer ${token}`;
-
-          // Add loading state
           const persona = await personaApi.getPersona();
           if (!persona) throw new Error("No persona data");
 
@@ -60,7 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           console.error("Auth initialization error:", error);
           logout();
         } finally {
-          setIsLoading(false); // Ensure loading ends
+          setIsLoading(false); 
         }
       }
     };

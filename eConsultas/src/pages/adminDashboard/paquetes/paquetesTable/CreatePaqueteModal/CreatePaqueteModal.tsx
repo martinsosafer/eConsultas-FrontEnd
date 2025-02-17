@@ -11,7 +11,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { paqueteDashboardApi } from "@/api/dashboard/paqueteDashboardApi";
 import { cn } from "@/lib/utils";
-import { extractErrorMessage } from "@/api/errorHandler";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 interface CreatePaqueteModalProps {
   open: boolean;

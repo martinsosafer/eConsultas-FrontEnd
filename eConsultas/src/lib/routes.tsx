@@ -1,21 +1,26 @@
 import { createBrowserRouter } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import Layout from "../components/layout";
-import Home from "../pages";
-import About from "../pages/about.tsx";
-import BloquePaciente from "../pages/paciente/index.tsx";
-import DatosPaciente from "../pages/paciente/[id].tsx";
-import ColorSystemShowcase from "../pages/colorshowcase/index.tsx";
-import PasswordCreate from "@/pages/crearContraseña/index.tsx";
-import Login from "@/pages/login/index.tsx";
+import LoadingSpinner from "@/components/ui/loading-spinner"; 
 
-import ProfilePage from "@/pages/profile/index.tsx";
-import DashboardAdminPage from "@/pages/adminDashboard/index.tsx";
-import ManejarPersonalPage from "@/pages/adminDashboard/manejarPersonalPage/index.tsx";
-import EditProfile from "@/pages/profile/profile/editProfile/editProfile.tsx";
-import ServiciosPage from "@/pages/adminDashboard/todosServicios/index.tsx";
-import PaquetesPage from "@/pages/adminDashboard/paquetes/index.tsx";
-import ConsultasPage from "@/pages/adminDashboard/consultas/index.tsx";
-import { FilesBrowserWrapper } from "@/pages/profile/profile/FilesOfUser/FilesBrowserWrapper.tsx";
+const Home = lazy(() => import("../pages"));
+const About = lazy(() => import("../pages/about.tsx"));
+const BloquePaciente = lazy(() => import("../pages/paciente/index.tsx"));
+const DatosPaciente = lazy(() => import("../pages/paciente/[id].tsx"));
+const ColorSystemShowcase = lazy(() => import("../pages/colorshowcase/index.tsx"));
+const PasswordCreate = lazy(() => import("@/pages/passwordManagement/index.tsx"));
+const Login = lazy(() => import("@/pages/login/index.tsx"));
+const ProfilePage = lazy(() => import("@/pages/profile/index.tsx"));
+const DashboardAdminPage = lazy(() => import("@/pages/adminDashboard/index.tsx"));
+const ManejarPersonalPage = lazy(() => import("@/pages/adminDashboard/manejarPersonalPage/index.tsx"));
+const EditProfile = lazy(() => import("@/pages/profile/profile/editProfile/editProfile.tsx"));
+const ServiciosPage = lazy(() => import("@/pages/adminDashboard/todosServicios/index.tsx"));
+const PaquetesPage = lazy(() => import("@/pages/adminDashboard/paquetes/index.tsx"));
+const ConsultasPage = lazy(() => import("@/pages/adminDashboard/consultas/index.tsx"));
+const FilesBrowserWrapper = lazy(() => import("@/pages/profile/profile/FilesOfUser/FilesBrowserWrapper.tsx"));
+const ReportesManagement = lazy(() => import("@/pages/adminDashboard/reportes/index.tsx"));
+const ForgotPassword = lazy(() => import("@/pages/passwordManagement/forgotPassword.tsx/index.tsx"));
+const NotFoundPage = lazy(() => import("@/components/errors/NotFoundPage.tsx"));
 
 export const router = createBrowserRouter([
   {
@@ -24,33 +29,35 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Home />,
+        element: <Suspense fallback={<LoadingSpinner />}><Home /></Suspense>,
       },
-
       {
         path: "about",
-        element: <About />,
+        element: <Suspense fallback={<LoadingSpinner />}><About /></Suspense>,
       },
       {
         path: "/dashboard-admin",
-        element: <DashboardAdminPage />,
-
+        element: <Suspense fallback={<LoadingSpinner />}><DashboardAdminPage /></Suspense>,
         children: [
           {
             path: "manejar-personal",
-            element: <ManejarPersonalPage />,
+            element: <Suspense fallback={<LoadingSpinner />}><ManejarPersonalPage /></Suspense>,
+          },
+          {
+            path: "reportes",
+            element: <Suspense fallback={<LoadingSpinner />}><ReportesManagement /></Suspense>,
           },
           {
             path: "consultas",
-            element: <ConsultasPage />,
+            element: <Suspense fallback={<LoadingSpinner />}><ConsultasPage /></Suspense>,
           },
           {
             path: "servicios",
-            element: <ServiciosPage />,
+            element: <Suspense fallback={<LoadingSpinner />}><ServiciosPage /></Suspense>,
           },
           {
             path: "paquetes",
-            element: <PaquetesPage />,
+            element: <Suspense fallback={<LoadingSpinner />}><PaquetesPage /></Suspense>,
           },
         ],
       },
@@ -59,25 +66,38 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <BloquePaciente />,
+            element: <Suspense fallback={<LoadingSpinner />}><BloquePaciente /></Suspense>,
           },
           {
             path: ":id",
-            element: <DatosPaciente />,
+            element: <Suspense fallback={<LoadingSpinner />}><DatosPaciente /></Suspense>,
           },
         ],
       },
       {
         path: "colorshowcase",
-        element: <ColorSystemShowcase />,
+        element: <Suspense fallback={<LoadingSpinner />}><ColorSystemShowcase /></Suspense>,
       },
       {
-        path: "crear-password/:email/:code",
-        element: <PasswordCreate />,
+        path: "password",
+        children: [
+          {
+            path: "create/:email/:code",
+            element: <Suspense fallback={<LoadingSpinner />}><PasswordCreate isChangeMode={false} /></Suspense>,
+          },
+          {
+            path: "change/:email/:code",
+            element: <Suspense fallback={<LoadingSpinner />}><PasswordCreate isChangeMode={true} /></Suspense>,
+          },
+          {
+            path: "forgot",
+            element: <Suspense fallback={<LoadingSpinner />}><ForgotPassword /></Suspense>,
+          },
+        ],
       },
       {
         path: "login",
-        element: <Login />,
+        element: <Suspense fallback={<LoadingSpinner />}><Login /></Suspense>,
       },
       {
         path: "profile",
@@ -87,19 +107,23 @@ export const router = createBrowserRouter([
             children: [
               {
                 index: true,
-                element: <ProfilePage />,
+                element: <Suspense fallback={<LoadingSpinner />}><ProfilePage /></Suspense>,
               },
               {
                 path: "edit",
-                element: <EditProfile />,
+                element: <Suspense fallback={<LoadingSpinner />}><EditProfile /></Suspense>,
               },
               {
                 path: "files",
-                element: <FilesBrowserWrapper />,
+                element: <Suspense fallback={<LoadingSpinner />}><FilesBrowserWrapper /></Suspense>,
               },
             ],
           },
         ],
+      },
+      {
+        path: "*",
+        element: <Suspense fallback={<LoadingSpinner />}><NotFoundPage /></Suspense>,
       },
     ],
   },
