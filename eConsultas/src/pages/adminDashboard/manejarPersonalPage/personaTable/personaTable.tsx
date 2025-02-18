@@ -146,7 +146,7 @@ export default function PersonaTable() {
     return roles.map(role => {
       switch(role.id) {
         case 1: return "Admin";
-        case 2: return "Usuario";
+        case 2: return "Cliente";
         case 3: return "Super Admin";
         default: return "Desconocido";
       }

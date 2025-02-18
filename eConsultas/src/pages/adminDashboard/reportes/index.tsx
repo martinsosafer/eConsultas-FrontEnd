@@ -159,7 +159,7 @@ export default function ReportesManagement() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <SummaryCard 
-            title="Total Pagado" 
+            title="Ganancias Brutas" 
             value={totals.totalPaid} 
             variant="success"
           />

@@ -10,7 +10,7 @@ import {
   HomeIcon as IconHome,
   EditIcon as IconEdit,
   FolderIcon as IconFolder,
-} from "lucide-react"; // Añadí FolderIcon para el botón
+} from "lucide-react"; 
 import { Link } from "react-router-dom";
 import { Paciente, Medico } from "@/api/models/personaModels";
 import { useEffect, useState } from "react";
