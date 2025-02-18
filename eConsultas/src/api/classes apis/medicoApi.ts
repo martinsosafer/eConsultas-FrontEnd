@@ -1,23 +1,28 @@
-
 import { api } from "../axios";
 import Cookies from "js-cookie";
 
 export const medicoApi = {
-  async getDisponibilidadTurnosMedico(email: string, fecha: string): Promise<any> {
+  async getDisponibilidadTurnosMedico(
+    email: string,
+    fecha: string
+  ): Promise<any> {
     const token = Cookies.get("access_token");
     if (!token) throw new Error("No authentication token found");
 
     try {
-      const response = await api.get("/usuarios/medicos/disponibilidad-semanal", {
-        params: {
-          email,
-          fecha
-        },
-        headers: {
-          Accept: "*/*",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.get(
+        "/usuarios/medicos/disponibilidad-semanal",
+        {
+          params: {
+            email,
+            fecha,
+          },
+          headers: {
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching disponibilidad:", error);
@@ -33,7 +38,7 @@ export const medicoApi = {
       await api.put("/usuarios/medicos/asignar-remover-turno", null, {
         params: {
           email: encodeURIComponent(email),
-          idOHorarioTurno: encodeURIComponent(horario)
+          idOHorarioTurno: encodeURIComponent(horario),
         },
         headers: {
           Accept: "*/*",
@@ -54,7 +59,7 @@ export const medicoApi = {
       await api.put("/usuarios/medicos/asignar-remover-turno-a-todos", null, {
         params: {
           idOHorario: encodeURIComponent(horario),
-          accion: "REMOVER"
+          accion: "REMOVER",
         },
         headers: {
           Accept: "*/*",
@@ -77,7 +82,7 @@ export const medicoApi = {
 
     try {
       const response = await api.get(
-        `/usuarios/medicos/disponibilidad-por-fecha-horario?fecha=${fecha}&email=${email}&horario=${horario}`, 
+        `/usuarios/medicos/disponibilidad-por-fecha-horario?fecha=${fecha}&email=${email}&horario=${horario}`,
         {
           headers: {
             Accept: "*/*",
@@ -88,6 +93,52 @@ export const medicoApi = {
       return response.data;
     } catch (error) {
       console.error("Error fetching disponibilidad por horario:", error);
+      throw error;
+    }
+  },
+  async getMedicoSpecialties(): Promise<string[]> {
+    try {
+      const response = await api.get("/usuarios/medicos/especialidades", {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${Cookies.get("access_token")}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching specialties:", error);
+      throw error;
+    }
+  },
+  async getMedicosBySpecialty(
+    especialidad: string,
+    search?: string
+  ): Promise<Medico[]> {
+    try {
+     
+
+      const params = new URLSearchParams({
+        especialidadMedico: especialidad,
+      });
+
+      if (search) {
+        params.append("search", encodeURIComponent(search));
+      }
+
+      const fullUrl = `/usuarios/persona/get-all/MEDICO?${params}`;
+      console.log("Constructed URL:", fullUrl); // Add this line
+
+      const response = await api.get(fullUrl, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${Cookies.get("access_token")}`,
+        },
+      });
+
+      console.log("API Response:", response); // Add this line
+      return response.data;
+    } catch (error) {
+      console.error("Error details:", error.response?.data || error.message);
       throw error;
     }
   },
