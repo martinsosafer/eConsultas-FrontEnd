@@ -121,7 +121,6 @@ export const CreateConsultaModal = ({
     setLoading(true);
     try {
       const payload: CreateConsulta = {
-<<<<<<< HEAD
         fecha: selectedDate?.toISOString().split("T")[0] || "",
         horario: selectedTime.split(" ")[1],
         medico: {
@@ -130,12 +129,6 @@ export const CreateConsultaModal = ({
         paciente: {
           credenciales: { email: selectedPaciente?.credenciales.email || "" },
         },
-=======
-        fecha: selectedDate?.toISOString().split('T')[0] || "",
-        horario: selectedTime,
-        medico: { credenciales: { email: selectedMedico?.credenciales.email || "" } },
-        paciente: { credenciales: { email: selectedPaciente?.credenciales.email || "" } },
->>>>>>> 9e29e290dd02ca7fd61ecb9af79d8ab768c8f50d
         ...(selectedServicio && { idServicioMedico: selectedServicio.id }),
         ...(selectedPaquete && { idPaquete: selectedPaquete.id }),
       };
@@ -237,7 +230,6 @@ export const CreateConsultaModal = ({
                   <Select
                     value={selectedSpecialty || ""}
                     onValueChange={(value) => {
-                      console.log("Selected specialty:", value);
                       setSelectedSpecialty(value);
                       setSelectedMedico(null); // Reset selected doctor when specialty changes
                     }}
