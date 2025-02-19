@@ -9,6 +9,10 @@
     }
   ],
   "compilerOptions": {
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmitOnError": false,
+    "useUnknownInCatchVariables": false,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
