@@ -3,7 +3,15 @@ import logo from "../../../public/logo.png";
 import { RevealText } from "../animations/RevealText";
 import Button from "../button";
 
-const HeroBlock = ({ TipoDePersona }: { TipoDePersona: string }) => {
+const HeroBlock = ({
+  TipoDePersona,
+  nombre,
+  apellido,
+}: {
+  TipoDePersona: string;
+  nombre?: string;
+  apellido?: string;
+}) => {
   const buttonsConfig = {
     "": [{ label: "Login", type: "primary" }],
     Paciente: [
@@ -29,7 +37,11 @@ const HeroBlock = ({ TipoDePersona }: { TipoDePersona: string }) => {
           <h1 className="text-5xl font-bold text-foreground mb-4">
             Bienvenido a Consultas Médicas
           </h1>
-
+          {nombre && apellido && (
+            <h2 className="text-3xl font-semibold text-primary-dark mb-6">
+              Hola, {nombre} {apellido}
+            </h2>
+          )}
           <div className="flex gap-6 flex-wrap">
             {buttons.map((button) => (
               <Button

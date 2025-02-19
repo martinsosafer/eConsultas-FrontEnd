@@ -8,7 +8,6 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import {
-  Calendar,
   Stethoscope,
   ClipboardList,
   BadgeDollarSign,
@@ -16,23 +15,28 @@ import {
 } from "lucide-react";
 import Button from "../components/button";
 import HeroBlock from "@/components/home/HeroBlock";
+import { PatientCreateConsultaModal } from "@/components/home/PatientCreateConsultaModal";
+import { useState } from "react";
 
 const Home = () => {
   const { personaData, isAuthenticated, isLoading } = useAuth();
-
+  const [showConsultaModal, setShowConsultaModal] = useState(false);
   // Si está cargando, muestra un mensaje de carga
   if (isLoading) {
     return <div>Loading authentication state...</div>;
   }
-
-
+  console.log("PERSONADATA", personaData);
   // Si no está autenticado o no es Super Admin, muestra el Home
   const esMedico = personaData?.tipoPersona === "MEDICO";
   const esPaciente = personaData?.tipoPersona === "PACIENTE";
 
   const medicalServices = [
-    { name: "Consulta General", icon: <Calendar className="w-6 h-6" /> },
-    { name: "Especialidades", icon: <Stethoscope className="w-6 h-6" /> },
+    {
+      name: "Consulta Medica",
+      icon: <Stethoscope className="w-6 h-6" />,
+      action: () => setShowConsultaModal(true),
+    },
+
     { name: "Exámenes Médicos", icon: <ClipboardList className="w-6 h-6" /> },
     { name: "Paquetes", icon: <Package className="w-6 h-6" /> },
   ];
@@ -45,7 +49,11 @@ const Home = () => {
 
   return (
     <div className="prose max-w-none">
-      <HeroBlock TipoDePersona={personaData?.tipoPersona || ""} />
+      <HeroBlock
+        TipoDePersona={personaData?.tipoPersona || ""}
+        nombre={personaData?.nombre}
+        apellido={personaData?.apellido}
+      />
 
       {/* Conditional Sections */}
       {esPaciente ? (
@@ -62,7 +70,7 @@ const Home = () => {
                 <Button
                   label="Ver detalles"
                   type="secondary"
-                  onClick={() => {}}
+                  onClick={service.action}
                   fit
                 />
               </CardFooter>
@@ -95,44 +103,50 @@ const Home = () => {
       {/* Differentiated Access - Updated Section */}
       <div className="grid md:grid-cols-2 gap-6">
         {esMedico ? (
-          <Card className="bg-primary-light border-primary">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">
-                Portal de Pacientes
-              </h3>
-              <Button
-                label="Gestionar Pacientes"
-                type="primary"
-                onClick={() => {}}
-              />
-            </CardContent>
-          </Card>
+          <>
+            <Card className="bg-primary-light border-primary">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-semibold mb-4">
+                  Portal de Pacientes
+                </h3>
+                <Button
+                  label="Gestionar Pacientes"
+                  type="primary"
+                  onClick={() => {}}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Show this card only for medics */}
+            <Card className="bg-accent-light border-accent">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-semibold mb-4">
+                  Mis Próximas Consultas
+                </h3>
+                <Button label="Ver Agenda" type="accent" onClick={() => {}} />
+              </CardContent>
+            </Card>
+          </>
         ) : (
           <Card className="bg-secondary-light border-secondary">
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold mb-4">Panel Médico</h3>
               <Button
                 label="Acceder al Panel"
-                type="secondary"
+                type="primary"
                 onClick={() => {}}
               />
             </CardContent>
           </Card>
         )}
-
-        <Card className="bg-accent-light border-accent">
-          <CardContent className="p-6">
-            <h3 className="text-xl font-semibold mb-4">
-              {esMedico ? "Mis Próximas Consultas" : "Solicitar Información"}
-            </h3>
-            <Button
-              label={esMedico ? "Ver Agenda" : "Contactarnos"}
-              type="accent"
-              onClick={() => {}}
-            />
-          </CardContent>
-        </Card>
       </div>
+      <PatientCreateConsultaModal
+        open={showConsultaModal}
+        onOpenChange={setShowConsultaModal}
+        onCreated={async () => {
+          // Refresh any necessary data here
+        }}
+      />
     </div>
   );
 };
