@@ -35,7 +35,7 @@ export const consultaApi = {
       });
       return response.data;
     } catch (error) {
-      console.error("Error creating consulta:", error);
+      console.error("Error creating a consulta:", error);
       throw error;
     }
   },
