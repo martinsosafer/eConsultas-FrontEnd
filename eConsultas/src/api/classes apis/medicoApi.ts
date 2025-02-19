@@ -1,5 +1,6 @@
 import { api } from "../axios";
 import Cookies from "js-cookie";
+import { Medico } from "../models/personaModels";
 
 export const medicoApi = {
   async getDisponibilidadTurnosMedico(
@@ -115,8 +116,6 @@ export const medicoApi = {
     search?: string
   ): Promise<Medico[]> {
     try {
-     
-
       const params = new URLSearchParams({
         especialidadMedico: especialidad,
       });
@@ -138,7 +137,10 @@ export const medicoApi = {
       console.log("API Response:", response); // Add this line
       return response.data;
     } catch (error) {
-      console.error("Error details:", error.response?.data || error.message);
+      console.error(
+        "Error details:",
+        (error as any).response?.data || (error as any).message
+      );
       throw error;
     }
   },
