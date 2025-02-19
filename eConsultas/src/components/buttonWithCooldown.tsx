@@ -4,6 +4,7 @@ import { ButtonProps } from "./ui/button";
 
 interface ButtonWithCooldownProps extends ButtonProps {
   cooldownDuration?: number;
+  label:string
 }
 
 export default function ButtonWithCooldown({

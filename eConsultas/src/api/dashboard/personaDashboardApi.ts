@@ -86,7 +86,7 @@ export const personaDashboardApi = {
     if (!token) throw new Error("No authentication token found");
 
     try {
-      console.log("BODYY", personaData);
+      console.log("BODY", personaData);
       const response = await api.post("/usuarios/persona", personaData, {
         headers: {
           "Content-Type": "application/json",

@@ -13,6 +13,9 @@ export interface ServicioContratado {
   nombre: string;
   descripcion: string;
   precio: number;
+  porcentajeDescuentoPaquete: number;
+  porcentajeDescuentoObraSocial: number;
+  total: number;
 }
 
 // Para crear el paquete solamente hay que pasarle un array de Ids de servicios y se crea y pone precio automáticamente mediante el back!

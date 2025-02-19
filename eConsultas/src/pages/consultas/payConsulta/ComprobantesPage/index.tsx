@@ -12,16 +12,18 @@ import { PdfFactura } from "./PdfFactura";
 import { PdfRecibo } from "./PdfRecibo";
 import { Loader2, Download, Printer, CheckCircle } from "lucide-react";
 import ButtonWithCooldown from "@/components/buttonWithCooldown";
+import { sendFileToUserEmail } from "@/api/misc/templateMail";
 
 export const ComprobantesPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [consulta, setConsulta] = useState<Consulta | null>(null);
-  const [paciente, setPaciente] = useState<Paciente | null>(null);
+  const [consulta, setConsulta] = useState<Consulta>();
+  const [paciente, setPaciente] = useState<Paciente>();
   const [tipoComprobante, setTipoComprobante] = useState<"FACTURA" | "RECIBO">("FACTURA");
   const [archivoExistente, setArchivoExistente] = useState(false);
   const [loading, setLoading] = useState(true);
   const [generandoPDF, setGenerandoPDF] = useState(false);
-  const [fileContent, setFileContent] = useState<Blob | null>(null);
+  const [enviandoEmail, setEnviandoEmail] = useState(false);
+  const [fileContent, setFileContent] = useState<string | null>(null);
 
   useEffect(() => {
     const cargarDatos = async () => {
@@ -36,10 +38,11 @@ export const ComprobantesPage = () => {
         
         const tipoArchivo = `${tipoComprobante}-${id}`;
         try {
-          await fileManagerApi.getFileByUserAndFileTipo(
+          const blob = await fileManagerApi.getFileByUserAndFileTipo(
             pacienteResponse.credenciales.email,
             tipoArchivo
           );
+          setFileContent(URL.createObjectURL(blob));
           setArchivoExistente(true);
         } catch {
           setArchivoExistente(false);
@@ -56,6 +59,7 @@ export const ComprobantesPage = () => {
 
   const handleGenerarComprobante = async () => {
     if (!consulta || !paciente) return;
+    if (!consulta.pagado) return;
 
     setGenerandoPDF(true);
     try {
@@ -70,35 +74,50 @@ export const ComprobantesPage = () => {
 
       await fileManagerApi.uploadOrUpdateFileOfUserAndConnectWithConsulta(
         paciente.credenciales.email,
-        tipoArchivo,
+        tipoComprobante,
         id!,
         pdfFile
       );
 
-      setFileContent(pdfBlob);
+      setFileContent(URL.createObjectURL(pdfBlob));
       setArchivoExistente(true);
 
-      toast.success(`${tipoComprobante} generada correctamente`);
+      setEnviandoEmail(true);
+      const fechaActual = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      
+      try {
+        await sendFileToUserEmail(
+          paciente.credenciales.email,
+          fechaActual,
+          pdfFile
+        );
+        toast.success("Correo enviado con éxito al paciente");
+      } catch (error: any) {
+        if (error.response?.status === 415) {
+          toast.success("Correo considerado como enviado con éxito (error 415 manejado).");
+        } else {
+          throw error; // Relanza el error si no es un 415
+        }
+      }
     } catch (error) {
-      toast.error(`No se pudo generar el ${tipoComprobante.toLowerCase()}`);
+      toast.error(`Error al procesar el ${tipoComprobante.toLowerCase()}`);
     } finally {
       setGenerandoPDF(false);
+      setEnviandoEmail(false);
     }
   };
 
   const handleDownload = () => {
     if (!fileContent) return;
-    const url = URL.createObjectURL(fileContent);
     const link = document.createElement("a");
-    link.href = url;
+    link.href = fileContent;
     link.download = `${tipoComprobante}-${id}.pdf`;
     link.click();
   };
 
   const handleImprimir = () => {
     if (!fileContent) return;
-    const pdfUrl = URL.createObjectURL(fileContent);
-    window.open(pdfUrl, "_blank");
+    window.open(fileContent, "_blank");
   };
 
   if (loading) {
@@ -108,6 +127,26 @@ export const ComprobantesPage = () => {
       </div>
     );
   }
+
+  if (!consulta?.pagado) {
+    return (
+      <div className="p-6 bg-background min-h-screen flex flex-col items-center justify-center">
+        <div className="max-w-md text-center space-y-4">
+          <div className="text-red-600 bg-red-100 p-4 rounded-lg border border-red-200">
+            <p className="font-semibold">La consulta debe estar pagada para generar comprobantes</p>
+          </div>
+          <Button 
+            onClick={() => window.location.href = `/consultas/pay/${id}`}
+            className="bg-primary hover:bg-primary-hover text-white"
+          >
+            Ir a página de pago
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+
 
   return (
     <div className="p-6 bg-background min-h-screen">
@@ -123,31 +162,51 @@ export const ComprobantesPage = () => {
         <TabsContent value={tipoComprobante}>
           {archivoExistente ? (
             <div className="space-y-6">
+              <div className="bg-white p-4 rounded-lg shadow-lg">
+                <embed
+                  src={fileContent || ''}
+                  type="application/pdf"
+                  className="w-full h-[600px]"
+                />
+              </div>
+
               <div className="flex gap-4">
-                <Button onClick={handleDownload} className="gap-2">
+                <Button onClick={handleDownload} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                   <Download size={18} />
                   Descargar
                 </Button>
-                <Button variant="outline" onClick={handleImprimir}>
+                <Button 
+                  variant="outline" 
+                  onClick={handleImprimir}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
                   <Printer size={18} />
                   Imprimir
                 </Button>
               </div>
+
               <div className="flex items-center gap-2 text-green-600">
                 <CheckCircle size={18} />
                 <span>
                   {tipoComprobante} vinculada a {paciente?.nombre}
                 </span>
               </div>
+
+              {enviandoEmail && (
+                <div className="flex items-center gap-2 text-gray-600">
+                  <Loader2 className="animate-spin" size={18} />
+                  <span>Enviando {tipoComprobante.toLowerCase()} al email del paciente...</span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-6">
               <div className="bg-card p-6 rounded-lg border border-border">
-                {tipoComprobante === "FACTURA" ? (
-                  <VistaPreviaFactura consulta={consulta} paciente={paciente!} />
+                {consulta && paciente && (tipoComprobante === "FACTURA" ? (
+                  <VistaPreviaFactura consulta={consulta} paciente={paciente} />
                 ) : (
-                  <VistaPreviaRecibo consulta={consulta} paciente={paciente!} />
-                )}
+                  <VistaPreviaRecibo consulta={consulta} paciente={paciente} />
+                ))}
               </div>
 
               <ButtonWithCooldown
@@ -164,26 +223,28 @@ export const ComprobantesPage = () => {
       
       <Toaster theme="system" />
     </div>
+
   );
+  
 };
 
-const VistaPreviaFactura = ({ consulta, paciente }: { consulta: ConsultaDTO; paciente: Paciente }) => (
+const VistaPreviaFactura = ({ consulta, paciente }: { consulta: Consulta; paciente: Paciente }) => (
   <div className="grid grid-cols-2 gap-4">
     <Dato label="Razón Social" value="Clínica Médica SA" />
     <Dato label="CUIT" value="30-12345678-9" />
     <Dato label="Fecha Consulta" value={consulta.fecha} />
     <Dato label="N° Comprobante" value={`FAC-${consulta.id}`} />
     <Dato label="Paciente" value={`${paciente.nombre} ${paciente.apellido}`} />
-    <Dato label="Total" value={`$${consulta.total}`} />
+    <Dato label="Total" value={`$${consulta.total.toFixed(2)}`} />
   </div>
 );
 
-const VistaPreviaRecibo = ({ consulta, paciente }: { consulta: ConsultaDTO; paciente: Paciente }) => (
+const VistaPreviaRecibo = ({ consulta, paciente }: { consulta: Consulta; paciente: Paciente }) => (
   <div className="grid grid-cols-2 gap-4">
     <Dato label="Fecha" value={consulta.fecha} />
     <Dato label="N° Recibo" value={`REC-${consulta.id}`} />
     <Dato label="Paciente" value={`${paciente.nombre} ${paciente.apellido}`} />
-    <Dato label="Monto Total" value={`$${consulta.total}`} />
+    <Dato label="Monto Total" value={`$${consulta.total.toFixed(2)}`} />
   </div>
 );
 

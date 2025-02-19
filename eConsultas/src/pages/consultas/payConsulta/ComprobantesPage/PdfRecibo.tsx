@@ -1,6 +1,6 @@
-import { ConsultaDTO } from "@/api/models/consultaModels";
+import { Consulta } from "@/api/models/consultaModels";
 import { Paciente } from "@/api/models/personaModels";
-import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image, pdf } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
   page: { padding: 30 },
@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
     borderColor: '#000',
     paddingBottom: 10
   },
-  logo: { width: 100, height: 50 },
+  logo: { width: 100, height: 100 },
   content: { 
     marginVertical: 20,
     lineHeight: 1.5
@@ -26,8 +26,8 @@ const styles = StyleSheet.create({
 });
 
 export const PdfRecibo = {
-  generar: async ({ consulta, paciente }: { consulta: ConsultaDTO; paciente: Paciente }) => {
-    const blob = await (
+  generar: async ({ consulta, paciente }: { consulta: Consulta; paciente: Paciente }) => {
+    const doc = (
       <Document>
         <Page size="A4" style={styles.page}>
           <View style={styles.header}>
@@ -51,8 +51,10 @@ export const PdfRecibo = {
           </View>
         </Page>
       </Document>
-    ).toBlob();
-    
+    );
+
+    const instance = pdf(doc);
+    const blob = await instance.toBlob();
     return blob;
   }
 };

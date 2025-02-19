@@ -1,6 +1,6 @@
 import { Consulta } from "@/api/models/consultaModels";
 import { Paciente } from "@/api/models/personaModels";
-import { Page, Text, View, Document, StyleSheet, Image } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image, pdf } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
   page: { padding: 30 },
@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     marginBottom: 20 
   },
-  logo: { width: 100, height: 50 },
+  logo: { width: 100, height: 100 },
   section: { marginBottom: 10 },
   table: { 
     flexDirection: 'row', 
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     paddingRight: 20
   },
   totalText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold'
   }
 });
@@ -57,7 +57,11 @@ export const PdfFactura = {
       porcentajeDescuentoObraSocial: 0
     }];
 
-    const blob = await (
+    const primerServicio = servicios[0];
+    const descuentoPaquete = primerServicio.porcentajeDescuentoPaquete;
+    const descuentoObraSocial = primerServicio.porcentajeDescuentoObraSocial;
+
+    const doc = (
       <Document>
         <Page size="A4" style={styles.page}>
           <View style={styles.header}>
@@ -85,8 +89,7 @@ export const PdfFactura = {
           </View>
 
           {servicios.map(servicio => {
-            const descuentoTotal = consulta.porcentajeDescuentoPaquete + servicio.porcentajeDescuentoObraSocial;
-            const descuentoMonto = servicio.precio * descuentoTotal;
+            const descuentoTotal = descuentoPaquete + descuentoObraSocial;
             
             return (
               <View style={styles.table} key={servicio.id}>
@@ -94,7 +97,7 @@ export const PdfFactura = {
                 <Text style={styles.tableCell}>1</Text>
                 <Text style={styles.tableCell}>${servicio.precio.toFixed(2)}</Text>
                 <Text style={styles.tableCell}>{descuentoTotal * 100}%</Text>
-                <Text style={styles.tableCell}>${consulta.total.toFixed(2)}</Text>
+                <Text style={styles.tableCell}>${servicio.total.toFixed(2)}</Text>
               </View>
             );
           })}
@@ -106,8 +109,10 @@ export const PdfFactura = {
           </View>
         </Page>
       </Document>
-    ).toBlob();
-    
+    );
+
+    const instance = pdf(doc);
+    const blob = await instance.toBlob();
     return blob;
   }
 };

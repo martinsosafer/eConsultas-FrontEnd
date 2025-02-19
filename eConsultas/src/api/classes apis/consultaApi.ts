@@ -1,5 +1,5 @@
 import { api } from "../axios";
-import { Consulta } from "../models/consultaModels";
+import { Consulta, CreateConsulta } from "../models/consultaModels";
 import Cookies from "js-cookie";
 
 export const consultaApi = {
