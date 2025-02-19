@@ -14,7 +14,7 @@ import { ServicioSelectorCard } from "@/components/classes components/servicio/S
 import { Servicio } from "@/api/models/servicioModels";
 import { Paquete } from "@/api/models/paqueteModels";
 import { consultaDashboardApi } from "@/api/dashboard/consultaDashboardApi";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Medico } from "@/api/models/personaModels";
 import { CreateConsulta } from "@/api/models/consultaModels";
@@ -173,6 +173,20 @@ export const PatientCreateConsultaModal = ({
       }}
     >
       <DialogContent className="max-w-[90vw] w-[800px] h-[85vh] flex flex-col fixed left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 overflow-y-auto">
+        <Toaster
+          theme="system"
+          toastOptions={{
+            classNames: {
+              toast:
+                "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+              description: "group-[.toast]:text-muted-foreground",
+              success:
+                "group-[.toast]:bg-green-100 group-[.toast]:text-green-800 group-[.toast]:border-green-200",
+              error:
+                "group-[.toast]:bg-red-100 group-[.toast]:text-red-800 group-[.toast]:border-red-200",
+            },
+          }}
+        />
         <DialogHeader>
           <DialogTitle className="text-xl">Nueva Consulta</DialogTitle>
         </DialogHeader>
