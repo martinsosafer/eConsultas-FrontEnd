@@ -131,7 +131,7 @@ export const FilesBrowser = ({ email }: { email: string }) => {
       <Toaster position="top-right" />
       
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Archivos de usuario</h1>
+        <h1 className="text-2xl font-bold">Archivos de paciente</h1>
         <Select value={selectedType} onValueChange={setSelectedType}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filtrar por tipo" />

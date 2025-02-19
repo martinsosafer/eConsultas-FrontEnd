@@ -10,9 +10,11 @@ import {
 export const personaDashboardApi = {
   async getAllPersonas(): Promise<(Medico | Paciente)[]> {
     try {
+      const token = Cookies.get("access_token");
       const response = await api.get("/usuarios/usuarios", {
         headers: {
           Accept: "*/*",
+          Authorization: `Bearer ${token}`
         },
       });
 
@@ -30,9 +32,11 @@ export const personaDashboardApi = {
 
   async getAllPersonasByTipo(tipo: string): Promise<(Medico | Paciente)[]> {
     try {
+      const token = Cookies.get("access_token");
       const response = await api.get(`usuarios/persona/get-all/${tipo}`, {
         headers: {
           Accept: "*/*",
+          Authorization: `Bearer ${token}`
         },
       });
 

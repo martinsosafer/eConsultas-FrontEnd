@@ -27,4 +27,28 @@ export const sendPasswordRecoveryEmail = async (email: string, expirationDate: s
     console.error("Error sending recovery email:", error);
     throw error;
   }
-};
+}
+
+export const sendFileToUserEmail = async (
+    email: string,
+    expirationDate: string,
+    pdfFile: File
+  ): Promise<void> => {
+    try {
+      const formData = new FormData();
+      formData.append("to", email);
+      formData.append("fecha", expirationDate);
+      formData.append("template", "ENVIO_DE_ARCHIVO");
+      formData.append("file", pdfFile);
+
+      await api.post("/verificacion/verificacion/codigo-de-verificacion", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Accept: "*/*"
+        }
+      });
+    } catch (error) {
+      console.error("Error sending file email:", error);
+      throw error;
+    }
+  };

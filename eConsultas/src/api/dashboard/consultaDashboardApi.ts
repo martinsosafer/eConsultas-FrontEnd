@@ -66,7 +66,7 @@ export const consultaDashboardApi = {
     if (!token) throw new Error("No authentication token found");
 
     try {
-      const response = await api.post("/consultas", consultaData, {
+      const response = await api.post("/consultas/consultas", consultaData, {
         headers: {
           "Content-Type": "application/json",
           Accept: "*/*",

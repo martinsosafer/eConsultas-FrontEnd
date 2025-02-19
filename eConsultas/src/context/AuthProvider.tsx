@@ -1,13 +1,14 @@
-// src/contexts/AuthContext.tsx
 import { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { api } from "../api/axios";
-import { personaApi } from "@/api/classes apis/personaApi";
-import { Medico, Paciente, Persona } from "../api/models/personaModels";
+import { personaApi } from "@/api/classes apis/personaApi"; 
+import { Medico, Paciente } from "../api/models/personaModels";
 import { authService } from "@/api/authService";
+
 interface CredencialesDTO {
   roles?: Array<{ id: number; nombre: string }>;
 }
+
 interface UserDTO {
   correo: string;
   verificacion2Factores: boolean;
@@ -15,7 +16,6 @@ interface UserDTO {
   username: string;
   jti: string;
   scope: string;
-
   credenciales?: CredencialesDTO;
 }
 
@@ -34,10 +34,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserDTO | null>(null);
-  const [personaData, setPersonaData] = useState<Medico | Paciente | null>(
-    null
-  );
-  // Carga del auth parcial!
+  const [personaData, setPersonaData] = useState<Medico | Paciente | null>(null);
+
+  // Carga inicial de la autenticación
   useEffect(() => {
     const initializeAuth = async () => {
       const token = Cookies.get("access_token");
@@ -45,36 +44,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (token && userData) {
         try {
-          const parsedUser = JSON.parse(userData);
+          const parsedUser = JSON.parse(userData) as UserDTO;
           api.defaults.headers.Authorization = `Bearer ${token}`;
+
+          // Obtener datos de la persona
           const persona = await personaApi.getPersona();
-          if (!persona) throw new Error("No persona data");
+          if (!persona) {
+            throw new Error("No se pudo obtener los datos de la persona");
+          }
 
           setIsAuthenticated(true);
           setUser(parsedUser);
           setPersonaData(persona);
         } catch (error) {
-          console.error("Auth initialization error:", error);
-          logout();
+          console.error("Error inicializando la autenticación:", error);
+          logout(); // Limpiar datos inválidos
         } finally {
-          setIsLoading(false); 
+          setIsLoading(false);
         }
+      } else {
+        setIsLoading(false); // No hay token, no es necesario cargar
       }
     };
+
     initializeAuth();
   }, []);
 
   const login = async (username: string, password: string) => {
     try {
       await authService.login(username, password);
-      const userData = JSON.parse(localStorage.getItem("UserDTO")!);
+
+      const userData = JSON.parse(localStorage.getItem("UserDTO")!) as UserDTO;
       const persona = await personaApi.getPersona();
+
+      if (!persona) {
+        throw new Error("No se pudo obtener los datos de la persona");
+      }
 
       setIsAuthenticated(true);
       setUser(userData);
       setPersonaData(persona);
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Error durante el login:", error);
       throw error;
     }
   };
@@ -101,6 +112,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
+  if (!context) {
+    throw new Error("useAuth debe usarse dentro de un AuthProvider");
+  }
   return context;
 };

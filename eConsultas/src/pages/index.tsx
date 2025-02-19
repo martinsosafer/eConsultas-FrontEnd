@@ -20,20 +20,15 @@ import HeroBlock from "@/components/home/HeroBlock";
 const Home = () => {
   const { personaData, isAuthenticated, isLoading } = useAuth();
 
-  // Derived values from personaData
+  // Si está cargando, muestra un mensaje de carga
+  if (isLoading) {
+    return <div>Loading authentication state...</div>;
+  }
+
+
+  // Si no está autenticado o no es Super Admin, muestra el Home
   const esMedico = personaData?.tipoPersona === "MEDICO";
   const esPaciente = personaData?.tipoPersona === "PACIENTE";
-
-  if (isLoading) return <div>Loading authentication state...</div>;
-
-  // Check for Super Admin role
-  const isSuperAdmin =
-    isAuthenticated &&
-    personaData?.credenciales?.roles?.some(
-      (role) => role.nombre === "ROLE_SUPER_ADMIN"
-    );
-
-  if (isSuperAdmin) return <Navigate to="/dashboard-admin" replace />;
 
   const medicalServices = [
     { name: "Consulta General", icon: <Calendar className="w-6 h-6" /> },

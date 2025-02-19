@@ -19,10 +19,33 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Determinar si es flujo de recuperación
+  const isRecoveryFlow = !!email && !!code;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isChangeMode) {
+    if (isRecoveryFlow) {
+      // Flujo de recuperación de contraseña (sin contraseña actual)
+      if (!email || !code) {
+        toast.error("Faltan datos en la URL.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        toast.error("Las contraseñas no coinciden.");
+        return;
+      }
+      
+      try {
+        await passwordManagement.createPassword(email, password, code);
+        toast.success("Contraseña restablecida exitosamente.");
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error);
+        toast.error("Error: " + errorMessage);
+        console.error("Password reset error:", error);
+      }
+    } else if (isChangeMode) {
+      // Flujo de cambio normal (requiere contraseña actual)
       const username = Cookies.get("username");
       if (!username) {
         toast.error("Usuario no autenticado.");
@@ -40,24 +63,6 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
         const errorMessage = extractErrorMessage(error);
         toast.error("Error: " + errorMessage);
         console.error("Password change error:", error);
-      }
-    } else {
-      if (!email || !code) {
-        toast.error("Faltan datos en la URL.");
-        return;
-      }
-      if (password !== confirmPassword) {
-        toast.error("Las contraseñas no coinciden.");
-        return;
-      }
-      
-      try {
-        await passwordManagement.createPassword(email, password, code);
-        toast.success("Contraseña creada exitosamente.");
-      } catch (error) {
-        const errorMessage = extractErrorMessage(error);
-        toast.error("Error: " + errorMessage);
-        console.error("Password creation error:", error);
       }
     }
   };
@@ -139,12 +144,16 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            {isChangeMode ? "Cambiar Contraseña" : "Crear Contraseña"}
+            {isRecoveryFlow 
+              ? "Restablecer Contraseña" 
+              : isChangeMode 
+              ? "Cambiar Contraseña" 
+              : "Crear Contraseña"}
           </motion.h1>
         </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {isChangeMode && (
+          {isChangeMode && !isRecoveryFlow && (
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -176,7 +185,7 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              {isChangeMode ? "Nueva Contraseña" : "Contraseña"}
+              {isRecoveryFlow ? "Nueva Contraseña" : "Contraseña"}
             </label>
             <input
               type="password"
@@ -197,7 +206,9 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
               htmlFor="confirmPassword"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              {isChangeMode ? "Confirmar Nueva Contraseña" : "Confirmar Contraseña"}
+              {isRecoveryFlow 
+                ? "Confirmar Nueva Contraseña" 
+                : "Confirmar Contraseña"}
             </label>
             <input
               type="password"
@@ -216,9 +227,14 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
             transition={{ duration: 0.5, delay: 0.6 }}
           >
             <Button
-              label={isChangeMode ? "Cambiar contraseña" : "Crear contraseña"}
+              label={
+                isRecoveryFlow 
+                  ? "Restablecer contraseña" 
+                  : isChangeMode 
+                  ? "Cambiar contraseña" 
+                  : "Crear contraseña"
+              }
               type="primary"
-              onClick={() => {}}
               className="w-full py-3 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50"
             />
           </motion.div>

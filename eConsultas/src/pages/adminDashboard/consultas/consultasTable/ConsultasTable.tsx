@@ -17,12 +17,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, MoreVertical, Trash2, Copy, PlusCircle } from "lucide-react";
+import { Search, MoreVertical, Trash2, Copy, PlusCircle, DollarSign } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { consultaDashboardApi } from "@/api/dashboard/consultaDashboardApi";
 import type { ConsultaDTO } from "@/api/models/consultaModels";
 import { useAuth } from "@/context/AuthProvider";
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { CreateConsultaModal } from "./createConsultaModal/CreateConsultaModal"; 
 
 export default function ConsultasTable() {
@@ -34,7 +34,7 @@ export default function ConsultasTable() {
   const tableRef = useRef<HTMLDivElement>(null);
   const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
   const [initialLoad, setInitialLoad] = useState(true);
-
+  const navigate = useNavigate();
   const isSuperAdmin = personaData?.credenciales.roles.some(
     (role) => role.id === 3
   );
@@ -221,13 +221,22 @@ export default function ConsultasTable() {
                       <Copy className="mr-2 h-4 w-4" />
                       Copiar ID
                     </DropdownMenuItem>
+                    
                     {isSuperAdmin && (
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteClick(consulta)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem
+                      onClick={() => navigate(`/consultas/pay/${consulta.id}`)}
+                    >
+                      <DollarSign className="mr-2 h-4 w-4 text-green-600" />
+                      <span className="text-green-600">Registrar pago</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleDeleteClick(consulta)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Eliminar
+                    </DropdownMenuItem>
+                  </>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>

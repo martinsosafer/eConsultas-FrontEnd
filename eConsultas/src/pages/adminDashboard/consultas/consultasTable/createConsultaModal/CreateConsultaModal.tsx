@@ -122,7 +122,7 @@ export const CreateConsultaModal = ({
     try {
       const payload: CreateConsulta = {
         fecha: selectedDate?.toISOString().split("T")[0] || "",
-        horario: selectedTime.split(" ")[1],
+        horario: selectedTime,
         medico: {
           credenciales: { email: selectedMedico?.credenciales.email || "" },
         },

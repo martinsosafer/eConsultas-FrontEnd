@@ -1,7 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Layout from "../components/layout";
-import LoadingSpinner from "@/components/ui/loading-spinner"; 
+import LoadingSpinner from "@/components/ui/loading-spinner";
+import { PayConsulta } from "@/pages/consultas/payConsulta/index.tsx";
+import { ComprobantesPage } from "@/pages/consultas/payConsulta/ComprobantesPage/index.tsx";
 
 const Home = lazy(() => import("../pages"));
 const About = lazy(() => import("../pages/about.tsx"));
@@ -29,35 +31,67 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Suspense fallback={<LoadingSpinner />}><Home /></Suspense>,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <Home />
+          </Suspense>
+        ),
       },
       {
         path: "about",
-        element: <Suspense fallback={<LoadingSpinner />}><About /></Suspense>,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <About />
+          </Suspense>
+        ),
       },
       {
-        path: "/dashboard-admin",
-        element: <Suspense fallback={<LoadingSpinner />}><DashboardAdminPage /></Suspense>,
+        path: "dashboard-admin",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <DashboardAdminPage />
+          </Suspense>
+        ),
         children: [
           {
             path: "manejar-personal",
-            element: <Suspense fallback={<LoadingSpinner />}><ManejarPersonalPage /></Suspense>,
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ManejarPersonalPage />
+              </Suspense>
+            ),
           },
           {
             path: "reportes",
-            element: <Suspense fallback={<LoadingSpinner />}><ReportesManagement /></Suspense>,
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ReportesManagement />
+              </Suspense>
+            ),
           },
           {
             path: "consultas",
-            element: <Suspense fallback={<LoadingSpinner />}><ConsultasPage /></Suspense>,
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ConsultasPage />
+              </Suspense>
+            ),
           },
           {
             path: "servicios",
-            element: <Suspense fallback={<LoadingSpinner />}><ServiciosPage /></Suspense>,
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ServiciosPage />
+              </Suspense>
+            ),
           },
           {
             path: "paquetes",
-            element: <Suspense fallback={<LoadingSpinner />}><PaquetesPage /></Suspense>,
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <PaquetesPage />
+              </Suspense>
+            ),
           },
         ],
       },
@@ -66,38 +100,87 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Suspense fallback={<LoadingSpinner />}><BloquePaciente /></Suspense>,
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <BloquePaciente />
+              </Suspense>
+            ),
           },
           {
             path: ":id",
-            element: <Suspense fallback={<LoadingSpinner />}><DatosPaciente /></Suspense>,
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <DatosPaciente />
+              </Suspense>
+            ),
           },
         ],
       },
       {
         path: "colorshowcase",
-        element: <Suspense fallback={<LoadingSpinner />}><ColorSystemShowcase /></Suspense>,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ColorSystemShowcase />
+          </Suspense>
+        ),
       },
       {
         path: "password",
         children: [
           {
             path: "create/:email/:code",
-            element: <Suspense fallback={<LoadingSpinner />}><PasswordCreate isChangeMode={false} /></Suspense>,
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <PasswordCreate isChangeMode={false} />
+              </Suspense>
+            ),
           },
           {
             path: "change/:email/:code",
-            element: <Suspense fallback={<LoadingSpinner />}><PasswordCreate isChangeMode={true} /></Suspense>,
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <PasswordCreate isChangeMode={true} />
+              </Suspense>
+            ),
           },
           {
             path: "forgot",
-            element: <Suspense fallback={<LoadingSpinner />}><ForgotPassword /></Suspense>,
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ForgotPassword />
+              </Suspense>
+            ),
           },
         ],
       },
       {
         path: "login",
-        element: <Suspense fallback={<LoadingSpinner />}><Login /></Suspense>,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <Login />
+          </Suspense>
+        ),
+      },
+      {
+        path: "consultas",
+        children: [
+          {
+            path: "pay/:id",
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <PayConsulta />
+              </Suspense>
+            ),
+          },
+          {
+            path: "comprobantes/:id",
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                 <ComprobantesPage/>
+              </Suspense>
+            ),
+          },
+        ],
       },
       {
         path: "profile",
@@ -107,15 +190,27 @@ export const router = createBrowserRouter([
             children: [
               {
                 index: true,
-                element: <Suspense fallback={<LoadingSpinner />}><ProfilePage /></Suspense>,
+                element: (
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <ProfilePage />
+                  </Suspense>
+                ),
               },
               {
                 path: "edit",
-                element: <Suspense fallback={<LoadingSpinner />}><EditProfile /></Suspense>,
+                element: (
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <EditProfile />
+                  </Suspense>
+                ),
               },
               {
                 path: "files",
-                element: <Suspense fallback={<LoadingSpinner />}><FilesBrowserWrapper /></Suspense>,
+                element: (
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <FilesBrowserWrapper />
+                  </Suspense>
+                ),
               },
             ],
           },
@@ -123,7 +218,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "*",
-        element: <Suspense fallback={<LoadingSpinner />}><NotFoundPage /></Suspense>,
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <NotFoundPage />
+          </Suspense>
+        ),
       },
     ],
   },
