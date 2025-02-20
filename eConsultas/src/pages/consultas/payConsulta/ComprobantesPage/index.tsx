@@ -214,7 +214,7 @@ export const ComprobantesPage = () => {
                 onClick={handleGenerarComprobante}
                 disabled={generandoPDF}
                 className="w-full"
-                cooldownDuration={10}
+                cooldownDuration={5}
               />
             </div>
           )}

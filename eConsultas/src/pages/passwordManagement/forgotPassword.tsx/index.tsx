@@ -1,12 +1,11 @@
-// pages/forgotPassword/index.tsx
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 import { sendPasswordRecoveryEmail } from "@/api/misc/templateMail";
 import { extractErrorMessage } from "@/api/misc/errorHandler";
-import Button from "@/components/button";
 import logo from "../../../../public/logo.png";
+import ButtonWithCooldown from "@/components/buttonWithCooldown";
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -97,12 +96,12 @@ const ForgotPassword: React.FC = () => {
               />
             </div>
 
-            <Button
+            <ButtonWithCooldown
               label={isLoading ? "Enviando..." : "Enviar correo de recuperación"}
               type="primary"
               disabled={isLoading}
               className="w-full py-3 font-bold rounded-md shadow-lg"
-              buttonType="submit"
+              cooldownDuration={5}
             />
           </motion.form>
 

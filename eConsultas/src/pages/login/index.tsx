@@ -3,11 +3,11 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { LogIn } from "lucide-react";
 import logo from "../../../public/logo.png";
-import Button from "@/components/button";
 import { toast, Toaster } from "sonner";
 import { useAuth } from "@/context/AuthProvider";
 import Cookies from "js-cookie";
 import { extractErrorMessage } from "@/api/misc/errorHandler";
+import ButtonWithCooldown from "@/components/buttonWithCooldown";
 
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,11 +27,13 @@ export default function SignInPage() {
     setTimeout(() => {
       setIsButtonDisabled(false);
     }, 5000);
+    console.log(isButtonDisabled);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log(isLoading);
 
     try {
       await login(username, password);
@@ -176,13 +178,14 @@ export default function SignInPage() {
               </div>
             </div>
 
-            <Button
-              label={isLoading ? "Procesando..." : "Iniciar sesión"}
+            <ButtonWithCooldown
+              label="Iniciar sesión"
               type="primary"
-              disabled={isLoading || isButtonDisabled}
+              cooldownDuration={5}
+              onClick={handleSubmit}
               className="w-full py-3 font-bold rounded-md shadow-lg"
-              buttonType="submit"
             />
+
 
             <motion.div
               className="mt-4 text-center"

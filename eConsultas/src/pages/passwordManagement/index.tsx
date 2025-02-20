@@ -3,11 +3,11 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { passwordManagement } from "../../api/passwordManagement";
-import Button from "../../components/button";
 import logo from "../../../public/logo.png";
 import { Toaster, toast } from "sonner";
 import { extractErrorMessage } from "@/api/misc/errorHandler";
 import Cookies from "js-cookie";
+import ButtonWithCooldown from "@/components/buttonWithCooldown";
 
 interface PasswordCreateProps {
   isChangeMode?: boolean;
@@ -226,7 +226,7 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <Button
+            <ButtonWithCooldown
               label={
                 isRecoveryFlow 
                   ? "Restablecer contraseña" 

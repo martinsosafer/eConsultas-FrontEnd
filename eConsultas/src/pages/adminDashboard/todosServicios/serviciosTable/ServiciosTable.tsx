@@ -47,6 +47,7 @@ export default function ServicioTable() {
   const [tiposServicio, setTiposServicio] = useState<TipoServicio[]>([]);
   const [filteredServicios, setFilteredServicios] = useState<Servicio[]>([]);
   const [filter, setFilter] = useState<string>("all");
+  const [editingServicio, setEditingServicio] = useState<Servicio | null>(null); 
   const { personaData } = useAuth();
   const tableRef = useRef<HTMLDivElement>(null);
   const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
@@ -61,7 +62,7 @@ export default function ServicioTable() {
       try {
         const [serviciosData, tiposData] = await Promise.all([
           servicioDashboardApi.getAllServicios(),
-          servicioApi.getAllTiposServicio()
+          servicioApi.getAllTiposServicio(),
         ]);
         setServicios(serviciosData);
         setTiposServicio(tiposData);
@@ -78,16 +79,17 @@ export default function ServicioTable() {
       (servicio) =>
         (currentFilter === "all" ||
           servicio.tipoServicio.nombre === currentFilter) &&
-        servicio.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+        (servicio.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        servicio.id.toString().includes(searchTerm) // Búsqueda por ID
+    ));
     setFilteredServicios(filtered);
   };
 
   const handleToggleEnabled = async (servicio: Servicio, enabled: boolean) => {
     try {
       const updatedServicio = await servicioDashboardApi.editServicio(servicio.id, { enabled });
-      setServicios(prev => prev.map(s => s.id === servicio.id ? updatedServicio : s));
-      applyFilters(servicios.map(s => s.id === servicio.id ? updatedServicio : s), filter);
+      setServicios((prev) => prev.map((s) => (s.id === servicio.id ? updatedServicio : s)));
+      applyFilters(servicios.map((s) => (s.id === servicio.id ? updatedServicio : s)), filter);
       toast.success(`Servicio ${enabled ? "activado" : "desactivado"}`);
     } catch (error) {
       toast.error("Error actualizando servicio");
@@ -106,33 +108,34 @@ export default function ServicioTable() {
   };
 
   const handleEditClick = (servicio: Servicio) => {
-    setEditingServicio(servicio);
+    setEditingServicio(servicio); 
+    console.log(editingServicio);
   };
 
-  const handleSave = async (updatedServicio: Servicio) => {
-    try {
-      setServicios(
-        servicios.map((s) =>
-          s.id === updatedServicio.id ? updatedServicio : s
-        )
-      );
-      setFilteredServicios(
-        filteredServicios.map((s) =>
-          s.id === updatedServicio.id ? updatedServicio : s
-        )
-      );
-      setEditingServicio(null);
-      toast.success("Servicio actualizado con éxito");
-    } catch (error) {
-      toast.error("Error actualizando servicio");
-    }
-  };
+  // const handleSave = async (updatedServicio: Servicio) => {
+  //   try {
+  //     setServicios((servicios) =>
+  //       servicios.map((s) =>
+  //         s.id === updatedServicio.id ? updatedServicio : s
+  //       )
+  //     );
+  //     setFilteredServicios((filteredServicios) =>
+  //       filteredServicios.map((s) =>
+  //         s.id === updatedServicio.id ? updatedServicio : s
+  //       )
+  //     );
+  //     setEditingServicio(null);
+  //     toast.success("Servicio actualizado con éxito");
+  //   } catch (error) {
+  //     toast.error("Error actualizando servicio");
+  //   }
+  // };
 
   const handleDeleteClick = async (servicio: Servicio) => {
     if (!confirm(`¿Eliminar el servicio: ${servicio.descripcion}?`)) return;
     try {
-      setServicios(servicios.filter((s) => s.id !== servicio.id));
-      setFilteredServicios(
+      setServicios((servicios) => servicios.filter((s) => s.id !== servicio.id));
+      setFilteredServicios((filteredServicios) =>
         filteredServicios.filter((s) => s.id !== servicio.id)
       );
       toast.success("Servicio eliminado");
@@ -178,9 +181,9 @@ export default function ServicioTable() {
       <div className="flex justify-between items-center">
         <div className="relative w-64">
           <Input
-            placeholder="Buscar servicios..."
+            placeholder="Buscar servicios por descripción o ID..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearch} // Corregido
             className="pl-10"
           />
           <Search
@@ -195,7 +198,7 @@ export default function ServicioTable() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
-            {tiposServicio.map(tipo => (
+            {tiposServicio.map((tipo) => (
               <SelectItem key={tipo.id} value={tipo.nombre}>
                 {tipo.nombre}
               </SelectItem>

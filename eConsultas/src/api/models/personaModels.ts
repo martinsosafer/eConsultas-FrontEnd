@@ -3,7 +3,7 @@ import { Turno } from "./turnoModels";
 
 // Modelo base de Persona
 export interface Persona {
-    id: string;
+    id: string; 
     pais: string | null;
     ciudad: string | null;
     direccion: string | null;
@@ -38,17 +38,14 @@ export interface Persona {
     id: string;
     persona: Persona | null;
     tipoPersona: string | null;
-    email: string;
-    username: string;
+    email: string; //
+    username: string; //
     password: string;
-    codigoDeLlamada: string;
-    celular: string;
+    codigoDeLlamada: string; //
+    celular: string; //
     roles: Rol[];
     enabled: boolean;
     intentos: number;
-    codigoDeVerificacion: string | null;
-    vencimientoDeCodigoDeVerificacion: string | null;
-    fechaDeSolicitudDeCodigoDeVerificacion: string | null;
     nivelDeVerificacion: string;
     emailVerificado: boolean;
     celularVerificado: boolean;

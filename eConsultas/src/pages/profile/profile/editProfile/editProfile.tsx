@@ -27,6 +27,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/context/AuthProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { extractErrorMessage } from "@/api/misc/errorHandler";
+import ButtonWithCooldown from "@/components/buttonWithCooldown";
 
 const EditProfile = () => {
   const { username: encodedUsername } = useParams<{ username: string }>();
@@ -46,9 +47,21 @@ const EditProfile = () => {
     direccion: "",
     numeroExterior: "",
     codigoPostal: "",
-    tipoPersona: "PACIENTE",
     dni: "",
     credenciales: {
+      id: "",
+      persona: null,
+      tipoPersona: null,
+      password : null,
+      roles : null,
+      enabled : null,
+      intentos : null,
+      nivelDeVerificacion: "",
+      emailVerificado: null,
+      celularVerificado: null,
+      verificacion2Factores: null,
+      nombre: null,
+      apellido: null,
       email: "",
       username: "",
       codigoDeLlamada: "+52",
@@ -153,23 +166,23 @@ const EditProfile = () => {
 
     editableFields.forEach((field) => {
       if (current[field] !== undefined && current[field] !== original[field]) {
-        changes[field] = current[field];
+        changes[field] = current[field] as never;
       }
     });
 
     if (isAdmin) {
-      ["sueldo", "especialidad"].forEach((field) => {
-        const key = field as keyof Medico;
-        if (current[key] !== undefined && current[key] !== (original as Medico)[key]) {
-          (changes as Medico)[key] = current[key] as never;
+      const medicoFields: (keyof Medico)[] = ["sueldo", "especialidad"];
+      medicoFields.forEach((field) => {
+        if (current[field] !== undefined && current[field] !== (original as Medico)[field]) {
+          (changes as Medico)[field] = current[field] as never;
         }
       });
     }
 
-    ["email", "username", "codigoDeLlamada", "celular"].forEach((field) => {
-      const key = field as keyof Persona["credenciales"];
-      if (current.credenciales?.[key] !== original.credenciales[key]) {
-        changes.credenciales = { ...changes.credenciales, [key]: current.credenciales?.[key] };
+    const credencialFields: (keyof Persona["credenciales"])[] = ["email", "username", "codigoDeLlamada", "celular"];
+    credencialFields.forEach((field) => {
+      if (current.credenciales?.[field] !== original.credenciales[field]) {
+        changes.credenciales = { ...changes.credenciales, [field]: current.credenciales?.[field] };
       }
     });
 
@@ -329,7 +342,7 @@ const EditProfile = () => {
               </div>
             </div>
 
-            {userData.tipoPersona === "MEDICO" && (
+            {userData.credenciales.tipoPersona === "MEDICO" && (
               <div className="space-y-6">
                 <h3 className="text-xl font-semibold text-accent-dark border-l-4 border-accent pl-3">Información Médica</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -369,11 +382,13 @@ const EditProfile = () => {
                     onClick={() => navigate(-1)}
                     className="px-6 py-3 rounded-lg hover:bg-primary-lightest transition-colors"
                   />
-                  <Button
+                  <ButtonWithCooldown
                     type="primary"
-                    label={isSubmitting ? "Guardando..." : cooldown ? "Espere" : "Guardar Cambios"}
+                    label={isSubmitting ? "Guardando..." : "Guardar Cambios"}
                     disabled={isSubmitting || cooldown}
                     className="px-6 py-3 rounded-lg bg-primary hover:bg-primary-dark transition-all"
+                    cooldownDuration={5}
+                    onClick={handleSubmit}
                   />
                 </>
               )}
