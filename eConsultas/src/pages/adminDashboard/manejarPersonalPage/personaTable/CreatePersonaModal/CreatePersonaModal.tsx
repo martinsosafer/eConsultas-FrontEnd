@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import type { CreatePersona } from "@/api/models/personaModels";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 interface CreatePersonaModalProps {
   open: boolean;
@@ -42,7 +43,7 @@ export default function CreatePersonaModal({
       dateParts[0].length <= 2 &&
       dateParts[1].length <= 2 &&
       dateParts[2].length === 4;
-
+  
     if (
       !newPersona.dni ||
       !newPersona.nombre ||
@@ -54,29 +55,30 @@ export default function CreatePersonaModal({
       toast.error("Por favor complete todos los campos requeridos");
       return;
     }
-
+  
     try {
-      // Format date with leading zeros
-      const [day, month, year] = dateParts;
-      const formattedDate = `${day.padStart(2, "0")}/${month.padStart(
-        "0",
-        2
-      )}/${year}`;
-
-      // Validate actual date
-      const dateObj = new Date(
-        `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
-      );
-      if (isNaN(dateObj.getTime())) {
+      const [day, month, year] = dateParts.map((part) => Number(part));
+  
+      if (isNaN(day) || isNaN(month) || isNaN(year)) {
         toast.error("Fecha de nacimiento inválida");
         return;
       }
 
+      const formattedDate = `${day.toString().padStart(2, "0")}/${month
+        .toString()
+        .padStart(2, "0")}/${year}`;
+  
+      const dateObj = new Date(year, month - 1, day); 
+      if (isNaN(dateObj.getTime())) {
+        toast.error("Fecha de nacimiento inválida");
+        return;
+      }
+  
       const fechaFormateada = new Date()
         .toISOString()
         .replace("T", " ")
         .split(".")[0];
-
+  
       const personaToSave = {
         ...newPersona,
         fechaNacimiento: formattedDate,
@@ -85,7 +87,7 @@ export default function CreatePersonaModal({
           fechaDeSolicitudDeCodigoDeVerificacion: fechaFormateada,
         },
       };
-
+  
       await onSave(personaToSave);
       onOpenChange(false);
       setNewPersona({
@@ -103,7 +105,8 @@ export default function CreatePersonaModal({
         obraSocial: false,
       });
     } catch (error) {
-      toast.error("Error al crear el usuario");
+      const errorMessage = extractErrorMessage(error)
+      toast.error("Error al crear el usuario: " + errorMessage);
     }
   };
 

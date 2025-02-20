@@ -6,7 +6,6 @@ import {
   UserIcon as IconUser,
   MailIcon as IconMail,
   PhoneIcon as IconPhone,
-  ShieldIcon as IconShield,
   HomeIcon as IconHome,
   EditIcon as IconEdit,
   FolderIcon as IconFolder,
@@ -15,11 +14,12 @@ import { Link } from "react-router-dom";
 import { Paciente, Medico } from "@/api/models/personaModels";
 import { useEffect, useState } from "react";
 import { personaApi } from "@/api/classes apis/personaApi";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 export default function Profile({ patient }: { patient: Medico | Paciente }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadingImage, setLoadingImage] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
 
   useEffect(() => {
     const loadProfilePicture = async () => {
@@ -31,9 +31,9 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
           const url = URL.createObjectURL(blob);
           setImageUrl(url);
         }
-      } catch (err) {
-        setError("Error al cargar la imagen de perfil");
-        console.error("Profile picture error:", err);
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error)
+        console.error("Profile picture error:", errorMessage);
       } finally {
         setLoadingImage(false);
       }

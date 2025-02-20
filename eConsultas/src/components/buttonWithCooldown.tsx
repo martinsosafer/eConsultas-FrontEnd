@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import Button from "./button";
 import { ButtonProps } from "./ui/button";
 
-interface ButtonWithCooldownProps extends ButtonProps {
+interface ButtonWithCooldownProps extends Omit<ButtonProps, 'type'> {
   cooldownDuration?: number;
-  label:string
+  label: string;
+  type?: "custom" | "secondary" | "primary" | "accent" | "secondary-accent" | "danger"; 
 }
 
 export default function ButtonWithCooldown({
   label,
-  type,
+  type = "primary",
   onClick,
   cooldownDuration = 5,
   disabled = false,

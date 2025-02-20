@@ -15,8 +15,7 @@ interface ServicioSelectorCardProps {
 export const ServicioSelectorCard = ({
   selectedServicio,
   onSelect,
-  onRemove,
-  isPaquete = false,
+  onRemove
 }: ServicioSelectorCardProps) => {
   return (
     <div className="relative min-h-[120px]">

@@ -39,8 +39,6 @@ export const TimeSlotPicker = ({
   const [disponibilidad, setDisponibilidad] = useState<DisponibilidadHorario[]>([]);
   const [selectedHorario, setSelectedHorario] = useState<string>("");
 
-
-  // Parte del código que hay que cambiar apenas Irving haga la request con solo este día
   const filterDisponibilidadByDate = (data: any[], date: Date): DisponibilidadHorario[] => {
     const dateString = date.toISOString().split('T')[0];
     return data
@@ -50,21 +48,18 @@ export const TimeSlotPicker = ({
         disponible: disponible === 1,
       }));
   };
-  // FIN: Este código será reemplazado cuando actualicemos el endpoint
 
-  //Voy a dejar comentarios para que se entienda como funciona este complejo jaajajaj 
-  // 1- Cargamos disponibilidad cuando cambia la fecha
   useEffect(() => {
     const loadDisponibilidad = async () => {
       if (!selectedDate) return;
-      
+
       setLoadingHorarios(true);
       try {
         const data = await medicoApi.getDisponibilidadTurnosMedico(
           medicoEmail,
           selectedDate.toISOString().split('T')[0]
         );
-        
+
         const filteredData = filterDisponibilidadByDate(data, selectedDate);
         setDisponibilidad(filteredData);
       } catch (error) {
@@ -77,11 +72,10 @@ export const TimeSlotPicker = ({
     loadDisponibilidad();
   }, [selectedDate, medicoEmail]);
 
-  // 2- Cargamos subhorarios cuando se selecciona un horario
   useEffect(() => {
     const loadSubHorarios = async () => {
       if (!selectedDate || !selectedHorario) return;
-      
+
       setLoadingSubHorarios(true);
       try {
         const fecha = selectedDate.toISOString().split('T')[0];
@@ -116,42 +110,9 @@ export const TimeSlotPicker = ({
   const handleSelectSubHorario = (horario: string, subHorario: string) => {
     if (!selectedDate) return;
     const fecha = selectedDate.toISOString().split('T')[0];
-    onTimeSelect(`${fecha} ${subHorario}`);
+    onTimeSelect(`${fecha} ${horario} ${subHorario}`);
   };
 
-  if (!selectedDate) {
-    return (
-      <div className="p-4">
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={onDateSelect}
-          locale={es}
-          disabled={{ before: new Date() }}
-          fromMonth={new Date()}
-        />
-      </div>
-    );
-  }
-
-  if (loadingHorarios) {
-    return (
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="space-y-2">
-            <Skeleton className="h-12 w-full rounded-lg" />
-            <div className="grid grid-cols-2 gap-2">
-              {[...Array(4)].map((_, j) => (
-                <Skeleton key={j} className="h-10 rounded-md" />
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  
   const sortHorarios = (a: DisponibilidadHorario, b: DisponibilidadHorario) => {
     const getHour = (horario: string) => parseInt(horario.split('-')[0]);
     return getHour(a.horario) - getHour(b.horario);
@@ -232,17 +193,18 @@ export const TimeSlotPicker = ({
             <span className="h-2 w-2 bg-primary rounded-full animate-ping" />
           )}
         </h3>
-        
+
         <div className="grid grid-cols-3 gap-4 pr-4 pb-4 overflow-y-auto flex-1 min-h-[400px]">
           {[...disponibilidad]
             .sort(sortHorarios)
             .map((horario) => (
               <div key={horario.horario} className="space-y-2">
                 <Button
-                  variant={horario.disponible ? "success" : "destructive"}
+                  variant={horario.disponible ? "default" : "destructive"}
                   className={cn(
                     "w-full font-bold h-14 text-base",
-                    selectedHorario === horario.horario && "ring-2 ring-primary ring-offset-2"
+                    selectedHorario === horario.horario && "ring-2 ring-primary ring-offset-2",
+                    horario.disponible && "bg-green-500 hover:bg-green-600 text-white"
                   )}
                   onClick={() => setSelectedHorario(
                     horario.disponible ? horario.horario : ""
@@ -254,7 +216,7 @@ export const TimeSlotPicker = ({
                     {horario.disponible ? '✓' : '✕'}
                   </span>
                 </Button>
-                
+
                 {selectedHorario === horario.horario && (
                   <div className="grid grid-cols-1 gap-2">
                     {horario.subHorarios?.map((sub) => (

@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { servicioDashboardApi } from "@/api/dashboard/servicioDashboardApi";
 import type { CreateServicio } from "@/api/models/servicioModels";
 import {
   Select,

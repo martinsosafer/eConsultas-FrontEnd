@@ -27,7 +27,7 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Use requestAnimationFrame for better timing
+
     const scrollToOutlet = () => {
       requestAnimationFrame(() => {
         outletRef.current?.scrollIntoView({
@@ -38,7 +38,6 @@ export default function AdminDashboard() {
       });
     };
 
-    // Delay scroll slightly to ensure DOM update
     const timer = setTimeout(scrollToOutlet, 100);
 
     return () => clearTimeout(timer);
@@ -81,7 +80,7 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Placeholder for a chart component */}
+
             <div className="bg-muted h-64 rounded-lg flex items-center justify-center">
               placeholder de metricas
             </div>
@@ -234,11 +233,10 @@ function QuickActionCard({
 }) {
   const navigate = useNavigate();
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     onClick?.();
-
     if (href) {
-      navigate(href); // REPLACE window.location.href WITH THIS
+      navigate(href);
     }
   };
 
@@ -258,9 +256,7 @@ function QuickActionCard({
           type="primary"
           onClick={handleClick}
           {...(href && {
-            // Add ARIA role for accessibility
             role: "link",
-            // Style the button as a link while keeping button appearance
             className: "cursor-pointer hover:bg-primary-dark",
           })}
         />

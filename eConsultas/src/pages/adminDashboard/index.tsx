@@ -1,7 +1,6 @@
-import React from "react";
 import AdminDashboard from "./dasboardView/AdminDashboard";
 
-import { Navigate } from "react-router-dom"; // Or your navigation method
+import { Navigate } from "react-router-dom"; 
 import { useAuth } from "@/context/AuthProvider";
 
 function DashboardAdminPage() {

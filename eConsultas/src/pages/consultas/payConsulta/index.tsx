@@ -6,7 +6,6 @@ import { Consulta } from "@/api/models/consultaModels";
 import { DollarSign, Calendar, Clock, User, Stethoscope, Package, Crosshair } from "lucide-react";
 import { consultaApi } from "@/api/classes apis/consultaApi";
 import ButtonWithCooldown from "@/components/buttonWithCooldown";
-import { useAuth } from "@/context/AuthProvider";
 
 interface PaymentButtonProps {
   onClick: () => void;
@@ -21,8 +20,6 @@ const PaymentButton = ({ onClick, disabled }: PaymentButtonProps) => {
       cooldownDuration={5}
       onClick={onClick}
       disabled={disabled}
-      icon={DollarSign}
-      iconPosition="left"
       className="mt-4 px-8 py-4 text-lg"
     />
   );
@@ -144,7 +141,7 @@ interface DetailItemProps {
 
 const DetailItem = ({ icon: Icon, label, value }: DetailItemProps) => (
   <div className="flex items-center p-4 bg-gray-50 rounded-lg">
-    <Icon className="text-blue-600 mr-4" size={24} />
+    <Icon className="text-blue-600 mr-4" width={24} height={24} />
     <div>
       <div className="text-sm text-gray-500">{label}</div>
       <div className="text-lg font-medium text-gray-800">{value}</div>

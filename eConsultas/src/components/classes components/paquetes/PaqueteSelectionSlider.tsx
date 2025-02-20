@@ -23,7 +23,6 @@ export const PaqueteSelectionSlider = ({
   open,
   onOpenChange,
   onSelect,
-  selectedIds,
 }: PaqueteSelectionSliderProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [paquetes, setPaquetes] = useState<Paquete[]>([]);

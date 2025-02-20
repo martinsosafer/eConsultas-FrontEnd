@@ -9,6 +9,7 @@ interface PersonaSelectorCardProps {
   onSelect: () => void;
   onRemove: () => void;
   tipoPersona: "MEDICO" | "PACIENTE";
+  disabled?: boolean; 
 }
 
 export const PersonaSelectorCard = ({
@@ -16,6 +17,7 @@ export const PersonaSelectorCard = ({
   onSelect,
   onRemove,
   tipoPersona,
+  disabled = false, 
 }: PersonaSelectorCardProps) => {
   const isPaciente = tipoPersona === "PACIENTE";
 
@@ -77,6 +79,7 @@ export const PersonaSelectorCard = ({
           variant="outline"
           className="h-full w-full border-2 border-dashed border-primary hover:bg-primary-light/20 min-h-[120px]"
           onClick={onSelect}
+          disabled={disabled} 
         >
           <div className="flex flex-col items-center gap-2">
             <span className="text-primary">

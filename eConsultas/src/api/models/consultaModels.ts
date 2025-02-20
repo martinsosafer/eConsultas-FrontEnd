@@ -41,6 +41,7 @@ export interface Consulta {
     apellido: string;
     credenciales: CredencialesMedicoDTO;
     sueldo: number;
+    especialidad: string;
   }
   
   interface PacienteDTO {

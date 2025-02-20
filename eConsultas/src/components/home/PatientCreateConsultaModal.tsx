@@ -16,7 +16,7 @@ import { Paquete } from "@/api/models/paqueteModels";
 import { consultaDashboardApi } from "@/api/dashboard/consultaDashboardApi";
 import { toast, Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
-import { Medico } from "@/api/models/personaModels";
+import { Medico} from "@/api/models/personaModels"; 
 import { CreateConsulta } from "@/api/models/consultaModels";
 import { PaqueteSelectionSlider } from "@/components/classes components/paquetes/PaqueteSelectionSlider";
 import { TimeSlotPicker } from "@/components/classes components/consultas/TimeSlotPicker";
@@ -133,6 +133,7 @@ export const PatientCreateConsultaModal = ({
       setLoading(false);
     }
   };
+
   const handleTimeSelect = (fullTime: string) => {
     const [date, time] = fullTime.split(" ");
     setSelectedDate(new Date(date));
@@ -293,7 +294,7 @@ export const PatientCreateConsultaModal = ({
                       {selectedMedico.nombre} {selectedMedico.apellido}
                     </h3>
                     <div className="text-sm text-muted-foreground">
-                      <p>Especialidad: {selectedMedico.especialidadMedico}</p>
+                      <p>Especialidad: {selectedMedico.especialidad}</p>
                       <p>Email: {selectedMedico.credenciales.email}</p>
                     </div>
                   </div>
@@ -432,8 +433,10 @@ export const PatientCreateConsultaModal = ({
               : undefined
           }
           onSelect={(m) => {
-            setSelectedMedico(m);
-            setSliderStates((prev) => ({ ...prev, medico: false }));
+            if (m.tipoPersona === "MEDICO") {
+              setSelectedMedico(m);
+              setSliderStates((prev) => ({ ...prev, medico: false }));
+            }
           }}
         />
 

@@ -1,5 +1,4 @@
-import React from "react";
-import ConsultasTable from "./consultasTable/consultasTable";
+import ConsultasTable from "./consultasTable/ConsultasTable";
 
 function ConsultasPage() {
   return <ConsultasTable />;

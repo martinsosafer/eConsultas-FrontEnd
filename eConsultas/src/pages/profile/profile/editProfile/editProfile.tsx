@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 import { personaApi } from "@/api/classes apis/personaApi";
 import { toast } from "sonner";
-import { Medico, Paciente, Persona } from "@/api/models/personaModels";
+import { Medico, Persona } from "@/api/models/personaModels";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuth } from "@/context/AuthProvider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

@@ -149,6 +149,7 @@ export const CreateConsultaModal = ({
     setSelectedDate(new Date(date));
     setSelectedTime(time);
   };
+
   useEffect(() => {
     const fetchSpecialties = async () => {
       setLoadingSpecialties(true);
@@ -167,6 +168,7 @@ export const CreateConsultaModal = ({
       setSelectedSpecialty(null);
     }
   }, [open, showMedico]);
+
   return (
     <Dialog
       open={open}
@@ -300,6 +302,7 @@ export const CreateConsultaModal = ({
                 />
               </TabsContent>
             )}
+
             {showTipo && (
               <TabsContent value="tipo" className="space-y-4">
                 <Tabs defaultValue="servicio" className="w-full">
@@ -419,8 +422,10 @@ export const CreateConsultaModal = ({
           }
           tipoPersona="PACIENTE"
           onSelect={(p) => {
-            setSelectedPaciente(p);
-            setSliderStates((prev) => ({ ...prev, paciente: false }));
+            if (p.tipoPersona === "PACIENTE") {
+              setSelectedPaciente(p);
+              setSliderStates((prev) => ({ ...prev, paciente: false }));
+            }
           }}
         />
 
@@ -436,10 +441,13 @@ export const CreateConsultaModal = ({
               : undefined
           }
           onSelect={(m) => {
-            setSelectedMedico(m);
-            setSliderStates((prev) => ({ ...prev, medico: false }));
+            if (m.tipoPersona === "MEDICO") {
+              setSelectedMedico(m);
+              setSliderStates((prev) => ({ ...prev, medico: false }));
+            }
           }}
         />
+
         <ServicioSelectionSlider
           open={sliderStates.servicio}
           onOpenChange={(open) =>

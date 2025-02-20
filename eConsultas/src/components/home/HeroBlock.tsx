@@ -3,6 +3,20 @@ import logo from "../../../public/logo.png";
 import { RevealText } from "../animations/RevealText";
 import Button from "../button";
 
+// el tipado fuerte de typescript XD
+type ButtonType = "primary" | "secondary" | "accent" | "secondary-accent" | "danger" | "custom";
+
+
+interface ButtonConfig {
+  label: string;
+  type: ButtonType;
+}
+
+
+interface ButtonsConfig {
+  [key: string]: ButtonConfig[];
+}
+
 const HeroBlock = ({
   TipoDePersona,
   nombre,
@@ -12,7 +26,8 @@ const HeroBlock = ({
   nombre?: string;
   apellido?: string;
 }) => {
-  const buttonsConfig = {
+
+  const buttonsConfig: ButtonsConfig = {
     "": [{ label: "Login", type: "primary" }],
     Paciente: [
       { label: "Mis Consultas", type: "primary" },
@@ -26,8 +41,8 @@ const HeroBlock = ({
     ],
   };
 
-  const buttons =
-    buttonsConfig[TipoDePersona as keyof typeof buttonsConfig] || [];
+
+  const buttons = buttonsConfig[TipoDePersona] || [];
 
   return (
     <div className="mt-6 mb-5 flex justify-between items-start p-8 bg-accent-light rounded-xl shadow-lg border border-secondary-dark">
@@ -47,9 +62,9 @@ const HeroBlock = ({
               <Button
                 key={button.label}
                 label={button.label}
-                type={button.type}
+                type={button.type} 
                 onClick={() => {
-                  /* Add click handler */
+
                 }}
               />
             ))}
@@ -60,13 +75,13 @@ const HeroBlock = ({
       {/* Right Section */}
       <motion.div
         initial={{ opacity: 0, x: 100 }}
-        animate={{ opacity: 1, x: -15 }} // Reduced from -30 to -15
+        animate={{ opacity: 1, x: -15 }} 
         transition={{
           type: "tween",
           duration: 0.8,
           ease: "easeOut",
         }}
-        className="flex items-center gap-6 h-auto  justify-start mr-56" // Reduced from -mr-10 to -mr-6
+        className="flex items-center gap-6 h-auto justify-start mr-56" 
       >
         <img
           src={logo}
@@ -80,4 +95,5 @@ const HeroBlock = ({
     </div>
   );
 };
+
 export default HeroBlock;

@@ -16,6 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useAuth } from "@/context/AuthProvider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { turnoApi } from "@/api/classes apis/turnoApi";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 interface EditPersonaModalProps {
   open: boolean;
@@ -36,7 +37,6 @@ export default function EditPersonaModal({
   const { personaData } = useAuth();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadingImage, setLoadingImage] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingTurnos, setLoadingTurnos] = useState(false);
   
@@ -71,9 +71,9 @@ export default function EditPersonaModal({
           const url = URL.createObjectURL(blob);
           setImageUrl(url);
         }
-      } catch (err) {
-        setError("Error al cargar la imagen de perfil");
-        console.error("Profile picture error:", err);
+      } catch (error) {
+        const errorMessage = extractErrorMessage(error)
+        console.error("Profile picture error:", errorMessage);
       } finally {
         setLoadingImage(false);
         setIsLoading(false);
@@ -95,8 +95,7 @@ export default function EditPersonaModal({
     onSave(persona);
     toast({
       title: "Éxito!",
-      description: "Cambios guardados correctamente",
-      variant: "success",
+      description: "Cambios guardados correctamente"
     });
   };
 
@@ -104,6 +103,7 @@ export default function EditPersonaModal({
     [1, 3].includes(role.id)
   );
 
+  console.log(isAdmin);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
