@@ -16,6 +16,7 @@ import Button from "../components/button";
 import HeroBlock from "@/components/home/HeroBlock";
 import { PatientCreateConsultaModal } from "@/components/home/PatientCreateConsultaModal";
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 
 const Home = () => {
   const { personaData, isAuthenticated, isLoading } = useAuth();
@@ -26,6 +27,13 @@ const Home = () => {
   }
   console.log("PERSONADATA", personaData);
   // Si no está autenticado o no es Super Admin, muestra el Home
+  const isSuperAdmin =
+  isAuthenticated &&
+  personaData?.credenciales?.roles?.some(
+    (role) => role.nombre === "ROLE_SUPER_ADMIN"
+  );
+
+if (isSuperAdmin) return <Navigate to="/dashboard-admin" replace />;
   const esMedico = personaData?.tipoPersona === "MEDICO";
   const esPaciente = personaData?.tipoPersona === "PACIENTE";
 

@@ -213,6 +213,10 @@ export default function ReportesManagement() {
           data={serviceTypeData}
           loading={loading.serviceType}
         />
+        <ServiceTypeReportTable 
+          data={serviceTypeData}
+          loading={loading.serviceType}
+        />
       </section>
 
       {/* Búsqueda Específica */}

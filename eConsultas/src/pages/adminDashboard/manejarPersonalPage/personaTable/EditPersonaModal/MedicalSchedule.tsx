@@ -9,13 +9,15 @@ import { toast } from "sonner";
 
 interface MedicalScheduleProps {
   medicoEmail: string;
+  currentTurnos: Turno[];
+  onUpdate: (updatedTurnos: Turno[]) => void;
 }
 
 interface GroupedTurnos {
   [key: string]: {
     horario: string;
-    subHorarios: Turno[];
-    hasTurno: boolean; 
+    subHorarios: (Turno & { hasTurno: boolean })[];
+    hasTurno: boolean;
   };
 }
 
@@ -41,13 +43,14 @@ export const MedicalSchedule = ({ medicoEmail }: MedicalScheduleProps) => {
           };
         }
         
+        // Verificar si el médico tiene este turno
         const hasTurno = medicoTurnos.some(mt => mt.id === turno.id);
         acc[mainHour].subHorarios.push({ ...turno, hasTurno });
         
         return acc;
       }, {});
 
-
+      // Actualizar hasTurno para el horario principal
       Object.keys(grouped).forEach(key => {
         grouped[key].hasTurno = grouped[key].subHorarios.some(sh => sh.hasTurno);
       });
@@ -78,7 +81,6 @@ export const MedicalSchedule = ({ medicoEmail }: MedicalScheduleProps) => {
       );
     } catch (error) {
       toast.error('Error actualizando turno');
-      
       await loadData();
     } finally {
       setProcessing(prev => prev.filter(h => h !== horario));
