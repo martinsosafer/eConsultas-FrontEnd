@@ -18,7 +18,7 @@ const ManejarPersonalPage = lazy(() => import("@/pages/adminDashboard/manejarPer
 const EditProfile = lazy(() => import("@/pages/profile/profile/editProfile/editProfile.tsx"));
 const ServiciosPage = lazy(() => import("@/pages/adminDashboard/todosServicios/index.tsx"));
 const PaquetesPage = lazy(() => import("@/pages/adminDashboard/paquetes/index.tsx"));
-const ConsultasPage = lazy(() => import("@/pages/adminDashboard/consultas/index.tsx"));
+const ConsultasPage = lazy(() => import("@/pages/profile/consultasPage/index.tsx"));
 const FilesBrowserWrapper = lazy(() => import("@/pages/profile/profile/FilesOfUser/FilesBrowserWrapper.tsx"));
 const ReportesManagement = lazy(() => import("@/pages/adminDashboard/reportes/index.tsx"));
 const ForgotPassword = lazy(() => import("@/pages/passwordManagement/forgotPassword.tsx/index.tsx"));
@@ -201,6 +201,14 @@ export const router = createBrowserRouter([
                 element: (
                   <Suspense fallback={<LoadingSpinner />}>
                     <EditProfile />
+                  </Suspense>
+                ),
+              },
+              {
+                path: "consultas",
+                element: (
+                  <Suspense fallback={<LoadingSpinner />}>
+                    <ConsultasPage />
                   </Suspense>
                 ),
               },

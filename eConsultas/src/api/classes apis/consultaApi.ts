@@ -27,7 +27,6 @@ export const consultaApi = {
 
     try {
       const response = await api.post("/consultas/consultas", consultaData, {
-        // Add /consultas
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -36,6 +35,24 @@ export const consultaApi = {
       return response.data;
     } catch (error) {
       console.error("Error creating a consulta:", error);
+      throw error;
+    }
+  },
+
+  async getConsultasByPersonaEmail(email: string): Promise<Consulta[]> {
+    const token = Cookies.get("access_token");
+    if (!token) throw new Error("No authentication token found");
+
+    try {
+      const response = await api.get(`/consultas/consultas/persona-consultas/${email}`, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching consultas for persona:", error);
       throw error;
     }
   },

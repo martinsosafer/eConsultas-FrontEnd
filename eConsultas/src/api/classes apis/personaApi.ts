@@ -1,4 +1,3 @@
-// personaApi.ts
 import { api } from "../axios";
 import Cookies from "js-cookie";
 import { Medico, Paciente, Persona } from "../models/personaModels";
