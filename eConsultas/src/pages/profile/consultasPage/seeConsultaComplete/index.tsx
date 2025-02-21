@@ -30,7 +30,7 @@ export default function ConsultaDetailPage() {
 
         const consultaData = await consultaApi.getConsultaByConsultaId(Number(id));
         
-        // Verificamos permisos y cargamos imagenes
+        // Verificamos los permisos
         const isOwner = [consultaData.paciente.credenciales.email, consultaData.medico.credenciales.email]
           .includes(personaData?.credenciales.email);
         
@@ -43,7 +43,7 @@ export default function ConsultaDetailPage() {
 
         setConsulta(consultaData);
 
-
+        // Cargamos imágenes
         const [medicoImg, pacienteImg] = await Promise.all([
           personaApi.fetchProfilePicture(consultaData.medico.credenciales.email),
           personaApi.fetchProfilePicture(consultaData.paciente.credenciales.email)
@@ -102,7 +102,7 @@ export default function ConsultaDetailPage() {
             <h1 className="text-3xl font-bold text-primary-dark">
               Detalles de la consulta
             </h1>
-            <Badge variant="outline" className="mt-2">
+            <Badge variant="outline" className="mt-2 text-lg">
               {isPaquete ? "Paquete médico" : "Servicio individual"}
             </Badge>
           </div>
@@ -170,8 +170,7 @@ export default function ConsultaDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="bg-card p-6 rounded-xl shadow-sm border border-border/50 hover:bg-primary/5 transition-colors cursor-pointer"
-            onClick={() => handleProfileClick(consulta.paciente.credenciales.email)}
+            className="bg-card p-6 rounded-xl shadow-sm border border-border/50"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-primary/10 rounded-full">
@@ -188,7 +187,10 @@ export default function ConsultaDetailPage() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">
+                <p 
+                  className="font-medium hover:text-primary transition-colors cursor-pointer"
+                  onClick={() => handleProfileClick(consulta.paciente.credenciales.email)}
+                >
                   {consulta.paciente.nombre} {consulta.paciente.apellido}
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -202,8 +204,7 @@ export default function ConsultaDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="bg-card p-6 rounded-xl shadow-sm border border-border/50 hover:bg-primary/5 transition-colors cursor-pointer"
-            onClick={() => handleProfileClick(consulta.medico.credenciales.email)}
+            className="bg-card p-6 rounded-xl shadow-sm border border-border/50"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-primary/10 rounded-full">
@@ -220,7 +221,10 @@ export default function ConsultaDetailPage() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">
+                <p 
+                  className="font-medium hover:text-primary transition-colors cursor-pointer"
+                  onClick={() => handleProfileClick(consulta.medico.credenciales.email)}
+                >
                   {consulta.medico.nombre} {consulta.medico.apellido}
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -262,11 +266,11 @@ export default function ConsultaDetailPage() {
                       <p>${servicio.precio}</p>
                     </div>
                     <div>
-                      <p className="font-medium">Descuento</p>
+                      <p className="font-medium">Descuento paquete</p>
                       <p>{servicio.porcentajeDescuentoPaquete * 100}%</p>
                     </div>
                     <div>
-                      <p className="font-medium">Descuento OS</p>
+                      <p className="font-medium">Descuento obra social</p>
                       <p>{servicio.porcentajeDescuentoObraSocial * 100}%</p>
                     </div>
                     <div>

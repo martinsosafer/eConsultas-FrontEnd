@@ -1,9 +1,8 @@
 import { api } from "../axios";
 import Cookies from "js-cookie";
 import { Medico, Paciente, Persona } from "../models/personaModels";
-import { urlApi } from "../constant";
 
-//Recuerden que acá estan todas las funciones crud de persona
+// Recuerden que acá están todas las funciones CRUD de persona
 export const personaApi = {
   async getPersona(): Promise<Medico | Paciente | null> {
     const token = Cookies.get("access_token");
@@ -114,6 +113,7 @@ export const personaApi = {
       throw new Error("No se pudo obtener el perfil");
     }
   },
+
   async deletePersona(email: string) {
     const token = Cookies.get("access_token");
     if (!token) throw new Error("No authentication token found");
@@ -132,6 +132,7 @@ export const personaApi = {
       throw error;
     }
   },
+
   async uploadProfilePicture(payload: {
     file: File;
     identifier: string;
@@ -143,18 +144,17 @@ export const personaApi = {
     const formData = new FormData();
     formData.append("file", payload.file);
 
-    const response = await fetch(
-      `${urlApi}/files/files?idUsuario=${payload.identifier}&tipo=${payload.tipo}`,
+    const response = await api.post(
+      `/files/files?idUsuario=${payload.identifier}&tipo=${payload.tipo}`,
+      formData,
       {
-        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        body: formData,
       }
     );
 
-    if (!response.ok) {
+    if (!response) {
       throw new Error("Error subiendo archivo");
     }
   },
@@ -164,31 +164,21 @@ export const personaApi = {
     if (!token) throw new Error("No authentication token found");
 
     try {
-      const response = await fetch(
-        `${urlApi}/files/files/${email}/PROFILE_PICTURE`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "*/*",
-            Authorization: `Bearer ${token}`,
-          },
-          redirect: "follow",
-        }
-      );
+      const response = await api.get(`/files/files/${email}/PROFILE_PICTURE`, {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: "blob" 
+      });
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch profile picture: ${response.statusText}`
-        );
-      }
-
-      // Vamos a trabajar con Blob
-      return await response.blob();
+      return response.data;
     } catch (error) {
       console.error("Error fetching profile picture:", error);
       throw error;
     }
   },
+
   async getAllPersonas(
     tipoPersona: "MEDICO" | "PACIENTE",
     filters?: Record<string, string>
