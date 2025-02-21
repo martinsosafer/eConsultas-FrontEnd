@@ -2,12 +2,12 @@ import axios from "axios";
 import Cookies from "js-cookie";
 
 export const api = axios.create({
-  baseURL: "http://vps-4110266-x.dattaweb.com:8080/api",
+  baseURL: "/api", // Implementé una proxy inversa debido a que nuestra api está en HTTP y nuestro
+  //Deploy está en HTTPS. 
   headers: {
     "Content-Type": "application/json",
   },
 });
-
 
 api.interceptors.request.use(
   (config: any) => {
@@ -15,7 +15,6 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
 
     if (config.data instanceof FormData) {
       delete config.headers["Content-Type"];
@@ -27,4 +26,3 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
-

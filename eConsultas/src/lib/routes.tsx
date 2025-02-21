@@ -4,6 +4,8 @@ import Layout from "../components/layout";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { PayConsulta } from "@/pages/consultas/payConsulta/index.tsx";
 import { ComprobantesPage } from "@/pages/consultas/payConsulta/ComprobantesPage/index.tsx";
+import { ProtectedProfile } from "./ProtectedProfile";
+import { AdminRoute } from "./AdminRoute";
 
 const Home = lazy(() => import("../pages"));
 const About = lazy(() => import("../pages/about.tsx"));
@@ -19,6 +21,7 @@ const EditProfile = lazy(() => import("@/pages/profile/profile/editProfile/editP
 const ServiciosPage = lazy(() => import("@/pages/adminDashboard/todosServicios/index.tsx"));
 const PaquetesPage = lazy(() => import("@/pages/adminDashboard/paquetes/index.tsx"));
 const ConsultasPage = lazy(() => import("@/pages/profile/consultasPage/index.tsx"));
+const ConsultaDetailPage = lazy(() => import("@/pages/profile/consultasPage/seeConsultaComplete/index.tsx")); 
 const FilesBrowserWrapper = lazy(() => import("@/pages/profile/profile/FilesOfUser/FilesBrowserWrapper.tsx"));
 const ReportesManagement = lazy(() => import("@/pages/adminDashboard/reportes/index.tsx"));
 const ForgotPassword = lazy(() => import("@/pages/passwordManagement/forgotPassword.tsx/index.tsx"));
@@ -163,6 +166,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "consultas",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <AdminRoute />
+          </Suspense>
+        ),
         children: [
           {
             path: "pay/:id",
@@ -176,7 +184,15 @@ export const router = createBrowserRouter([
             path: "comprobantes/:id",
             element: (
               <Suspense fallback={<LoadingSpinner />}>
-                 <ComprobantesPage/>
+                <ComprobantesPage/>
+              </Suspense>
+            ),
+          },
+          {
+            path: ":id", 
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ConsultaDetailPage />
               </Suspense>
             ),
           },
@@ -184,6 +200,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "profile",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ProtectedProfile />
+          </Suspense>
+        ),
         children: [
           {
             path: ":username",
