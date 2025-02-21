@@ -1,1 +1,1 @@
-export const urlApi = `http://vps-4110266-x.dattaweb.com:8080/api`;
+export const urlApi = `http://vps-4708093-x.dattaweb.com:8080/api/consultas/api`;

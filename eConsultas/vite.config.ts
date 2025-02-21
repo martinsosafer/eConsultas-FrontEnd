@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://vps-4110266-x.dattaweb.com:8080",
+        target: "http://vps-4708093-x.dattaweb.com:8080",
         changeOrigin: true,
         secure: false,
       },

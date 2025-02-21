@@ -24,10 +24,11 @@ export const reportesApi = {
           'Authorization': `Bearer ${Cookies.get('access_token')}`
         }
       });
-      return response.data.map(([period, paid, unpaid]: [string, number, number]) => ({
+      return response.data.map(([period, paid, unpaid, salary]: [string, number, number, number]) => ({
         period,
         paidAmount: paid,
         unpaidAmount: unpaid,
+        salaryExpenses: salary, 
         totalPaid: 0,  
         totalUnpaid: 0 
       }));

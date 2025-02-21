@@ -94,7 +94,7 @@ export const ComprobantesPage = () => {
         toast.success("Correo enviado con éxito al paciente");
       } catch (error: any) {
         if (error.response?.status === 415) {
-          toast.success("Correo considerado como enviado con éxito (error 415 manejado).");
+          toast.success("Correo enviado con éxito!.");
         } else {
           throw error; // Relanza el error si no es un 415
         }
