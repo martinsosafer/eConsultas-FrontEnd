@@ -6,6 +6,7 @@ import { PayConsulta } from "@/pages/consultas/payConsulta/index.tsx";
 import { ComprobantesPage } from "@/pages/consultas/payConsulta/ComprobantesPage/index.tsx";
 import { ProtectedProfile } from "./ProtectedProfile";
 import { AdminRoute } from "./AdminRoute";
+import ConsultasAdminPage from "@/pages/adminDashboard/consultas/index.tsx";
 
 const Home = lazy(() => import("../pages"));
 const About = lazy(() => import("../pages/about.tsx"));
@@ -76,7 +77,7 @@ export const router = createBrowserRouter([
             path: "consultas",
             element: (
               <Suspense fallback={<LoadingSpinner />}>
-                <ConsultasPage />
+                <ConsultasAdminPage />
               </Suspense>
             ),
           },

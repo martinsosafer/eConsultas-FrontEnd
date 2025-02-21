@@ -1,7 +1,7 @@
 import ConsultasTable from "./consultasTable/ConsultasTable";
 
-function ConsultasPage() {
+function ConsultasAdminPage() {
   return <ConsultasTable />;
 }
 
-export default ConsultasPage;
+export default ConsultasAdminPage;
