@@ -50,7 +50,7 @@ const HeroBlock = ({
       <div className="flex-1 pr-8">
         <RevealText>
           <h1 className="text-5xl font-bold text-foreground mb-4">
-            Bienvenido a Consultas Médicas
+            Bienvenido a Consultas MédicasS
           </h1>
           {nombre && apellido && (
             <h2 className="text-3xl font-semibold text-primary-dark mb-6">
