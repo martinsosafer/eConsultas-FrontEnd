@@ -131,8 +131,9 @@ export default function ReportesManagement() {
   const totals = {
     totalPaid: generalData.reduce((acc, curr) => acc + curr.paidAmount, 0),
     totalUnpaid: generalData.reduce((acc, curr) => acc + curr.unpaidAmount, 0),
-    netProfit: generalData.reduce((acc, curr) => acc + (curr.paidAmount - curr.unpaidAmount), 0)
-  }
+    totalSalaries: generalData.reduce((acc, curr) => acc + curr.salaryExpenses, 0),
+    netProfit: generalData.reduce((acc, curr) => acc + (curr.paidAmount - curr.unpaidAmount - curr.salaryExpenses), 0)
+  };
 
   return (
     <div className="p-6 space-y-8">
@@ -169,6 +170,11 @@ export default function ReportesManagement() {
             variant="danger"
           />
           <SummaryCard 
+            title="Gastos en Sueldos" 
+            value={totals.totalSalaries} 
+            variant="default"
+          />
+          <SummaryCard 
             title="Ganancias Netas" 
             value={totals.netProfit} 
             variant={totals.netProfit >= 0 ? "success" : "danger"}
@@ -195,11 +201,11 @@ export default function ReportesManagement() {
           <Button 
             variant="outline"
             onClick={() => {
-              const data = serviceTypeData.map(item => ({
+              const data = generalData.map(item => ({
                 Periodo: item.period,
-                'Tipo de Servicio': item.serviceType,
                 Pagado: item.paidAmount,
                 Pendiente: item.unpaidAmount,
+                'Gastos Sueldos': item.salaryExpenses,
                 Total: item.paidAmount + item.unpaidAmount
               }))
               exportToCSV(data, `Distribucion_Tipo_Servicio_${new Date().toISOString().split('T')[0]}.csv`)
@@ -388,6 +394,7 @@ const YearlyReportTable = ({ data, loading }: { data: YearlyReport[], loading?: 
           <TableHead>Periodo</TableHead>
           <TableHead className="text-right">Pagado</TableHead>
           <TableHead className="text-right">Pendiente</TableHead>
+          <TableHead className="text-right">Gastos Sueldos</TableHead>
           <TableHead className="text-right">Total</TableHead>
         </TableRow>
       </TableHeader>
@@ -414,6 +421,9 @@ const YearlyReportTable = ({ data, loading }: { data: YearlyReport[], loading?: 
               </TableCell>
               <TableCell className="text-right text-red-600">
                 ${report.unpaidAmount.toFixed(2)}
+              </TableCell>
+              <TableCell className="text-right text-blue-600">
+                ${report.salaryExpenses.toFixed(2)}
               </TableCell>
               <TableCell className="text-right font-bold">
                 ${(report.paidAmount + report.unpaidAmount).toFixed(2)}

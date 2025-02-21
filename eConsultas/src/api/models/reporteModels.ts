@@ -1,10 +1,11 @@
 export interface YearlyReport {
-    period: string;         
-    paidAmount: number;     
-    unpaidAmount: number;   
-    totalPaid: number;      
-    totalUnpaid: number;    
-  }
+  period: string;         
+  paidAmount: number;     
+  unpaidAmount: number;   
+  salaryExpenses: number; 
+  totalPaid: number;      
+  totalUnpaid: number;    
+}
   
 
   export interface YearlyReportByServiceType extends YearlyReport {

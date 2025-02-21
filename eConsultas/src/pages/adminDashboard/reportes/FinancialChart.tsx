@@ -1,3 +1,4 @@
+// FinancialChart.tsx
 "use client";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -14,6 +15,7 @@ interface ChartDataItem {
   name: string;
   pagado?: number;
   pendiente?: number;
+  sueldos?: number;
   totalPagado?: number;
   totalPendiente?: number;
 }
@@ -21,14 +23,14 @@ interface ChartDataItem {
 export default function FinancialChart({ 
   data,
   mode,
-  loading = false // Default value for loading
+  loading = false
 }: FinancialChartProps) {
-  // Transformar los datos para el gráfico
   const chartData: ChartDataItem[] = mode === 'general' 
     ? (data as YearlyReport[]).map(d => ({
         name: d.period,
         pagado: d.paidAmount,
-        pendiente: d.unpaidAmount
+        pendiente: d.unpaidAmount,
+        sueldos: d.salaryExpenses
       }))
     : (data as DetailedServiceReport[]).map(d => ({
         name: new Date(d.fecha).toLocaleDateString(),
@@ -36,7 +38,6 @@ export default function FinancialChart({
         totalPendiente: !d.pagado ? d.total : 0
       }));
 
-  // Render Skeleton si está cargando
   if (loading) {
     return (
       <div className="w-full h-[400px]">
@@ -45,7 +46,6 @@ export default function FinancialChart({
     );
   }
 
-  // Render empty state si no hay datos
   if (!data || data.length === 0) {
     return (
       <div className="w-full h-[400px] flex items-center justify-center">
@@ -54,7 +54,6 @@ export default function FinancialChart({
     );
   }
 
-  // Renderizar el gráfico
   return (
     <div className="w-full h-[400px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -76,6 +75,12 @@ export default function FinancialChart({
                 dataKey="pendiente" 
                 name="Pendiente" 
                 fill="#F44336" 
+                radius={[4, 4, 0, 0]} 
+              />
+              <Bar 
+                dataKey="sueldos" 
+                name="Gastos en Sueldos" 
+                fill="#2196F3"
                 radius={[4, 4, 0, 0]} 
               />
             </>

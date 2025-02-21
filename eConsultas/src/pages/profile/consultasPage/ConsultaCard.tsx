@@ -94,7 +94,7 @@ export default function ConsultaCard({
           </div>
           <div className="flex items-center gap-3">
             <Avatar className="w-10 h-10">
-              <AvatarImage src={targetUserType === "PACIENTE" ? medicoImage : pacienteImage} />
+              <AvatarImage src={targetUserType === "PACIENTE" ? medicoImage : pacienteImage} alt="foto perfil" />
               <AvatarFallback className="bg-muted/50">
                 {consulta.medico.nombre[0]}
                 {consulta.medico.apellido[0]}
