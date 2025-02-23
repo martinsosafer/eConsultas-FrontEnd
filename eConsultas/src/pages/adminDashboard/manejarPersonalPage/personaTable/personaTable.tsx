@@ -58,18 +58,18 @@ export default function PersonaTable() {
   const isAdmin = personaData?.credenciales.roles.some((role) => role.id === 1);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const personas = await personaDashboardApi.getAllPersonas();
-        setUsers(personas);
-        applyFilters(personas, filter, searchTerm, roleFilter);
-      } catch (error) {
-        toast.error("Error cargando usuarios");
-      }
-    };
-    fetchUsers();
-  }, [filter, roleFilter]);
+  // useEffect(() => {
+  //   const fetchUsers = async () => {
+  //     try {
+  //       const personas = await personaDashboardApi.getAllPersonas();
+  //       setUsers(personas);
+  //       applyFilters(personas, filter, searchTerm, roleFilter);
+  //     } catch (error) {
+  //       toast.error("Error cargando usuarios");
+  //     }
+  //   };
+  //   fetchUsers();
+  // }, [filter, roleFilter]);
 
   const applyFilters = (
     data: (Medico | Paciente)[],

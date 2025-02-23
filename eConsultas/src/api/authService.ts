@@ -1,5 +1,6 @@
 import { api } from "./axios";
 import Cookies from "js-cookie";
+
 export const authService = {
   async login(username: string, password: string) {
     const frontAppUsername = "front_app";
@@ -14,7 +15,7 @@ export const authService = {
         Authorization:
           "Basic " + btoa(frontAppUsername + ":" + frontAppPassword),
         // "fecha-hora": "fecha y hora",
-        // "ubicacion": "mi ubicacion", // You might want to make these dynamic
+        // "ubicacion": "mi ubicacion", 
         // "dispositivo": "mi dispositivo",
       },
     });
@@ -32,7 +33,6 @@ export const authService = {
       const userDTO = {
         correo: response.data.correo,
         verificacion2Factores: response.data.verificacion2Factores,
-
         username: response.data.username,
         jti: response.data.jti,
         scope: response.data.scope,
@@ -45,4 +45,50 @@ export const authService = {
 
     return response.data;
   },
+
+  async refreshToken() {
+    const frontAppUsername = "front_app";
+    const frontAppPassword = "12345";
+    const refreshToken = localStorage.getItem("refresh_token");
+  
+    if (!refreshToken) {
+      throw new Error("No se encontró el refresh token.");
+    }
+  
+    // Crear el FormData
+    const formData = new FormData();
+    formData.append("refresh_token", refreshToken);
+    formData.append("grant_type", "refresh_token");
+  
+    // Configurar los headers
+    const headers = {
+      Authorization: "Basic " + btoa(frontAppUsername + ":" + frontAppPassword),
+      "Content-Type": "multipart/form-data", // Cambiado a multipart/form-data
+    };
+  
+    try {
+      // Realizar la solicitud
+      const response = await api.post("/security/oauth/token", formData, { headers });
+  
+      if (response.data.access_token) {
+        // Guardar el nuevo token de acceso en las cookies
+        Cookies.set("access_token", response.data.access_token, {
+          expires: 31,
+          secure: true,
+          sameSite: "strict",
+        });
+  
+        // Actualizar el token en las instancias de axios
+        api.defaults.headers.Authorization = `Bearer ${response.data.access_token}`;
+  
+        // Devolver el nuevo token y el refresh token (si es necesario)
+        return response.data;
+      } else {
+        throw new Error("No se pudo renovar el token de acceso.");
+      }
+    } catch (error) {
+      console.error("Error en la solicitud de renovación del token:", error);
+      throw error;
+    }
+  }
 };

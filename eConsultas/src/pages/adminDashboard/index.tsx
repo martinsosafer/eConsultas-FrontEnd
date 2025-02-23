@@ -1,9 +1,11 @@
 import AdminDashboard from "./dasboardView/AdminDashboard";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthProvider";
+import { authService } from "@/api/authService";
 
 function DashboardAdminPage() {
   const { personaData, isAuthenticated, isLoading } = useAuth();
+  authService.refreshToken();
 
   // 1. Handle loading state first
   if (isLoading) {
