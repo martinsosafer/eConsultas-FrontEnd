@@ -43,7 +43,9 @@ import { useOutletContext, useNavigate } from "react-router-dom";
 import CreatePersonaModal from "./CreatePersonaModal/CreatePersonaModal";
 import { Switch } from "@/components/ui/switch";
 
+
 export default function PersonaTable() {
+
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<(Medico | Paciente)[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<(Medico | Paciente)[]>([]);

@@ -50,45 +50,43 @@ export const authService = {
     const frontAppUsername = "front_app";
     const frontAppPassword = "12345";
     const refreshToken = localStorage.getItem("refresh_token");
-  
+
     if (!refreshToken) {
       throw new Error("No se encontró el refresh token.");
     }
-  
-    // Crear el FormData
+
+    // 1. Crear FormData (igual que en Postman)
     const formData = new FormData();
     formData.append("refresh_token", refreshToken);
     formData.append("grant_type", "refresh_token");
-  
-    // Configurar los headers
+
+    // 2. Configurar headers (sin Content-Type, Axios lo añadirá automáticamente)
     const headers = {
-      Authorization: "Basic " + btoa(frontAppUsername + ":" + frontAppPassword),
-      "Content-Type": "multipart/form-data", // Cambiado a multipart/form-data
+      Authorization: "Basic " + btoa(`${frontAppUsername}:${frontAppPassword}`),
     };
-  
+
     try {
-      // Realizar la solicitud
+      // 3. Hacer la solicitud con Axios
       const response = await api.post("/security/oauth/token", formData, { headers });
-  
+
       if (response.data.access_token) {
-        // Guardar el nuevo token de acceso en las cookies
+        // Guardar el nuevo token
         Cookies.set("access_token", response.data.access_token, {
           expires: 31,
           secure: true,
           sameSite: "strict",
         });
-  
-        // Actualizar el token en las instancias de axios
+
+        // Actualizar Axios
         api.defaults.headers.Authorization = `Bearer ${response.data.access_token}`;
-  
-        // Devolver el nuevo token y el refresh token (si es necesario)
+
         return response.data;
       } else {
-        throw new Error("No se pudo renovar el token de acceso.");
+        throw new Error("Error al renovar el token");
       }
     } catch (error) {
-      console.error("Error en la solicitud de renovación del token:", error);
+      console.error("Error en refreshToken:", error);
       throw error;
     }
-  }
+  },
 };

@@ -8,6 +8,7 @@ import Cookies from "js-cookie";
 
 export const consultaDashboardApi = {
   async getAllConsultas(): Promise<ConsultaDTO[]> {
+    if(this.refreshToken()){
     const token = Cookies.get("access_token");
     if (!token) throw new Error("No authentication token found");
 
@@ -23,7 +24,7 @@ export const consultaDashboardApi = {
       console.error("Error fetching consultas:", error);
       throw error;
     }
-  },
+  }},
 
   async updateConsulta(id: number, data: Partial<Consulta>): Promise<Consulta> {
     const token = Cookies.get("access_token");
