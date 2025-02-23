@@ -75,7 +75,6 @@ export interface Persona {
       email: string;
       codigoDeLlamada: string;
       celular: string;
-      roles: Array<{ id: number }>;
       fechaDeSolicitudDeCodigoDeVerificacion?: string;
     };
     obraSocial?: boolean;

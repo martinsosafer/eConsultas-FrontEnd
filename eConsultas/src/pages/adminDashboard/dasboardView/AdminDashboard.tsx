@@ -1,12 +1,10 @@
 import type React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import {
   Users,
   Calendar,
   Activity,
   DollarSign,
-  Bell,
   Settings,
   FileText,
   BarChart2,
@@ -15,18 +13,26 @@ import Button from "@/components/button";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/context/AuthProvider";
 
 export default function AdminDashboard() {
   const location = useLocation();
   const outletRef = useRef<HTMLDivElement>(null);
   const isFirstRender = useRef(true);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { personaData } = useAuth();
+  const navigate = useNavigate();
+
+  const isSuperAdmin = personaData?.credenciales.roles.some(
+    (role) => role.id === 3
+  );
+  const isAdmin = personaData?.credenciales.roles.some((role) => role.id === 1);
+  isAdmin;
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
-
 
     const scrollToOutlet = () => {
       requestAnimationFrame(() => {
@@ -39,82 +45,70 @@ export default function AdminDashboard() {
     };
 
     const timer = setTimeout(scrollToOutlet, 100);
-
     return () => clearTimeout(timer);
   }, [location.key]);
 
   return (
     <div className="p-8 bg-background min-h-screen">
       <h1 className="text-4xl font-bold text-primary-dark mb-8">
-        Super Admin Dashboard
+        {isSuperAdmin ? "Super Admin Dashboard" : "Admin Dashboard"}
       </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <MetricCard
-          title="Pacientes Totales"
-          value="1,234"
-          icon={<Users className="h-8 w-8 text-primary" />}
-        />
-        <MetricCard
-          title="Turnos para hoy "
-          value="42"
-          icon={<Calendar className="h-8 w-8 text-secondary" />}
-        />
-        <MetricCard
-          title="Personal Activo"
-          value="56"
-          icon={<Activity className="h-8 w-8 text-accent" />}
-        />
-        <MetricCard
-          title="Ganancias (mensuales)"
-          value="$125,000"
-          icon={<DollarSign className="h-8 w-8 text-success" />}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <Card className="col-span-2">
           <CardHeader>
             <CardTitle className="text-xl font-semibold flex items-center">
-              <BarChart2 className="mr-2" /> Rendimiento de Clinica
+              <BarChart2 className="mr-2" /> Métricas de la Aplicación
             </CardTitle>
           </CardHeader>
           <CardContent>
-
-            <div className="bg-muted h-64 rounded-lg flex items-center justify-center">
-              placeholder de metricas
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {isSuperAdmin ? (
+                <>
+                  <MetricCard
+                    title="Pacientes Totales"
+                    value="1,234"
+                    icon={<Users className="h-8 w-8 text-primary" />}
+                  />
+                  <MetricCard
+                    title="Turnos para hoy"
+                    value="42"
+                    icon={<Calendar className="h-8 w-8 text-secondary" />}
+                  />
+                  <MetricCard
+                    title="Personal Activo"
+                    value="56"
+                    icon={<Activity className="h-8 w-8 text-accent" />}
+                  />
+                  <MetricCard
+                    title="Ganancias (mensuales)"
+                    value="$125,000"
+                    icon={<DollarSign className="h-8 w-8 text-success" />}
+                  />
+                </>
+              ) : (
+                <div className="col-span-2 flex items-center justify-center h-64">
+                  <p className="text-lg text-muted-foreground">
+                    Métricas disponibles solo para SuperAdmins... ¡Saludos!
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold flex items-center">
-              <Bell className="mr-2" /> Notificaciones Recientes (no se si
-              llegamos a implementar esto)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-4">
-              <NotificationItem
-                title="Pacientes nuevo registrado"
-                description="John Doe se ha registrado como paciente "
-                time="hace 2 horas"
-              />
-              <NotificationItem
-                title="Turno cancelado"
-                description="Sarah Smith cancelo su turno para el jueves 5 de febrero a las 12:45hs"
-                time="hace 4 horas "
-              />
-              <NotificationItem
-                title="Reunion con el personal de trabajo"
-                description="Reunion mensual con el equipo a las 9"
-                time="Ayer"
-              />
-            </ul>
-          </CardContent>
-        </Card>
       </div>
+
+      {isSuperAdmin && (
+        <div className="flex justify-end mb-8">
+          <Button
+            label="Acceder a los reportes financieros"
+            type="primary"
+            onClick={() => navigate("/dashboard-admin/reportesFinancieros")}
+            className="bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary transition-all"
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
         <QuickActionCard
@@ -131,18 +125,19 @@ export default function AdminDashboard() {
           href="/dashboard-admin/servicios"
         />
         <QuickActionCard
-          title="Paquetes "
+          title="Paquetes"
           description="Lista de los paquetes disponibles"
           icon={<FileText className="h-6 w-6" />}
           href="/dashboard-admin/paquetes"
         />
         <QuickActionCard
-          title="Consultas "
-          description="Listas de las proximas consultas "
+          title="Consultas"
+          description="Listas de las próximas consultas"
           icon={<Settings className="h-6 w-6" />}
           href="/dashboard-admin/consultas"
         />
       </div>
+
       <AnimatePresence mode="wait">
         <motion.div
           key={location.key}
@@ -164,7 +159,6 @@ export default function AdminDashboard() {
           onAnimationStart={() => setIsAnimating(true)}
           onAnimationComplete={() => {
             setIsAnimating(false);
-            // Smooth scroll after animation
             outletRef.current?.scrollIntoView({
               behavior: "smooth",
               block: "start",
@@ -200,23 +194,6 @@ function MetricCard({
   );
 }
 
-function NotificationItem({
-  title,
-  description,
-  time,
-}: {
-  title: string;
-  description: string;
-  time: string;
-}) {
-  return (
-    <li className="border-b border-border pb-2">
-      <h4 className="font-semibold text-sm">{title}</h4>
-      <p className="text-sm text-muted-foreground">{description}</p>
-      <p className="text-xs text-muted-foreground mt-1">{time}</p>
-    </li>
-  );
-}
 
 function QuickActionCard({
   title,

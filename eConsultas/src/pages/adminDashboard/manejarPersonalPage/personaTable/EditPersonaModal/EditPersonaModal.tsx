@@ -6,17 +6,25 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Medico, Paciente } from "@/api/models/personaModels";
+import { Medico, Paciente, Rol } from "@/api/models/personaModels";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { toast, Toaster } from "sonner";
 import { personaApi } from "@/api/classes apis/personaApi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MedicalSchedule } from "./MedicalSchedule";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useAuth } from "@/context/AuthProvider";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { turnoApi } from "@/api/classes apis/turnoApi";
 import { extractErrorMessage } from "@/api/misc/errorHandler";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { personaDashboardApi } from "@/api/dashboard/personaDashboardApi";
+import { medicoApi } from "@/api/classes apis/medicoApi";
 
 interface EditPersonaModalProps {
   open: boolean;
@@ -33,47 +41,40 @@ export default function EditPersonaModal({
   onSave,
   onChange,
 }: EditPersonaModalProps) {
-  const { toast } = useToast();
   const { personaData } = useAuth();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadingImage, setLoadingImage] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadingTurnos, setLoadingTurnos] = useState(false);
-  
-  const loadTurnos = async () => {
-    if (persona.tipoPersona === "MEDICO") {
-      setLoadingTurnos(true);
-      try {
-        const turnos = await turnoApi.getTurnosByMedico(persona.credenciales.email);
-        console.log(turnos);
-        onChange({ ...persona, turnos });
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los turnos",
-          variant: "destructive"
-        });
-      } finally {
-        setLoadingTurnos(false);
-      }
-    }
-  };
+  const [especialidades, setEspecialidades] = useState<string[]>([]);
+  const [loadingEspecialidades, setLoadingEspecialidades] = useState(false);
+  const [showCustomEspecialidad, setShowCustomEspecialidad] = useState(false);
+  const [selectedRol, setSelectedRol] = useState<number | null>(null);
 
+  const isSuperAdmin = personaData?.credenciales.roles.some(
+    (role) => role.id === 3
+  );
+
+  // Roles predefinidos (manejados desde el frontend)
+  const roles: Rol[] = [
+    { id: 1, nombre: "Admin" },
+    { id: 2, nombre: "Usuario" },
+    { id: 3, nombre: "Super Admin" },
+  ];
+
+  // Cargar datos iniciales
   useEffect(() => {
-    const loadProfilePicture = async () => {
+    const loadInitialData = async () => {
       try {
-        if (persona?.credenciales?.email) {
-          const [blob] = await Promise.all([
-            personaApi.fetchProfilePicture(persona.credenciales.email),
-            loadTurnos()
-          ]);
-          
-          const url = URL.createObjectURL(blob);
-          setImageUrl(url);
-        }
+        const [blob] = await Promise.all([
+          personaApi.fetchProfilePicture(persona.credenciales.email),
+        ]);
+
+        const url = URL.createObjectURL(blob);
+        setImageUrl(url);
       } catch (error) {
-        const errorMessage = extractErrorMessage(error)
-        console.error("Profile picture error:", errorMessage);
+        const errorMessage = extractErrorMessage(error);
+        console.error("Error loading data:", errorMessage);
+        toast.error("No tiene foto de perfil");
       } finally {
         setLoadingImage(false);
         setIsLoading(false);
@@ -82,7 +83,7 @@ export default function EditPersonaModal({
 
     if (open) {
       setIsLoading(true);
-      loadProfilePicture();
+      loadInitialData();
       onChange({ ...persona });
     }
 
@@ -91,19 +92,46 @@ export default function EditPersonaModal({
     };
   }, [open, persona.credenciales?.email]);
 
+  // Forzar la carga de especialidades médicas
+  useEffect(() => {
+    const fetchEspecialidades = async () => {
+      setLoadingEspecialidades(true);
+      try {
+        const data = await medicoApi.getMedicoSpecialties();
+        setEspecialidades(data);
+      } catch (error) {
+        toast.error("Error al obtener especialidades");
+      } finally {
+        setLoadingEspecialidades(false);
+      }
+    };
+
+    if (open && persona.tipoPersona === "MEDICO") {
+      fetchEspecialidades();
+    }
+  }, [open, persona.tipoPersona]);
+
+  // Manejar guardar cambios
   const handleSave = () => {
     onSave(persona);
-    toast({
-      title: "Éxito!",
-      description: "Cambios guardados correctamente"
-    });
+    toast.success("Cambios guardados correctamente");
   };
 
-  const isAdmin = personaData?.credenciales.roles.some((role) =>
-    [1, 3].includes(role.id)
-  );
+  // Asignar nuevo rol
+  const handleAssignRol = async () => {
+    if (!selectedRol) {
+      toast.error("Selecciona un rol antes de asignarlo");
+      return;
+    }
 
-  console.log(isAdmin);
+    try {
+      await personaDashboardApi.modifyRol(persona.credenciales.email, [selectedRol]);
+      toast.success("Rol asignado correctamente");
+    } catch (error) {
+      toast.error("No se pudo asignar el rol");
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
@@ -248,20 +276,86 @@ export default function EditPersonaModal({
                             </div>
                             <div>
                               <Label>Especialidad</Label>
-                              <Input
-                                value={(persona as Medico).especialidad}
-                                onChange={(e) =>
-                                  onChange({
-                                    ...persona,
-                                    especialidad: e.target.value,
-                                  })
-                                }
-                              />
+                              {showCustomEspecialidad ? (
+                                <div className="flex gap-2">
+                                  <Input
+                                    value={(persona as Medico).especialidad}
+                                    onChange={(e) =>
+                                      onChange({
+                                        ...persona,
+                                        especialidad: e.target.value,
+                                      })
+                                    }
+                                  />
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => setShowCustomEspecialidad(false)}
+                                  >
+                                    ×
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex gap-2">
+                                  <Select
+                                    value={(persona as Medico).especialidad}
+                                    onValueChange={(value) =>
+                                      onChange({
+                                        ...persona,
+                                        especialidad: value,
+                                      })
+                                    }
+                                    disabled={loadingEspecialidades}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue
+                                        placeholder={
+                                          loadingEspecialidades
+                                            ? "Cargando especialidades..."
+                                            : "Selecciona una especialidad"
+                                        }
+                                      />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <div className="relative">
+                                        <Input
+                                          placeholder="Buscar especialidad..."
+                                          className="mb-2 sticky top-0"
+                                          onChange={(e) => {
+                                            const searchTerm = e.target.value.toLowerCase();
+                                            setEspecialidades((prev) =>
+                                              prev.filter((esp) =>
+                                                esp.toLowerCase().includes(searchTerm)
+                                              )
+                                            );
+                                          }}
+                                        />
+                                        <ScrollArea className="h-40">
+                                          {especialidades.map((especialidad) => (
+                                            <SelectItem
+                                              key={especialidad}
+                                              value={especialidad}
+                                              className="truncate"
+                                            >
+                                              {especialidad}
+                                            </SelectItem>
+                                          ))}
+                                        </ScrollArea>
+                                      </div>
+                                    </SelectContent>
+                                  </Select>
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setShowCustomEspecialidad(true)}
+                                  >
+                                    Añadir nueva
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}
 
-                        <Button className="w-full mt-4" onClick={handleSave}>
+                        <Button className="w-min mt-4 mx-auto" onClick={handleSave}>
                           Guardar Cambios
                         </Button>
                       </>
@@ -273,30 +367,54 @@ export default function EditPersonaModal({
                   <AccordionItem value="turnos">
                     <AccordionTrigger>Gestión de Turnos</AccordionTrigger>
                     <AccordionContent>
-                      {loadingTurnos ? (
-                        <div className="grid grid-cols-4 gap-4">
-                          {[...Array(4)].map((_, i) => (
-                            <div key={i} className="space-y-2">
-                              <Skeleton className="h-10 w-full" />
-                              <div className="grid grid-cols-2 gap-2">
-                                {[...Array(4)].map((_, j) => (
-                                  <Skeleton key={j} className="h-10 w-full" />
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <MedicalSchedule 
-                          medicoEmail={persona.credenciales.email}
-                          currentTurnos={(persona as Medico).turnos ?? []} 
-                          onUpdate={(updatedTurnos) => {
-                            console.log((persona as Medico).turnos)
-                            const updatedMedico = { ...persona, turnos: updatedTurnos };
-                            onChange(updatedMedico);
-                          }}
-                        />
-                      )}
+                      <MedicalSchedule
+                        medicoEmail={persona.credenciales.email}
+                        currentTurnos={(persona as Medico).turnos ?? []}
+                        onUpdate={(updatedTurnos) => {
+                          const updatedMedico = { ...persona, turnos: updatedTurnos };
+                          onChange(updatedMedico);
+                        }}
+                      />
+                    </AccordionContent>
+                  </AccordionItem>
+                )}
+
+                {isSuperAdmin && (
+                  <AccordionItem value="roles">
+                    <AccordionTrigger>Gestión de Roles</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Rol actual:{" "}
+                          <span className="font-semibold">
+                            {persona.credenciales.roles
+                              .map((role) => role.nombre)
+                              .join(", ")}
+                          </span>
+                        </p>
+                        <Select
+                          value={selectedRol?.toString() ?? ""}
+                          onValueChange={(value) => setSelectedRol(Number(value))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un rol" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {roles.map((role) => (
+                              <SelectItem key={role.id} value={role.id.toString()}>
+                                {role.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          className="w-full"
+                          onClick={handleAssignRol}
+                          disabled={!selectedRol}
+                        >
+                          Asignar Rol
+                        </Button>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                 )}
@@ -305,6 +423,20 @@ export default function EditPersonaModal({
           </CardContent>
         </Card>
       </DialogContent>
+      <Toaster
+        theme="system"
+        toastOptions={{
+          classNames: {
+            toast:
+              "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+            description: "group-[.toast]:text-muted-foreground",
+            success:
+              "group-[.toast]:bg-green-100 group-[.toast]:text-green-800 group-[.toast]:border-green-200",
+            error:
+              "group-[.toast]:bg-red-100 group-[.toast]:text-red-800 group-[.toast]:border-red-200",
+          },
+        }}
+      />
     </Dialog>
   );
 }

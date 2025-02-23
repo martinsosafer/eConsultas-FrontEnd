@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, Bell, User, LogOut, UserCircle } from "lucide-react";
+import { Menu, User, LogOut, UserCircle } from "lucide-react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import Sidebar from "./sidebar";
 import logo from "../../public/logo.png";
@@ -27,13 +27,14 @@ export default function Layout() {
               to="/"
               className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-white/10 transition-colors"
             >
-              <img src={logo} alt="App Logo" className="w-10 h-8" />
+              <img src={logo} alt="App Logo" className="w-10 h-8" title="Logo" />
             </Link>
             {isAuthenticated && !isPublicRoute && (
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                 aria-label="Toggle menu"
+                title="sidebar"
               >
                 <Menu className="w-6 h-6" />
               </button>
@@ -43,10 +44,7 @@ export default function Layout() {
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <>
-                <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-                  <Bell className="w-6 h-6" />
-                </button>
-                <Link
+                <Link title="profile"
                   to={`/profile/${encodeURIComponent(
                     personaData?.credenciales?.username || ""
                   )}`}
@@ -54,7 +52,8 @@ export default function Layout() {
                 >
                   <User className="w-6 h-6" />
                 </Link>
-                <button
+                <button 
+                  title="logout"
                   onClick={logout}
                   className="p-2 hover:bg-white/10 rounded-lg transition-colors"
                   aria-label="Sign out"

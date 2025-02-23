@@ -137,7 +137,7 @@ export default function CreateServicioModal({
             </div>
           </div>
 
-          <Button className="w-full" onClick={handleSubmit}>
+          <Button className="w-min mx-auto flex justify-center" onClick={handleSubmit}>
             Crear Servicio
           </Button>
         </div>

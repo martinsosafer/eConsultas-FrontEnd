@@ -121,7 +121,7 @@ export const CreatePaqueteModal = ({
             )}
 
             <Button
-              className="w-full bg-primary hover:bg-primary-dark"
+              className="w-min mx-auto bg-primary hover:bg-primary-dark"
               onClick={handleCreate}
               disabled={
                 selectedServicios.length < 2 ||

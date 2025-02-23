@@ -3,9 +3,9 @@ export default {
   darkMode: ["class"],
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    screens: {
-      sm: "640px", // This will be your desktop breakpoint
-    },
+    // screens: {
+    //   sm: "640px", // This will be your desktop breakpoint
+    // },
     extend: {
       scrollBehavior: {
         smooth: "smooth",

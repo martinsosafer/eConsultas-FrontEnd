@@ -1,13 +1,25 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Outlet } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Layout from "../components/layout";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import { PayConsulta } from "@/pages/consultas/payConsulta/index.tsx";
 import { ComprobantesPage } from "@/pages/consultas/payConsulta/ComprobantesPage/index.tsx";
-import { ProtectedProfile } from "./ProtectedProfile";
-import { AdminRoute } from "./AdminRoute";
-import ConsultasAdminPage from "@/pages/adminDashboard/consultas/index.tsx";
+import { ProtectedProfile } from "./TypesOfRoutes/ProtectedProfile.tsx";
+import { AdminRoute } from "./TypesOfRoutes/AdminRoute.tsx";
+import { OwnerRoute } from "./TypesOfRoutes/OwnerRoute.tsx";
+import { UnauthenticatedRoute } from "./TypesOfRoutes/UnauthenticatedRoute.tsx";
+import { CheckProfileAccess } from "./TypesOfRoutes/CheckProfileAccess.tsx";
 
+// Importaciones directas para el dashboard admin y así no ralentizamos esa parte :p
+import DashboardAdminPage from "@/pages/adminDashboard/index.tsx";
+import ManejarPersonalPage from "@/pages/adminDashboard/manejarPersonalPage/index.tsx";
+import ReportesManagement from "@/pages/adminDashboard/reportes/index.tsx";
+import ConsultasAdminPage from "@/pages/adminDashboard/consultas/index.tsx";
+import ServiciosPage from "@/pages/adminDashboard/todosServicios/index.tsx";
+import PaquetesPage from "@/pages/adminDashboard/paquetes/index.tsx";
+import NotAllowed from "@/components/errors/NotAllowed.tsx";
+
+// Importaciones lazy para el resto de componentes : D
 const Home = lazy(() => import("../pages"));
 const About = lazy(() => import("../pages/about.tsx"));
 const BloquePaciente = lazy(() => import("../pages/paciente/index.tsx"));
@@ -16,15 +28,10 @@ const ColorSystemShowcase = lazy(() => import("../pages/colorshowcase/index.tsx"
 const PasswordCreate = lazy(() => import("@/pages/passwordManagement/index.tsx"));
 const Login = lazy(() => import("@/pages/login/index.tsx"));
 const ProfilePage = lazy(() => import("@/pages/profile/index.tsx"));
-const DashboardAdminPage = lazy(() => import("@/pages/adminDashboard/index.tsx"));
-const ManejarPersonalPage = lazy(() => import("@/pages/adminDashboard/manejarPersonalPage/index.tsx"));
 const EditProfile = lazy(() => import("@/pages/profile/profile/editProfile/editProfile.tsx"));
-const ServiciosPage = lazy(() => import("@/pages/adminDashboard/todosServicios/index.tsx"));
-const PaquetesPage = lazy(() => import("@/pages/adminDashboard/paquetes/index.tsx"));
 const ConsultasPage = lazy(() => import("@/pages/profile/consultasPage/index.tsx"));
 const ConsultaDetailPage = lazy(() => import("@/pages/profile/consultasPage/seeConsultaComplete/index.tsx")); 
 const FilesBrowserWrapper = lazy(() => import("@/pages/profile/profile/FilesOfUser/FilesBrowserWrapper.tsx"));
-const ReportesManagement = lazy(() => import("@/pages/adminDashboard/reportes/index.tsx"));
 const ForgotPassword = lazy(() => import("@/pages/passwordManagement/forgotPassword.tsx/index.tsx"));
 const NotFoundPage = lazy(() => import("@/components/errors/NotFoundPage.tsx"));
 
@@ -52,50 +59,30 @@ export const router = createBrowserRouter([
       {
         path: "dashboard-admin",
         element: (
-          <Suspense fallback={<LoadingSpinner />}>
+          <AdminRoute>
             <DashboardAdminPage />
-          </Suspense>
+          </AdminRoute>
         ),
         children: [
           {
             path: "manejar-personal",
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <ManejarPersonalPage />
-              </Suspense>
-            ),
+            element: <ManejarPersonalPage />,
           },
           {
             path: "reportes",
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <ReportesManagement />
-              </Suspense>
-            ),
+            element: <ReportesManagement />,
           },
           {
             path: "consultas",
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <ConsultasAdminPage />
-              </Suspense>
-            ),
+            element: <ConsultasAdminPage />,
           },
           {
             path: "servicios",
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <ServiciosPage />
-              </Suspense>
-            ),
+            element: <ServiciosPage />,
           },
           {
             path: "paquetes",
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <PaquetesPage />
-              </Suspense>
-            ),
+            element: <PaquetesPage />,
           },
         ],
       },
@@ -130,6 +117,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "password",
+        element: (
+          <UnauthenticatedRoute>
+            <Outlet />
+          </UnauthenticatedRoute>
+        ),
         children: [
           {
             path: "create/:email/:code",
@@ -168,9 +160,9 @@ export const router = createBrowserRouter([
       {
         path: "consultas",
         element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <AdminRoute />
-          </Suspense>
+          <AdminRoute>
+            <Outlet />
+          </AdminRoute>
         ),
         children: [
           {
@@ -185,12 +177,12 @@ export const router = createBrowserRouter([
             path: "comprobantes/:id",
             element: (
               <Suspense fallback={<LoadingSpinner />}>
-                <ComprobantesPage/>
+                <ComprobantesPage />
               </Suspense>
             ),
           },
           {
-            path: ":id", 
+            path: ":id",
             element: (
               <Suspense fallback={<LoadingSpinner />}>
                 <ConsultaDetailPage />
@@ -202,13 +194,18 @@ export const router = createBrowserRouter([
       {
         path: "profile",
         element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <ProtectedProfile />
-          </Suspense>
+          <ProtectedProfile>
+            <Outlet />
+          </ProtectedProfile>
         ),
         children: [
           {
             path: ":username",
+            element: (
+              <CheckProfileAccess>
+                <Outlet />
+              </CheckProfileAccess>
+            ),
             children: [
               {
                 index: true,
@@ -222,7 +219,9 @@ export const router = createBrowserRouter([
                 path: "edit",
                 element: (
                   <Suspense fallback={<LoadingSpinner />}>
-                    <EditProfile />
+                    <OwnerRoute>
+                      <EditProfile />
+                    </OwnerRoute>
                   </Suspense>
                 ),
               },
@@ -230,7 +229,9 @@ export const router = createBrowserRouter([
                 path: "consultas",
                 element: (
                   <Suspense fallback={<LoadingSpinner />}>
-                    <ConsultasPage />
+                    <CheckProfileAccess>
+                      <ConsultasPage />
+                    </CheckProfileAccess>
                   </Suspense>
                 ),
               },
@@ -238,7 +239,9 @@ export const router = createBrowserRouter([
                 path: "files",
                 element: (
                   <Suspense fallback={<LoadingSpinner />}>
-                    <FilesBrowserWrapper />
+                    <CheckProfileAccess>
+                      <FilesBrowserWrapper />
+                    </CheckProfileAccess>
                   </Suspense>
                 ),
               },
@@ -251,6 +254,14 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingSpinner />}>
             <NotFoundPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "unauthorized",
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <NotAllowed />
           </Suspense>
         ),
       },

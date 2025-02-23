@@ -145,7 +145,7 @@ export default function ReportesManagement() {
     totalPaid: generalData.reduce((acc, curr) => acc + curr.paidAmount, 0), // Total pagado
     totalUnpaid: generalData.reduce((acc, curr) => acc + curr.unpaidAmount, 0), // Total pendiente
     totalSalaries: generalData.reduce((acc, curr) => acc + curr.salaryExpenses, 0), // Total gastos en sueldos
-    netProfit: generalData.reduce((acc, curr) => acc + (curr.paidAmount - curr.unpaidAmount - curr.salaryExpenses), 0) // Ganancia neta
+    netProfit: generalData.reduce((acc, curr) => acc + (curr.paidAmount  - curr.salaryExpenses), 0) // Ganancia neta
   };
 
   return (

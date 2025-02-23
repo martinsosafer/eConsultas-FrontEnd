@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/select";
 import CreateServicioModal from "./CreateServicioModal/CreateServicioModal";
 import { servicioApi } from "@/api/classes apis/servicioApi";
+import EditServicioModal from "./EditServicioModal/EditServicioModal";
 
 export default function ServicioTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,7 +48,7 @@ export default function ServicioTable() {
   const [tiposServicio, setTiposServicio] = useState<TipoServicio[]>([]);
   const [filteredServicios, setFilteredServicios] = useState<Servicio[]>([]);
   const [filter, setFilter] = useState<string>("all");
-  const [editingServicio, setEditingServicio] = useState<Servicio | null>(null); 
+  const [editingServicio, setEditingServicio] = useState<Servicio | null>(null);
   const { personaData } = useAuth();
   const tableRef = useRef<HTMLDivElement>(null);
   const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
@@ -57,6 +58,7 @@ export default function ServicioTable() {
     (role) => role.id === 3
   );
 
+  // Cargar datos iniciales
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -71,9 +73,11 @@ export default function ServicioTable() {
         toast.error("Error cargando datos iniciales");
       }
     };
+
     loadInitialData();
   }, [isAnimating]);
 
+  // Aplicar filtros
   const applyFilters = (data: Servicio[], currentFilter: string) => {
     const filtered = data.filter(
       (servicio) =>
@@ -85,9 +89,13 @@ export default function ServicioTable() {
     setFilteredServicios(filtered);
   };
 
+  // Cambiar estado (activar/desactivar)
   const handleToggleEnabled = async (servicio: Servicio, enabled: boolean) => {
     try {
-      const updatedServicio = await servicioDashboardApi.editServicio(servicio.id, { enabled });
+      const updatedServicio = await servicioDashboardApi.editServicio(servicio.id, {
+        enabled,
+        tipoServicio: servicio.tipoServicio, // Asegurar que se envíe el tipoServicio completo
+      });
       setServicios((prev) => prev.map((s) => (s.id === servicio.id ? updatedServicio : s)));
       applyFilters(servicios.map((s) => (s.id === servicio.id ? updatedServicio : s)), filter);
       toast.success(`Servicio ${enabled ? "activado" : "desactivado"}`);
@@ -96,54 +104,38 @@ export default function ServicioTable() {
     }
   };
 
+  // Buscar servicios
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value;
     setSearchTerm(term);
     applyFilters(servicios, filter);
   };
 
+  // Cambiar filtro de tipo de servicio
   const handleFilterChange = (value: string) => {
     setFilter(value);
     applyFilters(servicios, value);
   };
 
+  // Editar servicio
   const handleEditClick = (servicio: Servicio) => {
-    setEditingServicio(servicio); 
-    console.log(editingServicio);
+    setEditingServicio(servicio);
   };
 
-  // const handleSave = async (updatedServicio: Servicio) => {
-  //   try {
-  //     setServicios((servicios) =>
-  //       servicios.map((s) =>
-  //         s.id === updatedServicio.id ? updatedServicio : s
-  //       )
-  //     );
-  //     setFilteredServicios((filteredServicios) =>
-  //       filteredServicios.map((s) =>
-  //         s.id === updatedServicio.id ? updatedServicio : s
-  //       )
-  //     );
-  //     setEditingServicio(null);
-  //     toast.success("Servicio actualizado con éxito");
-  //   } catch (error) {
-  //     toast.error("Error actualizando servicio");
-  //   }
-  // };
-
+  // Eliminar servicio
   const handleDeleteClick = async (servicio: Servicio) => {
     if (!confirm(`¿Eliminar el servicio: ${servicio.descripcion}?`)) return;
     try {
-      setServicios((servicios) => servicios.filter((s) => s.id !== servicio.id));
-      setFilteredServicios((filteredServicios) =>
-        filteredServicios.filter((s) => s.id !== servicio.id)
-      );
+      await servicioDashboardApi.deleteServicio(servicio.id);
+      setServicios((prev) => prev.filter((s) => s.id !== servicio.id));
+      setFilteredServicios((prev) => prev.filter((s) => s.id !== servicio.id));
       toast.success("Servicio eliminado");
     } catch (error) {
       toast.error("Error eliminando servicio");
     }
   };
 
+  // Copiar ID del servicio
   const handleCopyId = async (id: string) => {
     try {
       await navigator.clipboard.writeText(id);
@@ -183,7 +175,7 @@ export default function ServicioTable() {
           <Input
             placeholder="Buscar servicios por descripción o ID..."
             value={searchTerm}
-            onChange={handleSearch} // Corregido
+            onChange={handleSearch}
             className="pl-10"
           />
           <Search
@@ -205,13 +197,16 @@ export default function ServicioTable() {
             ))}
           </SelectContent>
         </Select>
-        <Button
-          className="bg-primary hover:bg-primary-hover text-white"
-          onClick={() => setCreateModalOpen(true)}
-        >
-          <PlusCircle className="mr-2" size={20} />
-          Nuevo Servicio
-        </Button>
+
+        {isSuperAdmin && (
+          <Button
+            className="bg-primary hover:bg-primary-hover text-white"
+            onClick={() => setCreateModalOpen(true)}
+          >
+            <PlusCircle className="mr-2" size={20} />
+            Nuevo Servicio
+          </Button>
+        )}
       </div>
 
       <Table>
@@ -259,17 +254,23 @@ export default function ServicioTable() {
                       <Copy className="mr-2 h-4 w-4" />
                       Copiar ID
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleEditClick(servicio)}>
-                      <Edit className="mr-2 h-4 w-4" />
-                      Editar
-                    </DropdownMenuItem>
                     {isSuperAdmin && (
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteClick(servicio)}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => handleEditClick(servicio)}
+                          title="Editar servicio"
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteClick(servicio)}
+                          title="Eliminar servicio"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -278,6 +279,39 @@ export default function ServicioTable() {
           ))}
         </TableBody>
       </Table>
+
+      {editingServicio && (
+        <EditServicioModal
+          open={!!editingServicio}
+          onOpenChange={(open) => !open && setEditingServicio(null)}
+          servicio={editingServicio}
+          onSave={async (updatedServicio) => {
+            try {
+              const updated = await servicioDashboardApi.editServicio(
+                updatedServicio.id,
+                {
+                  descripcion: updatedServicio.descripcion,
+                  precio: updatedServicio.precio,
+                  tipoServicio: updatedServicio.tipoServicio, 
+                  enabled: updatedServicio.enabled,
+                }
+              );
+              setServicios((prev) =>
+                prev.map((s) => (s.id === updated.id ? updated : s))
+              );
+              setFilteredServicios((prev) =>
+                prev.map((s) => (s.id === updated.id ? updated : s))
+              );
+              setEditingServicio(null);
+              toast.success("Servicio actualizado con éxito");
+            } catch (error) {
+              toast.error("Error actualizando servicio");
+            }
+          }}
+          tiposServicio={tiposServicio}
+        />
+      )}
+
       <CreateServicioModal
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}

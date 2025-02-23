@@ -5,6 +5,7 @@ import {
   Medico,
   Paciente,
   Persona,
+  Rol,
 } from "../models/personaModels";
 
 export const personaDashboardApi = {
@@ -100,4 +101,61 @@ export const personaDashboardApi = {
       throw error;
     }
   },
+  async getAllRoles(): Promise<Rol[]> {
+    const token = Cookies.get("access_token");
+    if (!token) throw new Error("No authentication token found");
+
+    try {
+      const response = await api.get<Rol[]>("/usuarios/roles", {
+        headers: {
+          Accept: "*/*",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data.map((role) => ({
+        ...role,
+        nombre: formatRoleName(role.nombre),
+      }));
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      throw error;
+    }
+  },
+
+  async modifyRol(email: string, roles: number[]): Promise<void> {
+    const token = Cookies.get("access_token");
+    if (!token) throw new Error("No authentication token found");
+
+    try {
+      await api.put(
+        `/usuarios/usuarios/modificar-roles/${email}`,
+        roles,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error modifying role:", error);
+      throw error;
+    }
+  },
 };
+
+
+function formatRoleName(roleName: string): string {
+  switch (roleName) {
+    case "ROLE_ADMIN":
+      return "Admin";
+    case "ROLE_SUPER_ADMIN":
+      return "Super Admin";
+    case "ROLE_USER":
+      return "Usuario";
+    default:
+      return roleName;
+  }
+}
