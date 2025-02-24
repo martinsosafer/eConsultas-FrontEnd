@@ -26,7 +26,7 @@ export const dashboardApi = {
   ): Promise<number> {
     try {
       const response = await api.get(
-        `/api/consultas/reportes/ingresos-egresos?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`,
+        `/consultas/reportes/ingresos-egresos?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`,
         {
           headers: {
             Accept: "*/*",
@@ -58,7 +58,7 @@ export const dashboardApi = {
   async getNumberOfConsultasInOneDay(fecha: string): Promise<string> {
     try {
       const response = await api.get(
-        `/api/consultas/consultas/total-consultas?fecha=${fecha}`,
+        `/consultas/consultas/total-consultas?fecha=${fecha}`,
         {
           headers: {
             Accept: "*/*",

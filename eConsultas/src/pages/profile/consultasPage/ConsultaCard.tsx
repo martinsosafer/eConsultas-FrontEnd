@@ -116,7 +116,7 @@ export default function ConsultaCard({
               : "bg-red-600/20 text-red-600 hover:bg-red-600/30"
           }`}
         >
-          {consulta.pagado ? `Pagado ($${consulta.total})` : `Pendiente ($${consulta.total})`}
+          {consulta.pagado ? `Pagado ($${(consulta.total).toFixed(2)})` : `Pendiente ($${(consulta.total).toFixed(2)})`}
         </Badge>
 
         <Button

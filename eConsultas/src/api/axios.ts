@@ -57,7 +57,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         const { logout } = useAuth();
-        window.location.href = "/login";
+        window.location.href = "/";
         logout();
         return Promise.reject(refreshError);
       }

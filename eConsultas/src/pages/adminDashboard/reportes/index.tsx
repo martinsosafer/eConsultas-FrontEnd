@@ -193,7 +193,7 @@ export default function ReportesManagement() {
             title="Ganancias Netas" 
             value={totals.netProfit} 
             variant={totals.netProfit >= 0 ? "success" : "danger"}
-            description="Pagado - Pendiente - Gastos"
+            description="Pagado - Gastos"
           />
         </div>
 

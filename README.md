@@ -5,7 +5,7 @@
 eConsultas es una aplicación web diseñada para gestionar de manera integral las operaciones de una clínica médica. El sistema permite administrar servicios médicos, paquetes de servicios, registros de pacientes, médicos y consultas, además de gestionar facturación y generar reportes de ganancias en tiempo real. La aplicación se desarrolló siguiendo las consignas del concurso, donde podemos destacar la implementación de un entorno real de trabajo, con todas las operaciones ABML (Altas, Bajas, Modificaciones y Lecturas) necesarias, solicitudes a la API bien manejadas y manejo de cookies/Local Storage correctos.
 
 ---
-## Participantes del Equipo
+## Nuestra web
  [Clickea aquí para ver nuestra web](https://e-consultas-front-end.vercel.app/)
 
 ## Concurso HackaCode y TodoCode

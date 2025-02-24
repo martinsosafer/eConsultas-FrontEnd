@@ -245,17 +245,23 @@ export default function EditPersonaModal({
                         {persona.tipoPersona === "PACIENTE" && (
                           <div>
                             <Label>Obra Social</Label>
-                            <Input
-                              value={
-                                (persona as Paciente).obraSocial ? "Sí" : "No"
-                              }
-                              onChange={(e) =>
+                            <Select
+                              value={(persona as Paciente).obraSocial ? "Sí" : "No"}
+                              onValueChange={(value) =>
                                 onChange({
                                   ...persona,
-                                  obraSocial: e.target.value === "Sí",
+                                  obraSocial: value === "Sí",
                                 })
                               }
-                            />
+                            >
+                              <SelectTrigger className="w-20 mt-1">
+                                <SelectValue placeholder="Selecciona una opción" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Sí">Sí</SelectItem>
+                                <SelectItem value="No">No</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         )}
 

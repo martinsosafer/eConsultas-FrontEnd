@@ -23,8 +23,15 @@ import { consultaDashboardApi } from "@/api/dashboard/consultaDashboardApi";
 import type { ConsultaDTO } from "@/api/models/consultaModels";
 import { useAuth } from "@/context/AuthProvider";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { CreateConsultaModal } from "./createConsultaModal/CreateConsultaModal"; 
+import { CreateConsultaModal } from "./createConsultaModal/CreateConsultaModal";
 import { extractErrorMessage } from "@/api/misc/errorHandler";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function ConsultasTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,10 +43,12 @@ export default function ConsultasTable() {
   const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
   const [initialLoad, setInitialLoad] = useState(true);
   const navigate = useNavigate();
-  const isSuperAdmin = personaData?.credenciales.roles.some(
-    (role) => role.id === 3
-  );
-
+  const [dateOrder, setDateOrder] = useState<"asc" | "desc">("asc"); 
+  setDateOrder;
+  const [idOrder, setIdOrder] = useState<"asc" | "desc">("asc"); 
+  const isSuperAdmin = personaData?.credenciales.roles.some((role) => role.id === 3);
+  const isAdmin = personaData?.credenciales.roles.some(r => [1, 3].includes(r.id));
+  // Cargar consultas
   useEffect(() => {
     const fetchConsultas = async () => {
       try {
@@ -48,20 +57,20 @@ export default function ConsultasTable() {
         applyFilters(consultasData);
 
         if (!isAnimating && tableRef.current) {
-          tableRef.current.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
+          tableRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       } catch (error) {
         toast.error("Error cargando consultas");
         console.error("Loading error:", error);
+      } finally {
+        setInitialLoad(false);
       }
     };
 
     fetchConsultas();
   }, [isAnimating]);
 
+  // Refrescar consultas
   const refreshConsultas = async () => {
     try {
       const consultasData = await consultaDashboardApi.getAllConsultas();
@@ -72,7 +81,7 @@ export default function ConsultasTable() {
     }
   };
 
-
+  // Aplicar filtros y ordenar por fecha o ID
   const applyFilters = (data: ConsultaDTO[]) => {
     const filtered = data.filter((consulta) => {
       const matchesSearch =
@@ -82,34 +91,59 @@ export default function ConsultasTable() {
         `${consulta.paciente.nombre} ${consulta.paciente.apellido}`
           .toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
-        consulta.horario.toLowerCase().includes(searchTerm.toLowerCase());
+        consulta.fecha.toLowerCase().includes(searchTerm.toLowerCase());
 
       return matchesSearch;
     });
-    setFilteredConsultas(filtered);
+
+    // Ordenar por fecha
+    const sortedByDate = filtered.sort((a, b) => {
+      const dateA = new Date(a.fecha).getTime();
+      const dateB = new Date(b.fecha).getTime();
+      return dateOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
+
+    // Ordenar por ID
+    const sortedById = sortedByDate.sort((a, b) => {
+      return idOrder === "asc" ? a.id - b.id : b.id - a.id;
+    });
+
+    setFilteredConsultas(sortedById);
   };
 
+  // Manejar búsqueda
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value;
     setSearchTerm(term);
     applyFilters(consultas);
   };
 
+  // Manejar orden de ID
+  const handleIdOrderChange = (order: "asc" | "desc") => {
+    setIdOrder(order);
+    applyFilters(consultas);
+  };
+
+  // Eliminar consulta
   const handleDeleteClick = async (consulta: ConsultaDTO) => {
+    if (consulta.pagado) {
+      toast.error("No se puede eliminar una consulta ya pagada");
+      return;
+    }
+
     if (!confirm(`¿Eliminar la consulta #${consulta.id}?`)) return;
     try {
       await consultaDashboardApi.deleteConsulta(consulta.id);
-      setConsultas(consultas.filter((c) => c.id !== consulta.id));
-      setFilteredConsultas(
-        filteredConsultas.filter((c) => c.id !== consulta.id)
-      );
+      setConsultas((prev) => prev.filter((c) => c.id !== consulta.id));
+      setFilteredConsultas((prev) => prev.filter((c) => c.id !== consulta.id));
       toast.success("Consulta eliminada");
     } catch (error) {
       const errorMessage = extractErrorMessage(error);
-      toast.error("Error eliminando consulta: " + errorMessage );
+      toast.error("Error eliminando consulta: " + errorMessage);
     }
   };
 
+  // Copiar ID
   const handleCopyId = async (id: number) => {
     try {
       await navigator.clipboard.writeText(id.toString());
@@ -117,6 +151,11 @@ export default function ConsultasTable() {
     } catch (error) {
       toast.error("Error copiando ID");
     }
+  };
+
+  // Registrar pago
+  const handleRegisterPayment = (consultaId: number) => {
+    navigate(`/consultas/pay/${consultaId}`);
   };
 
   return (
@@ -163,13 +202,26 @@ export default function ConsultasTable() {
           />
         </div>
 
-        <Button
-          className="bg-primary hover:bg-primary-hover text-white"
-          onClick={() => setCreateModalOpen(true)}
-        >
-          <PlusCircle className="mr-2" size={20} />
-          Nueva Consulta
-        </Button>
+        <div className="flex items-center gap-4">
+
+          <Select value={idOrder} onValueChange={handleIdOrderChange}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Ordenar por ID" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">ID ascendente</SelectItem>
+              <SelectItem value="desc">ID descendente</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button
+            className="bg-primary hover:bg-primary-hover text-white"
+            onClick={() => setCreateModalOpen(true)}
+          >
+            <PlusCircle className="mr-2" size={20} />
+            Nueva Consulta
+          </Button>
+        </div>
       </div>
 
       <Table>
@@ -178,8 +230,9 @@ export default function ConsultasTable() {
             <TableHead>Médico</TableHead>
             <TableHead>Especialidad</TableHead>
             <TableHead>Paciente</TableHead>
-            <TableHead>Horario</TableHead>
+            <TableHead>Fecha</TableHead>
             <TableHead>Paquete</TableHead>
+            <TableHead>Servicio</TableHead>
             <TableHead>Total</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead>Acciones</TableHead>
@@ -197,8 +250,9 @@ export default function ConsultasTable() {
               <TableCell>
                 {consulta.paciente.nombre} {consulta.paciente.apellido}
               </TableCell>
-              <TableCell>{consulta.horario}</TableCell>
+              <TableCell>{consulta.fecha}</TableCell>
               <TableCell>#{consulta.idPaquete || "N/A"}</TableCell>
+              <TableCell>#{consulta.idServicioMedico || "N/A"}</TableCell>
               <TableCell>${consulta.total.toFixed(2)}</TableCell>
               <TableCell>
                 <span
@@ -212,36 +266,39 @@ export default function ConsultasTable() {
                 </span>
               </TableCell>
               <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
+                <div className="flex items-center gap-2">
+                  {!consulta.pagado && isAdmin && (
+                    <Button
+                      variant="ghost"
+                      className="h-8 w-8 p-0 bg-green-100 hover:bg-green-200"
+                      onClick={() => handleRegisterPayment(consulta.id)}
+                      title="Registrar pago"
+                    >
+                      <DollarSign className="h-4 w-4 text-green-600" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleCopyId(consulta.id)}>
-                      <Copy className="mr-2 h-4 w-4" />
-                      Copiar ID
-                    </DropdownMenuItem>
-                    
-                    {isSuperAdmin && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => navigate(`/consultas/pay/${consulta.id}`)}
-                    >
-                      <DollarSign className="mr-2 h-4 w-4 text-green-600" />
-                      <span className="text-green-600">Registrar pago</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleDeleteClick(consulta)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
-                    </DropdownMenuItem>
-                  </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleCopyId(consulta.id)}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        Copiar ID
+                      </DropdownMenuItem>
+                      {isSuperAdmin && !consulta.pagado && (
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteClick(consulta)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </TableCell>
             </TableRow>
           ))}

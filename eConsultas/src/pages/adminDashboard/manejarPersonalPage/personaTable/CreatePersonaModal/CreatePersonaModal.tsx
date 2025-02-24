@@ -132,12 +132,9 @@ export default function CreatePersonaModal({
     }));
   };
 
+  // Esto es por problemas de zona horaria así que por si acaso!!
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const date = new Date(e.target.value);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    
+    const [year, month, day] = e.target.value.split("-");
     setNewPersona(prev => ({
       ...prev,
       fechaNacimiento: `${day}/${month}/${year}`

@@ -31,7 +31,7 @@ export default function AdminDashboard() {
 
   const [pacientesTotales, setPacientesTotales] = useState<string>("0")
   const [turnosHoy, setTurnosHoy] = useState<string>("0")
-  const [gananciasHoy, setGananciasHoy] = useState<number>(0)
+  const [gananciasHoy, setGananciasHoy] = useState<string>("0")
 
   useEffect(() => {
     if (isSuperAdmin) {
@@ -45,10 +45,10 @@ export default function AdminDashboard() {
             await dashboardApi.getNumberOfConsultasInOneDay(today)
           setTurnosHoy(totalConsultas)
 
-          const ganancias = await dashboardApi.getNumberOfGananciasInOneDay(
+          const ganancias = (await dashboardApi.getNumberOfGananciasInOneDay(
             today,
             today
-          )
+          )).toFixed(2)
           setGananciasHoy(ganancias)
         } catch (error) {
           console.error("Error fetching metrics:", error)
@@ -258,7 +258,7 @@ function QuickActionCard({
       <CardContent className="p-6 flex flex-col h-full">
         <div className="flex items-center mb-4">
           <div className="bg-primary-light p-2 rounded-full mr-4">{icon}</div>
-          <h3 className="font-semibold">{title}</h3>
+          <h2 className="font-semibold">{title}</h2>
         </div>
         <p className="text-sm text-muted-foreground mb-4 flex-grow">
           {description}

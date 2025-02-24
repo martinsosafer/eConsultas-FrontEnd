@@ -17,9 +17,12 @@ export default function ConsultaDetailPage() {
   const navigate = useNavigate();
   const [consulta, setConsulta] = useState<Consulta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [medicoImage, setMedicoImage] = useState("");
-  const [pacienteImage, setPacienteImage] = useState("");
-
+  const [medicoImage, setMedicoImage] = useState<string | null>(null);
+  const [pacienteImage, setPacienteImage] = useState<string | null>(null);
+// Para los devs que vean esto, esta página es realmente complicada ya que en verdad, la ruta protegida
+// debemos verificarla a mano ya que hay 4 actores sociales acá en vez de 3 que pueden acceder
+// 1- Super admin, 2- Admin, 3- Paciente y 4- Médico
+// Y adivinemos, eureka, el pathvariable no verifica el actor social ni de paciente ni de médico
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -30,7 +33,7 @@ export default function ConsultaDetailPage() {
 
         const consultaData = await consultaApi.getConsultaByConsultaId(Number(id));
         
-        // Verificamos los permisos
+        // Verificamos permisos
         const isOwner = [consultaData.paciente.credenciales.email, consultaData.medico.credenciales.email]
           .includes(personaData?.credenciales.email);
         
@@ -43,16 +46,28 @@ export default function ConsultaDetailPage() {
 
         setConsulta(consultaData);
 
-        // Cargamos imágenes
-        const [medicoImg, pacienteImg] = await Promise.all([
-          personaApi.fetchProfilePicture(consultaData.medico.credenciales.email),
-          personaApi.fetchProfilePicture(consultaData.paciente.credenciales.email)
-        ]);
+        // Cargamos imágenes con manejo de errores
+        const loadImages = async () => {
+          try {
+            const medicoImg = await personaApi.fetchProfilePicture(consultaData.medico.credenciales.email);
+            setMedicoImage(URL.createObjectURL(medicoImg));
+          } catch (error) {
+            console.error("Error cargando imagen del médico:", error);
+            setMedicoImage(null);
+          }
 
-        setMedicoImage(URL.createObjectURL(medicoImg));
-        setPacienteImage(URL.createObjectURL(pacienteImg));
+          try {
+            const pacienteImg = await personaApi.fetchProfilePicture(consultaData.paciente.credenciales.email);
+            setPacienteImage(URL.createObjectURL(pacienteImg));
+          } catch (error) {
+            console.error("Error cargando imagen del paciente:", error);
+            setPacienteImage(null);
+          }
+        };
+
+        await loadImages();
       } catch (error) {
-        console.error("Error loading consulta:", error);
+        console.error("Error cargando consulta:", error);
         navigate("/error");
       } finally {
         setLoading(false);
@@ -61,6 +76,14 @@ export default function ConsultaDetailPage() {
 
     if (isAuthenticated) loadData();
   }, [id, isAuthenticated, navigate, personaData]);
+
+  const handleProfileClick = (email: string) => {
+
+    const isAdmin = personaData?.credenciales.roles.some(r => [1, 3].includes(r.id));
+    if (isAdmin) {
+      navigate(`/profile/${encodeURIComponent(email)}`);
+    }
+  };
 
   if (loading) {
     return (
@@ -81,10 +104,6 @@ export default function ConsultaDetailPage() {
 
   const isPaquete = !!consulta.idPaquete;
 
-  const handleProfileClick = (email: string) => {
-    navigate(`/profile/${email}`);
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -92,7 +111,7 @@ export default function ConsultaDetailPage() {
       className="p-8 bg-background min-h-screen"
     >
       <div className="max-w-6xl mx-auto">
-        {/* Nuestro header */}
+        {/* Header */}
         <motion.div
           initial={{ y: -20 }}
           animate={{ y: 0 }}
@@ -180,15 +199,23 @@ export default function ConsultaDetailPage() {
             </div>
             <div className="flex items-center gap-4">
               <Avatar className="w-12 h-12">
-                <AvatarImage src={pacienteImage} alt="Foto perfil paciente" />
-                <AvatarFallback>
-                  {consulta.paciente.nombre[0]}
-                  {consulta.paciente.apellido[0]}
-                </AvatarFallback>
+                {pacienteImage ? (
+                  <AvatarImage src={pacienteImage} alt="Foto perfil paciente" />
+                ) : (
+                  <AvatarFallback>
+                    {consulta.paciente.nombre[0]}
+                    {consulta.paciente.apellido[0]}
+                  </AvatarFallback>
+                )}
               </Avatar>
               <div>
                 <p 
-                  className="font-medium hover:text-primary transition-colors cursor-pointer"
+                  className={cn(
+                    "font-medium transition-colors",
+                    personaData?.credenciales.roles.some(r => [1, 3].includes(r.id))
+                      ? "hover:text-primary cursor-pointer"
+                      : "cursor-default"
+                  )}
                   onClick={() => handleProfileClick(consulta.paciente.credenciales.email)}
                 >
                   {consulta.paciente.nombre} {consulta.paciente.apellido}
@@ -214,15 +241,23 @@ export default function ConsultaDetailPage() {
             </div>
             <div className="flex items-center gap-4">
               <Avatar className="w-12 h-12">
-                <AvatarImage src={medicoImage} alt="Foto perfil médico"/>
-                <AvatarFallback>
-                  {consulta.medico.nombre[0]}
-                  {consulta.medico.apellido[0]}
-                </AvatarFallback>
+                {medicoImage ? (
+                  <AvatarImage src={medicoImage} alt="Foto perfil médico"/>
+                ) : (
+                  <AvatarFallback>
+                    {consulta.medico.nombre[0]}
+                    {consulta.medico.apellido[0]}
+                  </AvatarFallback>
+                )}
               </Avatar>
               <div>
                 <p 
-                  className="font-medium hover:text-primary transition-colors cursor-pointer"
+                  className={cn(
+                    "font-medium transition-colors",
+                    personaData?.credenciales.roles.some(r => [1, 3].includes(r.id))
+                      ? "hover:text-primary cursor-pointer"
+                      : "cursor-default"
+                  )}
                   onClick={() => handleProfileClick(consulta.medico.credenciales.email)}
                 >
                   {consulta.medico.nombre} {consulta.medico.apellido}

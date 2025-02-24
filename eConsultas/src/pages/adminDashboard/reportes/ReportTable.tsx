@@ -39,6 +39,7 @@ export default function ReportTable({
         <Button 
           variant="outline" 
           onClick={() => {
+
             // Mapear los datos para exportar a CSV
             const csvData = data.map(item => ({
               Fecha: new Date(item.fecha).toLocaleDateString(), // Fecha formateada
@@ -96,7 +97,7 @@ export default function ReportTable({
               data.map((report) => (
                 <TableRow key={`${report.id}-${report.pagado}`}> {/* Clave única */}
                   <TableCell>
-                    {new Date(report.fecha).toLocaleDateString()} {/* Fecha formateada */}
+                    {(report.fecha)} {/* Fecha formateada */}
                   </TableCell>
                   <TableCell>{report.nombre}</TableCell> {/* Nombre del servicio */}
                   <TableCell className="max-w-[200px] truncate">

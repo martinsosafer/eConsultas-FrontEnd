@@ -25,9 +25,8 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (isRecoveryFlow) {
-
       if (!email || !code) {
         toast.error("Faltan datos en la URL.");
         return;
@@ -36,18 +35,17 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
         toast.error("Las contraseñas no coinciden.");
         return;
       }
-      
+  
       try {
         await passwordManagement.createPassword(email, password, code);
-        toast.success("Contraseña creada exitosamente."); 
-        navigate("/login"); 
+        toast.success("Contraseña creada exitosamente.");
+        navigate("/login");
       } catch (error) {
         const errorMessage = extractErrorMessage(error);
         toast.error("Error: " + errorMessage);
         console.error("Password reset error:", error);
       }
     } else if (isChangeMode) {
-
       const username = Cookies.get("username");
       if (!username) {
         toast.error("Usuario no autenticado.");
@@ -57,11 +55,15 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
         toast.error("Las contraseñas nuevas no coinciden.");
         return;
       }
-      
+  
       try {
         await passwordManagement.changePassword(username, oldPassword, password);
-        toast.success("Contraseña cambiada exitosamente.");
-        navigate("/login"); 
+        
+        toast.success("Contraseña cambiada correctamente, redirijiendo en 3 segundos...");
+        
+        setTimeout(() => {
+          navigate("/login");
+        }, 3000); 
       } catch (error) {
         const errorMessage = extractErrorMessage(error);
         toast.error("Error: " + errorMessage);

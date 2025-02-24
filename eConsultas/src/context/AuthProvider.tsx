@@ -5,6 +5,7 @@ import { personaApi } from "@/api/classes apis/personaApi";
 import { Medico, Paciente } from "../api/models/personaModels";
 import { authService } from "@/api/authService";
 
+
 interface CredencialesDTO {
   roles?: Array<{ id: number; nombre: string }>;
 }
@@ -35,6 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserDTO | null>(null);
   const [personaData, setPersonaData] = useState<Medico | Paciente | null>(null);
+
 
   // Carga inicial de la autenticación
   useEffect(() => {
@@ -99,6 +101,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setPersonaData(null);
     delete api.defaults.headers.Authorization;
+
   };
 
   return (

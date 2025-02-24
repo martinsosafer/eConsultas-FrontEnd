@@ -159,34 +159,35 @@ export const router = createBrowserRouter([
       },
       {
         path: "consultas",
-        element: (
-          <AdminRoute>
-            <Outlet />
-          </AdminRoute>
-        ),
         children: [
           {
             path: "pay/:id",
             element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <PayConsulta />
-              </Suspense>
+              <AdminRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <PayConsulta />
+                </Suspense>
+              </AdminRoute>
             ),
           },
           {
             path: "comprobantes/:id",
             element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <ComprobantesPage />
-              </Suspense>
+              <AdminRoute>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <ComprobantesPage />
+                </Suspense>
+              </AdminRoute>
             ),
           },
           {
             path: ":id",
             element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <ConsultaDetailPage />
-              </Suspense>
+              <ProtectedProfile>
+                <Suspense fallback={<LoadingSpinner />}>
+                  <ConsultaDetailPage />
+                </Suspense>
+              </ProtectedProfile>
             ),
           },
         ],
