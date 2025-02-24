@@ -102,13 +102,15 @@ export const PersonaSelectionSlider = ({
   return (
     <div
       className={cn(
-        "fixed top-0 right-0 h-screen w-[500px] bg-background border-l shadow-xl transform transition-transform duration-300 z-[1000]",
+        "fixed top-0 right-0 h-screen w-full sm:w-[500px] bg-background border-l shadow-xl transform transition-transform duration-300 z-[1000]",
         open ? "translate-x-0" : "translate-x-full"
       )}
     >
-      <div className="p-6 h-full flex flex-col">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Seleccionar {tipoPersona}</h2>
+      <div className="p-4 sm:p-6 h-full flex flex-col">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-bold">
+            Seleccionar {tipoPersona}
+          </h2>
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
@@ -118,8 +120,8 @@ export const PersonaSelectionSlider = ({
           </Button>
         </div>
 
-        <div className="space-y-4 flex flex-col h-[calc(100vh-160px)]">
-          <div className="flex gap-2">
+        <div className="space-y-4 flex flex-col h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)]">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
             <div className="relative flex-1">
               <Input
                 placeholder="Buscar por email, DNI o celular..."
@@ -130,7 +132,11 @@ export const PersonaSelectionSlider = ({
               />
               <Search className="absolute left-3 top-3 text-muted-foreground" />
             </div>
-            <Button onClick={handleSearch} disabled={searchLoading}>
+            <Button
+              onClick={handleSearch}
+              disabled={searchLoading}
+              className="sm:w-auto w-full"
+            >
               {searchLoading ? <Loader2 className="animate-spin" /> : "Buscar"}
             </Button>
           </div>

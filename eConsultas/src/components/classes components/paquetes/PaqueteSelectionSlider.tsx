@@ -28,19 +28,19 @@ export const PaqueteSelectionSlider = ({
   const [paquetes, setPaquetes] = useState<Paquete[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const truncarTexto = (texto: string, longitud: number) => 
+  const truncarTexto = (texto: string, longitud: number) =>
     texto.length > longitud ? `${texto.substring(0, longitud)}...` : texto;
 
   const getTiposUnicos = (paquete: Paquete) => {
     const tipos = new Set(
-      paquete.servicios.map(servicio => servicio.tipoServicio.nombre)
+      paquete.servicios.map((servicio) => servicio.tipoServicio.nombre)
     );
     return Array.from(tipos);
   };
 
   const handleSearch = async () => {
     if (!searchTerm) return;
-    
+
     try {
       setLoading(true);
       if (!isNaN(Number(searchTerm))) {
@@ -73,24 +73,26 @@ export const PaqueteSelectionSlider = ({
   }, [open]);
 
   return (
-    <div className={cn(
-      "fixed top-0 right-0 h-screen w-[500px] bg-background border-l shadow-xl transform transition-transform duration-300 z-[1000]",
-      open ? "translate-x-0" : "translate-x-full"
-    )}>
-      <div className="p-6 h-full flex flex-col">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold">Seleccionar Paquete</h2>
-          <Button 
-            variant="ghost" 
+    <div
+      className={cn(
+        "fixed top-0 right-0 h-screen w-full sm:w-[500px] bg-background border-l shadow-xl transform transition-transform duration-300 z-[1000]",
+        open ? "translate-x-0" : "translate-x-full"
+      )}
+    >
+      <div className="p-4 sm:p-6 h-full flex flex-col">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <h2 className="text-lg sm:text-xl font-bold">Seleccionar Paquete</h2>
+          <Button
+            variant="ghost"
             onClick={() => onOpenChange(false)}
-            className="hover:bg-gray-100 rounded-full"
+            className="hover:bg-gray-100 rounded-full h-8 w-8"
           >
             ×
           </Button>
         </div>
 
-        <div className="space-y-4 flex flex-col h-[calc(100vh-160px)]">
-          <div className="flex gap-2">
+        <div className="space-y-4 flex flex-col h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)]">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
             <div className="relative flex-1">
               <Input
                 placeholder="Buscar por ID de paquete..."
@@ -101,23 +103,32 @@ export const PaqueteSelectionSlider = ({
               />
               <Search className="absolute left-3 top-3 text-muted-foreground" />
             </div>
-            <Button onClick={handleSearch} disabled={loading}>
+            <Button
+              onClick={handleSearch}
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
               {loading ? <Loader2 className="animate-spin" /> : "Buscar"}
             </Button>
           </div>
 
-          <Button variant="outline" onClick={fetchAll} disabled={loading}>
+          <Button
+            variant="outline"
+            onClick={fetchAll}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
             {loading ? "Cargando..." : "Traer todos"}
           </Button>
 
-          <ScrollArea className="flex-1 w-full pr-4">
+          <ScrollArea className="flex-1 w-full pr-2 sm:pr-4">
             <div className="space-y-2 pb-4">
               {paquetes.map((paquete) => (
                 <div
                   key={paquete.id}
                   className={cn(
-                    "p-4 border rounded-lg transition-all cursor-pointer group",
-                    paquete.enabled 
+                    "p-3 sm:p-4 border rounded-lg transition-all cursor-pointer group",
+                    paquete.enabled
                       ? "hover:bg-accent bg-white"
                       : "opacity-50 cursor-not-allowed bg-gray-50"
                   )}
@@ -128,29 +139,38 @@ export const PaqueteSelectionSlider = ({
                     }
                   }}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium">Paquete #{paquete.id}</h3>
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-base sm:text-inherit">
+                        Paquete #{paquete.id}
+                      </h3>
                       <p className="text-sm text-muted-foreground">
                         ${paquete.precio.toFixed(2)}
                       </p>
                     </div>
-                    <span className={cn(
-                      "text-xs px-2 py-1 rounded-full",
-                      paquete.enabled
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    )}>
+                    <span
+                      className={cn(
+                        "text-xs px-2 py-1 rounded-full shrink-0",
+                        paquete.enabled
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      )}
+                    >
                       {paquete.enabled ? "Activo" : "Inactivo"}
                     </span>
                   </div>
 
-                  <div className="mt-4 space-y-2">
-                    <h4 className="text-sm font-medium">Servicios incluidos:</h4>
+                  <div className="mt-3 sm:mt-4 space-y-2">
+                    <h4 className="text-sm font-medium">
+                      Servicios incluidos:
+                    </h4>
                     {paquete.servicios.map((servicio) => (
-                      <div key={servicio.id} className="flex justify-between items-center">
-                        <span className="text-sm">
-                          {truncarTexto(servicio.descripcion, 25)}
+                      <div
+                        key={servicio.id}
+                        className="flex justify-between items-center"
+                      >
+                        <span className="text-sm max-w-[70%] sm:max-w-[80%] truncate">
+                          {truncarTexto(servicio.descripcion, 20)}
                         </span>
                         <Button
                           variant="ghost"
@@ -168,13 +188,13 @@ export const PaqueteSelectionSlider = ({
                     ))}
                   </div>
 
-                  <div className="mt-4">
+                  <div className="mt-3 sm:mt-4">
                     <h4 className="text-sm font-medium">Tipos de servicios:</h4>
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
                       {getTiposUnicos(paquete).map((tipo) => (
                         <div key={tipo} className="flex items-center gap-1">
-                          <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800">
-                            {truncarTexto(tipo, 16)}
+                          <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800 max-w-[120px] sm:max-w-none truncate">
+                            {truncarTexto(tipo, 12)}
                           </span>
                           <Button
                             variant="ghost"

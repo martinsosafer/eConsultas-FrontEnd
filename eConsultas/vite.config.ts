@@ -25,17 +25,19 @@ export default defineConfig({
     }),
     svgo({
       multipass: true,
-      plugins: [{
-        name: "preset-default",
-        params: { overrides: { removeViewBox: false } }
-      }]
+      plugins: [
+        {
+          name: "preset-default",
+          params: { overrides: { removeViewBox: false } },
+        },
+      ],
     }),
     visualizer({
       open: true,
       filename: "bundle-analysis.html",
       gzipSize: true,
-      brotliSize: true
-    })
+      brotliSize: true,
+    }),
   ],
   resolve: {
     alias: {
@@ -46,16 +48,16 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            if (id.includes('lucide-react')) return 'vendor-lucide';
-            if (id.includes('recharts')) return 'vendor-recharts';
-            if (id.includes('framer-motion')) return 'vendor-framer';
-            if (id.includes('react-router-dom')) return 'vendor-router';
-            if (id.includes('axios')) return 'vendor-axios';
-            return 'vendor';
+          if (id.includes("node_modules")) {
+            if (id.includes("lucide-react")) return "vendor-lucide";
+            if (id.includes("recharts")) return "vendor-recharts";
+            if (id.includes("framer-motion")) return "vendor-framer";
+            if (id.includes("react-router-dom")) return "vendor-router";
+            if (id.includes("axios")) return "vendor-axios";
+            return "vendor";
           }
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  },
 });

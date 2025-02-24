@@ -16,7 +16,7 @@ import { Paquete } from "@/api/models/paqueteModels";
 import { consultaDashboardApi } from "@/api/dashboard/consultaDashboardApi";
 import { toast, Toaster } from "sonner";
 import { Loader2 } from "lucide-react";
-import { Medico} from "@/api/models/personaModels"; 
+import { Medico } from "@/api/models/personaModels";
 import { CreateConsulta } from "@/api/models/consultaModels";
 import { PaqueteSelectionSlider } from "@/components/classes components/paquetes/PaqueteSelectionSlider";
 import { TimeSlotPicker } from "@/components/classes components/consultas/TimeSlotPicker";
@@ -173,7 +173,7 @@ export const PatientCreateConsultaModal = ({
         }
       }}
     >
-      <DialogContent className="max-w-[90vw] w-[800px] h-[85vh] flex flex-col fixed left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 overflow-y-auto">
+      <DialogContent className="max-w-[90vw] w-[800px] h-[85vh] flex flex-col fixed left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 overflow-y-auto  overflow-x-hidden">
         <Toaster
           theme="system"
           toastOptions={{
