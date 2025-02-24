@@ -97,6 +97,13 @@ export const PatientCreateConsultaModal = ({
     }
   };
 
+  const calculatePrice = () => {
+    const originalPrice = selectedServicio?.precio || selectedPaquete?.precio || 0;
+    const hasDiscount = personaData?.tipoPersona === "PACIENTE" && (personaData as any).obraSocial;
+    const finalPrice = hasDiscount ? originalPrice * 0.8 : originalPrice;
+    
+    return { originalPrice, finalPrice, hasDiscount };
+  };
   const handleCreateConsulta = async () => {
     if (!validateCurrentTab()) {
       toast.error("Completa todos los campos requeridos");
@@ -204,7 +211,7 @@ export const PatientCreateConsultaModal = ({
             <p className="text-sm mt-1">
               Obra social:{" "}
               <span className="text-primary">
-                {(personaData as any).obraSocial || "No especificada"}
+                {(personaData as any).obraSocial ? "Sí" : "No"}
               </span>
             </p>
           )}
@@ -386,6 +393,35 @@ export const PatientCreateConsultaModal = ({
             </TabsContent>
           </ScrollArea>
 
+
+      <div className="flex justify-between pt-4 px-4 pb-2">
+        <div className="flex items-center gap-4">
+          {(selectedServicio || selectedPaquete) && (
+            <div className="flex flex-col items-start">
+              {calculatePrice().hasDiscount ? (
+                <>
+                  <span className="text-sm text-gray-500 line-through">
+                    ${calculatePrice().originalPrice.toFixed(2)}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-600 font-semibold">
+                      ${calculatePrice().finalPrice.toFixed(2)}
+                    </span>
+                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                      -20% obra social
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <span className="font-semibold">
+                  ${calculatePrice().originalPrice.toFixed(2)}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+        </div>
+          
           <div className="flex justify-between pt-4 px-4 pb-2">
             <Button
               variant="outline"

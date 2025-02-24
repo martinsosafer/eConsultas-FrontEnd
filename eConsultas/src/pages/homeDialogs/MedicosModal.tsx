@@ -159,6 +159,7 @@ export const MedicosModal = ({ open, onOpenChange }: MedicosModalProps) => {
                             <Button 
                               variant="ghost" 
                               size="icon"
+                              title="horarios"
                               onClick={() => setSelectedMedico(medico)}
                             >
                               <Clock size={18} />
