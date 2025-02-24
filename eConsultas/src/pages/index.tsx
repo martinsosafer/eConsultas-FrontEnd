@@ -28,12 +28,12 @@ const Home = () => {
   console.log("PERSONADATA", personaData);
   // Si no está autenticado o no es Super Admin, muestra el Home
   const isSuperAdmin =
-  isAuthenticated &&
-  personaData?.credenciales?.roles?.some(
-    (role) => role.nombre === "ROLE_SUPER_ADMIN"
-  );
+    isAuthenticated &&
+    personaData?.credenciales?.roles?.some(
+      (role) => role.nombre === "ROLE_SUPER_ADMIN"
+    );
 
-if (isSuperAdmin) return <Navigate to="/dashboard-admin" replace />;
+  if (isSuperAdmin) return <Navigate to="/dashboard-admin" replace />;
   const esMedico = personaData?.tipoPersona === "MEDICO";
   const esPaciente = personaData?.tipoPersona === "PACIENTE";
 
@@ -64,15 +64,21 @@ if (isSuperAdmin) return <Navigate to="/dashboard-admin" replace />;
 
       {/* Conditional Sections */}
       {esPaciente ? (
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-3 gap-6 mb-8">
           {medicalServices.map((service, index) => (
-            <Card key={index} className="hover:border-primary transition-all">
-              <CardHeader>
-                <div className="bg-primary-light p-2 rounded-full w-max text-primary-dark">
-                  {service.icon}
-                </div>
-                <CardTitle className="mt-4">{service.name}</CardTitle>
-              </CardHeader>
+            <Card
+              key={index}
+              className="flex flex-col hover:border-primary transition-all"
+            >
+              <div className="flex flex-col sm:flex-row">
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="bg-primary/10 p-2 rounded-full w-max text-primary">
+                    {service.icon}
+                  </div>
+                  <CardTitle>{service.name}</CardTitle>
+                </CardHeader>
+              </div>
+              <CardContent className="flex-grow" />
               <CardFooter>
                 <Button
                   label="Ver detalles"
@@ -85,7 +91,7 @@ if (isSuperAdmin) return <Navigate to="/dashboard-admin" replace />;
           ))}
         </div>
       ) : esMedico ? (
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-3 gap-6 mb-8">
           {stats.map((stat, index) => (
             <Card
               key={index}
@@ -108,7 +114,7 @@ if (isSuperAdmin) return <Navigate to="/dashboard-admin" replace />;
       ) : null}
 
       {/* Differentiated Access - Updated Section */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid :grid-cols-2 gap-6">
         {esMedico ? (
           <>
             <Card className="bg-primary-light border-primary">
