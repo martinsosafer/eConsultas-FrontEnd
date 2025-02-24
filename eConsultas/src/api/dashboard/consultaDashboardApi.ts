@@ -1,3 +1,4 @@
+import { authService } from "../authService";
 import { api } from "../axios";
 import {
   Consulta,
@@ -8,7 +9,8 @@ import Cookies from "js-cookie";
 
 export const consultaDashboardApi = {
   async getAllConsultas(): Promise<ConsultaDTO[]> {
-    if(this.refreshToken()){
+    authService.refreshToken();
+    {
     const token = Cookies.get("access_token");
     if (!token) throw new Error("No authentication token found");
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { passwordManagement } from "../../api/passwordManagement";
 import logo from "../../../public/logo.png";
@@ -18,15 +18,16 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
   const [oldPassword, setOldPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate(); 
 
-  // Determinar si es flujo de recuperación
+
   const isRecoveryFlow = !!email && !!code;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (isRecoveryFlow) {
-      // Flujo de recuperación de contraseña (sin contraseña actual)
+
       if (!email || !code) {
         toast.error("Faltan datos en la URL.");
         return;
@@ -38,14 +39,15 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
       
       try {
         await passwordManagement.createPassword(email, password, code);
-        toast.success("Contraseña restablecida exitosamente.");
+        toast.success("Contraseña creada exitosamente."); 
+        navigate("/login"); 
       } catch (error) {
         const errorMessage = extractErrorMessage(error);
         toast.error("Error: " + errorMessage);
         console.error("Password reset error:", error);
       }
     } else if (isChangeMode) {
-      // Flujo de cambio normal (requiere contraseña actual)
+
       const username = Cookies.get("username");
       if (!username) {
         toast.error("Usuario no autenticado.");
@@ -59,6 +61,7 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
       try {
         await passwordManagement.changePassword(username, oldPassword, password);
         toast.success("Contraseña cambiada exitosamente.");
+        navigate("/login"); 
       } catch (error) {
         const errorMessage = extractErrorMessage(error);
         toast.error("Error: " + errorMessage);
@@ -145,7 +148,7 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             {isRecoveryFlow 
-              ? "Restablecer Contraseña" 
+              ? isChangeMode ? "Restablecer Contraseña" : "Crear Contraseña" 
               : isChangeMode 
               ? "Cambiar Contraseña" 
               : "Crear Contraseña"}
@@ -229,7 +232,7 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
             <ButtonWithCooldown
               label={
                 isRecoveryFlow 
-                  ? "Restablecer contraseña" 
+                  ? isChangeMode ? "Restablecer contraseña" : "Crear contraseña" 
                   : isChangeMode 
                   ? "Cambiar contraseña" 
                   : "Crear contraseña"

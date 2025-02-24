@@ -9,17 +9,23 @@ import {
   HomeIcon as IconHome,
   EditIcon as IconEdit,
   FolderIcon as IconFolder,
-} from "lucide-react"; 
-import { Link } from "react-router-dom";
+  CalendarIcon as IconCalendar,
+} from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { Paciente, Medico } from "@/api/models/personaModels";
 import { useEffect, useState } from "react";
 import { personaApi } from "@/api/classes apis/personaApi";
 import { extractErrorMessage } from "@/api/misc/errorHandler";
+import { useAuth } from "@/context/AuthProvider"; 
 
 export default function Profile({ patient }: { patient: Medico | Paciente }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadingImage, setLoadingImage] = useState(true);
+  const { personaData } = useAuth(); 
+  const navigate = useNavigate();
 
+  // Verificamos si el usuario está viendo su propio perfil
+  const isOwnProfile = personaData?.credenciales.email === patient.credenciales?.email;
 
   useEffect(() => {
     const loadProfilePicture = async () => {
@@ -32,7 +38,7 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
           setImageUrl(url);
         }
       } catch (error) {
-        const errorMessage = extractErrorMessage(error)
+        const errorMessage = extractErrorMessage(error);
         console.error("Profile picture error:", errorMessage);
       } finally {
         setLoadingImage(false);
@@ -70,12 +76,15 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
           <div>
             <CardTitle className="text-3xl font-bold text-primary-dark">
               {patient.nombre} {patient.apellido}
-              <Link
-                to={`edit`}
-                className="ml-4 inline-block hover:text-primary transition-colors"
-              >
-                <IconEdit className="w-6 h-6" />
-              </Link>
+              {/* Mostramos botón de editar SOLO y solo si es el propio perfil */}
+              {isOwnProfile && (
+                <Link
+                  to={`edit`}
+                  className="ml-4 inline-block hover:text-primary transition-colors"
+                >
+                  <IconEdit className="w-6 h-6" />
+                </Link>
+              )}
             </CardTitle>
             <Badge
               variant="outline"
@@ -84,13 +93,26 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
               {patient.tipoPersona}
             </Badge>
 
-            <Link
-              to={`files`}
-              className="mt-4 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 transform duration-300"
-            >
-              <IconFolder className="w-5 h-5" />
-              <span className="font-semibold">Ver archivos</span>
-            </Link>
+            {/* Contenedor para los botones */}
+            <div className="flex flex-col gap-4 mt-4">
+              {/* Botón archivos */}
+              <Link
+                to={`files`}
+                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 transform duration-300"
+              >
+                <IconFolder className="w-5 h-5" />
+                <span className="font-semibold">Ver archivos</span>
+              </Link>
+
+              {/* Botón  consultas */}
+              <button
+                onClick={() => navigate(`/profile/${patient.credenciales.email}/consultas`)}
+                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 transform duration-300"
+              >
+                <IconCalendar className="w-5 h-5" />
+                <span className="font-semibold">Ver consultas</span>
+              </button>
+            </div>
           </div>
         </div>
       </CardHeader>

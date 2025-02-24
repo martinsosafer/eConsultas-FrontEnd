@@ -66,7 +66,7 @@ export const PayConsulta = () => {
     try {
       await consultaDashboardApi.updateConsulta(consulta.id, { pagado: true });
       toast.success("Pago registrado exitosamente!");
-      setTimeout(() => navigate("/comprobantes"), 2000);
+      setTimeout(() => navigate(`/consultas/comprobantes/${consulta.id}`), 2000);
     } catch (error) {
       toast.error("Error al registrar el pago");
       console.error("Error:", error);

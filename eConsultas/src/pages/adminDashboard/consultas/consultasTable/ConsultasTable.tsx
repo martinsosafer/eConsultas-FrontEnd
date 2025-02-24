@@ -24,6 +24,7 @@ import type { ConsultaDTO } from "@/api/models/consultaModels";
 import { useAuth } from "@/context/AuthProvider";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { CreateConsultaModal } from "./createConsultaModal/CreateConsultaModal"; 
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 export default function ConsultasTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -104,7 +105,8 @@ export default function ConsultasTable() {
       );
       toast.success("Consulta eliminada");
     } catch (error) {
-      toast.error("Error eliminando consulta");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error eliminando consulta: " + errorMessage );
     }
   };
 
