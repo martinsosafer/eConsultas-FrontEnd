@@ -51,22 +51,34 @@ export default function PaqueteTable() {
     (role) => role.id === 3
   );
 
+
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         const [paquetesData, tiposData] = await Promise.all([
           paqueteDashboardApi.getAllPaquetes(),
-          servicioApi.getAllTiposServicio()
+          servicioApi.getAllTiposServicio(),
         ]);
         setPaquetes(paquetesData);
         setTiposServicio(tiposData);
         applyFilters(paquetesData, filter);
+
+        if (!isAnimating && tableRef.current) {
+          tableRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        }
       } catch (error) {
         toast.error("Error cargando datos iniciales");
+      } finally {
+        setInitialLoad(false);
       }
     };
+
     loadInitialData();
   }, [isAnimating]);
+
 
   const refreshPaquetes = async () => {
     try {
@@ -78,6 +90,7 @@ export default function PaqueteTable() {
     }
   };
 
+  // Aplicamos filtros
   const applyFilters = (data: Paquete[], currentFilter: string) => {
     const filtered = data.filter((paquete) => {
       const matchesSearch =
@@ -96,33 +109,37 @@ export default function PaqueteTable() {
     setFilteredPaquetes(filtered);
   };
 
+  // Manejamos búsqueda
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value;
     setSearchTerm(term);
     applyFilters(paquetes, filter);
   };
 
+  // Manejamos cambio de filtro
   const handleFilterChange = (value: string) => {
     setFilter(value);
     applyFilters(paquetes, value);
   };
 
+  // Eliminamos paquete
   const handleDeleteClick = async (paquete: Paquete) => {
     if (!confirm(`¿Eliminar el paquete #${paquete.id}?`)) return;
     try {
       await paqueteDashboardApi.deletePaquete(paquete.id);
-      setPaquetes(paquetes.filter((p) => p.id !== paquete.id));
-      setFilteredPaquetes(filteredPaquetes.filter((p) => p.id !== paquete.id));
+      setPaquetes((prev) => prev.filter((p) => p.id !== paquete.id));
+      setFilteredPaquetes((prev) => prev.filter((p) => p.id !== paquete.id));
       toast.success("Paquete eliminado exitosamente");
     } catch (error) {
       toast.error("Error eliminando paquete");
     }
   };
 
+  // Cambiamos estado (activar/desactivar)
   const handleToggleEnabled = async (paquete: Paquete, enabled: boolean) => {
     try {
       await paqueteDashboardApi.editPaquete(paquete.id, { enabled });
-      const updatedPaquetes = paquetes.map(p => 
+      const updatedPaquetes = paquetes.map((p) =>
         p.id === paquete.id ? { ...p, enabled } : p
       );
       setPaquetes(updatedPaquetes);
@@ -133,6 +150,7 @@ export default function PaqueteTable() {
     }
   };
 
+  // Copiar ID
   const handleCopyId = async (id: number) => {
     try {
       await navigator.clipboard.writeText(id.toString());
@@ -142,6 +160,7 @@ export default function PaqueteTable() {
     }
   };
 
+  // Obtener tipos de servicio únicos
   const getUniqueServiceTypes = (paquete: Paquete) => {
     const types = new Set(
       paquete.servicios.map((servicio) => servicio.tipoServicio.nombre)

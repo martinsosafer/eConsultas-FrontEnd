@@ -43,9 +43,7 @@ import { useOutletContext, useNavigate } from "react-router-dom";
 import CreatePersonaModal from "./CreatePersonaModal/CreatePersonaModal";
 import { Switch } from "@/components/ui/switch";
 
-
 export default function PersonaTable() {
-
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<(Medico | Paciente)[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<(Medico | Paciente)[]>([]);
@@ -59,20 +57,32 @@ export default function PersonaTable() {
   );
   const isAdmin = personaData?.credenciales.roles.some((role) => role.id === 1);
   const navigate = useNavigate();
+  const tableRef = useRef<HTMLDivElement>(null);
+  const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
+  const [initialLoad, setInitialLoad] = useState(true);
 
-  // useEffect(() => {
-  //   const fetchUsers = async () => {
-  //     try {
-  //       const personas = await personaDashboardApi.getAllPersonas();
-  //       setUsers(personas);
-  //       applyFilters(personas, filter, searchTerm, roleFilter);
-  //     } catch (error) {
-  //       toast.error("Error cargando usuarios");
-  //     }
-  //   };
-  //   fetchUsers();
-  // }, [filter, roleFilter]);
+  // Cargamos datos iniciales
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const personas = await personaDashboardApi.getAllPersonas();
+        setUsers(personas);
+        applyFilters(personas, filter, searchTerm, roleFilter);
 
+        if (!isAnimating && tableRef.current) {
+          tableRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      } catch (error) {
+        toast.error("Error cargando usuarios");
+      } finally {
+        setInitialLoad(false);
+      }
+    };
+
+    fetchUsers();
+  }, [filter, roleFilter, isAnimating]);
+
+  // Aplicamos filtros
   const applyFilters = (
     data: (Medico | Paciente)[],
     currentFilter: string,
@@ -94,9 +104,17 @@ export default function PersonaTable() {
     setFilteredUsers(filtered);
   };
 
+  // Manejamos búsqueda
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const term = event.target.value;
+    setSearchTerm(term);
+    applyFilters(users, filter, term, roleFilter);
+  };
+
+  // Cambiamos estado (habilitar/deshabilitar)
   const handleToggleEnabled = async (user: Medico | Paciente, enabled: boolean) => {
     const isTargetSuperAdmin = user.credenciales.roles.some((role) => role.id === 3);
-    if (isTargetSuperAdmin) {
+    if (isTargetSuperAdmin && !isSuperAdmin) {
       toast.error("No se puede modificar a un SuperAdmin");
       return;
     }
@@ -114,12 +132,7 @@ export default function PersonaTable() {
     }
   };
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const term = event.target.value;
-    setSearchTerm(term);
-    applyFilters(users, filter, term, roleFilter);
-  };
-
+  // Creamos usuario
   const handleCreateUser = async (newUserData: CreatePersona) => {
     try {
       const createdUser = await personaDashboardApi.createPersona(newUserData);
@@ -128,15 +141,16 @@ export default function PersonaTable() {
       applyFilters(updatedUsers, filter, searchTerm, roleFilter);
       toast.success("Usuario creado con éxito");
     } catch (error) {
-      console.log("error", error);
       toast.error("Error al crear el usuario");
     }
   };
 
+  // Editamos usuario :P
   const handleEditClick = (user: Medico | Paciente) => {
     setEditingUser(user);
   };
 
+  // Guardamos cambios en la edición
   const handleSave = async (updatedUser: Medico | Paciente) => {
     try {
       const savedUser = await personaApi.updatePersona(
@@ -150,30 +164,14 @@ export default function PersonaTable() {
       setEditingUser(null);
       toast.success("Usuario actualizado con éxito");
     } catch (error) {
-      toast.error("Error saving user");
+      toast.error("Error guardando usuario");
     }
   };
 
-  const mapRoles = (roles: { id: number }[]) => {
-    return roles
-      .map((role) => {
-        switch (role.id) {
-          case 1:
-            return "Admin";
-          case 2:
-            return "Cliente";
-          case 3:
-            return "Super Admin";
-          default:
-            return "Desconocido";
-        }
-      })
-      .join(", ");
-  };
-
+  // Eliminamos usuario
   const handleDeleteClick = async (user: Medico | Paciente) => {
     const isTargetSuperAdmin = user.credenciales.roles.some((role) => role.id === 3);
-    if (isTargetSuperAdmin) {
+    if (isTargetSuperAdmin && !isSuperAdmin) {
       toast.error("No se puede eliminar a un SuperAdmin");
       return;
     }
@@ -191,6 +189,7 @@ export default function PersonaTable() {
     }
   };
 
+  // Copiamos ID del usuario
   const handleCopyUserId = async (user: Medico | Paciente) => {
     try {
       await navigator.clipboard.writeText(user.id);
@@ -200,31 +199,28 @@ export default function PersonaTable() {
     }
   };
 
+  // Vemos perfil
   const handleViewProfile = (email: string) => {
     navigate(`/profile/${email}`);
   };
 
-  const tableRef = useRef<HTMLDivElement>(null);
-  const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
-  const [initialLoad, setInitialLoad] = useState(true);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const personas = await personaDashboardApi.getAllPersonas();
-        setUsers(personas);
-        applyFilters(personas, filter, searchTerm, roleFilter);
-
-        if (!isAnimating && tableRef.current) {
-          tableRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  // Mapeamos roles a texto
+  const mapRoles = (roles: { id: number }[]) => {
+    return roles
+      .map((role) => {
+        switch (role.id) {
+          case 1:
+            return "Admin";
+          case 2:
+            return "Usuario";
+          case 3:
+            return "Super Admin";
+          default:
+            return "Desconocido";
         }
-      } catch (error) {
-        toast.error("Error loading users");
-      }
-    };
-
-    fetchUsers();
-  }, [filter, roleFilter, isAnimating]);
+      })
+      .join(", ");
+  };
 
   return (
     <div
@@ -356,7 +352,7 @@ export default function PersonaTable() {
                     <Switch
                       checked={user.credenciales.enabled}
                       onCheckedChange={(enabled) => handleToggleEnabled(user, enabled)}
-                      disabled={isTargetSuperAdmin || !(isAdmin || isSuperAdmin)}
+                      disabled={isTargetSuperAdmin && !isSuperAdmin}
                     />
                     <span
                       className={`px-2 py-1 rounded-full text-xs ${
@@ -371,16 +367,14 @@ export default function PersonaTable() {
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-
-                      <Button
-                        variant="ghost"
-                        className="h-8 w-8 p-0"
-                        onClick={() => handleViewProfile(user.credenciales.email)}
-                        title="Ver perfil"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-
+                    <Button
+                      variant="ghost"
+                      className="h-8 w-8 p-0"
+                      onClick={() => handleViewProfile(user.credenciales.email)}
+                      title="Ver perfil"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0" title="Más opciones">
@@ -395,11 +389,10 @@ export default function PersonaTable() {
                           <Copy className="mr-2 h-4 w-4" />
                           Copiar ID
                         </DropdownMenuItem>
-                        {isSuperAdmin && (
+                        {(isSuperAdmin || (isAdmin && !isTargetSuperAdmin)) && (
                           <DropdownMenuItem
                             onClick={() => handleEditClick(user)}
                             title="Editar usuario"
-                            disabled={isTargetSuperAdmin || isAdmin}
                           >
                             <Edit className="mr-2 h-4 w-4" />
                             Editar

@@ -17,7 +17,7 @@ import ReportesManagement from "@/pages/adminDashboard/reportes/index.tsx";
 import ConsultasAdminPage from "@/pages/adminDashboard/consultas/index.tsx";
 import ServiciosPage from "@/pages/adminDashboard/todosServicios/index.tsx";
 import PaquetesPage from "@/pages/adminDashboard/paquetes/index.tsx";
-import NotAllowed from "@/components/errors/NotAllowed.tsx";
+import NotAllowed from "@/components/errors/NotAllowedPage.tsx";
 
 // Importaciones lazy para el resto de componentes : D
 const Home = lazy(() => import("../pages"));

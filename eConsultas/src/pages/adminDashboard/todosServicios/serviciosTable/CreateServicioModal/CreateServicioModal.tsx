@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import type { CreateServicio } from "@/api/models/servicioModels";
+import type { CreateServicio, TipoServicio } from "@/api/models/servicioModels"; 
 import {
   Select,
   SelectContent,
@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { servicioApi } from "@/api/classes apis/servicioApi"; 
 
 interface CreateServicioModalProps {
   open: boolean;
@@ -29,9 +30,33 @@ export default function CreateServicioModal({
   const [newServicio, setNewServicio] = useState<CreateServicio>({
     descripcion: "",
     precio: 0,
-    tipoServicio: { id: 1 }, // Changed to match API structure
+    tipoServicio: { id: 0 }, 
     enabled: true,
   });
+
+  const [tiposServicio, setTiposServicio] = useState<TipoServicio[]>([]); 
+
+
+  useEffect(() => {
+    const loadTiposServicio = async () => {
+      try {
+        const tipos = await servicioApi.getAllTiposServicio();
+        setTiposServicio(tipos);
+        
+
+        if (tipos.length > 0) {
+          setNewServicio((prev) => ({
+            ...prev,
+            tipoServicio: { id: tipos[0].id },
+          }));
+        }
+      } catch (error) {
+        toast.error("Error cargando tipos de servicio");
+      }
+    };
+
+    loadTiposServicio();
+  }, []);
 
   const handleSubmit = async () => {
     if (!newServicio.descripcion || newServicio.precio <= 0) {
@@ -40,15 +65,12 @@ export default function CreateServicioModal({
     }
 
     try {
-      await onSave({
-        ...newServicio,
-        tipoServicio: { id: newServicio.tipoServicio.id }, // Ensure correct structure
-      });
+      await onSave(newServicio);
       onOpenChange(false);
       setNewServicio({
         descripcion: "",
         precio: 0,
-        tipoServicio: { id: 1 },
+        tipoServicio: { id: tiposServicio[0]?.id || 0 }, 
         enabled: true,
       });
       toast.success("Servicio creado exitosamente");
@@ -108,9 +130,11 @@ export default function CreateServicioModal({
                   <SelectValue placeholder="Seleccionar tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">Consultas generales</SelectItem>
-                  <SelectItem value="2">Consultas especializadas</SelectItem>
-                  <SelectItem value="3">Exámenes médicos</SelectItem>
+                  {tiposServicio.map((tipo) => (
+                    <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                      {tipo.nombre}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

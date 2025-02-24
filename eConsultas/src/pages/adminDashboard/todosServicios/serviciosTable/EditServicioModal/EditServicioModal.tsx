@@ -33,6 +33,7 @@ export default function EditServicioModal({
 }: EditServicioModalProps) {
   const [editedServicio, setEditedServicio] = useState<Servicio | null>(null);
 
+
   useEffect(() => {
     if (servicio) {
       setEditedServicio(servicio);
@@ -42,22 +43,23 @@ export default function EditServicioModal({
   const handleSubmit = async () => {
     if (!editedServicio) return;
 
+
     if (!editedServicio.descripcion || editedServicio.precio <= 0) {
       toast.error("Por favor complete todos los campos requeridos");
       return;
     }
 
     try {
-
       const updatedServicio = await servicioDashboardApi.editServicio(
         editedServicio.id,
         {
           descripcion: editedServicio.descripcion,
           precio: editedServicio.precio,
-          tipoServicio: editedServicio.tipoServicio, 
+          tipoServicio: editedServicio.tipoServicio,
           enabled: editedServicio.enabled,
         }
       );
+
 
       await onSave(updatedServicio);
 

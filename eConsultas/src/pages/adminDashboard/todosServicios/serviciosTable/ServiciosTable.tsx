@@ -58,7 +58,6 @@ export default function ServicioTable() {
     (role) => role.id === 3
   );
 
-  // Cargar datos iniciales
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -71,74 +70,67 @@ export default function ServicioTable() {
         applyFilters(serviciosData, filter);
       } catch (error) {
         toast.error("Error cargando datos iniciales");
+      } finally {
+        setInitialLoad(false);
       }
     };
 
     loadInitialData();
   }, [isAnimating]);
 
-  // Aplicar filtros
   const applyFilters = (data: Servicio[], currentFilter: string) => {
     const filtered = data.filter(
       (servicio) =>
-        (currentFilter === "all" ||
-          servicio.tipoServicio.nombre === currentFilter) &&
+        (currentFilter === "all" || servicio.tipoServicio.id.toString() === currentFilter) &&
         (servicio.descripcion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        servicio.id.toString().includes(searchTerm) // Búsqueda por ID
+        servicio.id.toString().includes(searchTerm)
     ));
     setFilteredServicios(filtered);
   };
 
-  // Cambiar estado (activar/desactivar)
-  const handleToggleEnabled = async (servicio: Servicio, enabled: boolean) => {
-    try {
-      const updatedServicio = await servicioDashboardApi.editServicio(servicio.id, {
-        enabled,
-        tipoServicio: servicio.tipoServicio, // Asegurar que se envíe el tipoServicio completo
-      });
-      setServicios((prev) => prev.map((s) => (s.id === servicio.id ? updatedServicio : s)));
-      applyFilters(servicios.map((s) => (s.id === servicio.id ? updatedServicio : s)), filter);
-      toast.success(`Servicio ${enabled ? "activado" : "desactivado"}`);
-    } catch (error) {
-      toast.error("Error actualizando servicio");
-    }
-  };
-
-  // Buscar servicios
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     const term = event.target.value;
     setSearchTerm(term);
     applyFilters(servicios, filter);
   };
 
-  // Cambiar filtro de tipo de servicio
   const handleFilterChange = (value: string) => {
     setFilter(value);
     applyFilters(servicios, value);
   };
 
-  // Editar servicio
-  const handleEditClick = (servicio: Servicio) => {
-    setEditingServicio(servicio);
+  const handleToggleEnabled = async (servicio: Servicio, enabled: boolean) => {
+    try {
+      const updatedServicio = await servicioDashboardApi.editServicio(servicio.id, {
+        ...servicio,
+        enabled
+      });
+      
+      setServicios(prev => 
+        prev.map(s => s.id === servicio.id ? updatedServicio : s)
+      );
+      applyFilters(servicios.map(s => s.id === servicio.id ? updatedServicio : s), filter);
+      toast.success(`Servicio ${enabled ? "activado" : "desactivado"}`);
+    } catch (error) {
+      toast.error("Error actualizando servicio");
+    }
   };
 
-  // Eliminar servicio
   const handleDeleteClick = async (servicio: Servicio) => {
     if (!confirm(`¿Eliminar el servicio: ${servicio.descripcion}?`)) return;
     try {
       await servicioDashboardApi.deleteServicio(servicio.id);
-      setServicios((prev) => prev.filter((s) => s.id !== servicio.id));
-      setFilteredServicios((prev) => prev.filter((s) => s.id !== servicio.id));
+      setServicios(prev => prev.filter(s => s.id !== servicio.id));
+      setFilteredServicios(prev => prev.filter(s => s.id !== servicio.id));
       toast.success("Servicio eliminado");
     } catch (error) {
       toast.error("Error eliminando servicio");
     }
   };
 
-  // Copiar ID del servicio
-  const handleCopyId = async (id: string) => {
+  const handleCopyId = async (id: number) => {
     try {
-      await navigator.clipboard.writeText(id);
+      await navigator.clipboard.writeText(id.toString());
       toast.success("ID copiado al portapapeles");
     } catch (error) {
       toast.error("Error copiando ID");
@@ -153,35 +145,28 @@ export default function ServicioTable() {
         opacity: initialLoad ? 0 : 1,
         transition: "opacity 0.2s ease",
       }}
-      onTransitionEnd={() => setInitialLoad(false)}
     >
       <Toaster
         theme="system"
         toastOptions={{
           classNames: {
-            toast:
-              "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+            toast: "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
             description: "group-[.toast]:text-muted-foreground",
-            success:
-              "group-[.toast]:bg-green-100 group-[.toast]:text-green-800 group-[.toast]:border-green-200",
-            error:
-              "group-[.toast]:bg-red-100 group-[.toast]:text-red-800 group-[.toast]:border-red-200",
+            success: "group-[.toast]:bg-green-100 group-[.toast]:text-green-800 group-[.toast]:border-green-200",
+            error: "group-[.toast]:bg-red-100 group-[.toast]:text-red-800 group-[.toast]:border-red-200",
           },
         }}
       />
 
-      <div className="flex justify-between items-center">
-        <div className="relative w-64">
+      <div className="flex justify-between items-center gap-4 flex-wrap">
+        <div className="relative flex-1 max-w-xs">
           <Input
-            placeholder="Buscar servicios por descripción o ID..."
+            placeholder="Buscar servicios..."
             value={searchTerm}
             onChange={handleSearch}
             className="pl-10"
           />
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-            size={20}
-          />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
         </div>
 
         <Select value={filter} onValueChange={handleFilterChange}>
@@ -191,7 +176,7 @@ export default function ServicioTable() {
           <SelectContent>
             <SelectItem value="all">Todos</SelectItem>
             {tiposServicio.map((tipo) => (
-              <SelectItem key={tipo.id} value={tipo.nombre}>
+              <SelectItem key={tipo.id} value={tipo.id.toString()}>
                 {tipo.nombre}
               </SelectItem>
             ))}
@@ -199,11 +184,8 @@ export default function ServicioTable() {
         </Select>
 
         {isSuperAdmin && (
-          <Button
-            className="bg-primary hover:bg-primary-hover text-white"
-            onClick={() => setCreateModalOpen(true)}
-          >
-            <PlusCircle className="mr-2" size={20} />
+          <Button onClick={() => setCreateModalOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
             Nuevo Servicio
           </Button>
         )}
@@ -214,7 +196,7 @@ export default function ServicioTable() {
           <TableRow>
             <TableHead>Descripción</TableHead>
             <TableHead>Precio</TableHead>
-            <TableHead>Tipo de Servicio</TableHead>
+            <TableHead>Tipo</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead>Acciones</TableHead>
           </TableRow>
@@ -222,7 +204,7 @@ export default function ServicioTable() {
         <TableBody>
           {filteredServicios.map((servicio) => (
             <TableRow key={servicio.id}>
-              <TableCell>{servicio.descripcion}</TableCell>
+              <TableCell className="font-medium">{servicio.descripcion}</TableCell>
               <TableCell>${servicio.precio.toFixed(2)}</TableCell>
               <TableCell>{servicio.tipoServicio.nombre}</TableCell>
               <TableCell>
@@ -231,13 +213,9 @@ export default function ServicioTable() {
                     checked={servicio.enabled}
                     onCheckedChange={(enabled) => handleToggleEnabled(servicio, enabled)}
                   />
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      servicio.enabled
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
+                  <span className={`px-2 py-1 rounded-full text-xs ${
+                    servicio.enabled ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                  }`}>
                     {servicio.enabled ? "Activo" : "Inactivo"}
                   </span>
                 </div>
@@ -250,22 +228,19 @@ export default function ServicioTable() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleCopyId(servicio.id.toString())}>
+                    <DropdownMenuItem onClick={() => handleCopyId(servicio.id)}>
                       <Copy className="mr-2 h-4 w-4" />
                       Copiar ID
                     </DropdownMenuItem>
                     {isSuperAdmin && (
                       <>
-                        <DropdownMenuItem
-                          onClick={() => handleEditClick(servicio)}
-                          title="Editar servicio"
-                        >
+                        <DropdownMenuItem onClick={() => setEditingServicio(servicio)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Editar
                         </DropdownMenuItem>
                         <DropdownMenuItem
+                          className="text-red-600"
                           onClick={() => handleDeleteClick(servicio)}
-                          title="Eliminar servicio"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Eliminar
@@ -280,53 +255,51 @@ export default function ServicioTable() {
         </TableBody>
       </Table>
 
-      {editingServicio && (
-        <EditServicioModal
-          open={!!editingServicio}
-          onOpenChange={(open) => !open && setEditingServicio(null)}
-          servicio={editingServicio}
-          onSave={async (updatedServicio) => {
-            try {
-              const updated = await servicioDashboardApi.editServicio(
-                updatedServicio.id,
-                {
-                  descripcion: updatedServicio.descripcion,
-                  precio: updatedServicio.precio,
-                  tipoServicio: updatedServicio.tipoServicio, 
-                  enabled: updatedServicio.enabled,
-                }
-              );
-              setServicios((prev) =>
-                prev.map((s) => (s.id === updated.id ? updated : s))
-              );
-              setFilteredServicios((prev) =>
-                prev.map((s) => (s.id === updated.id ? updated : s))
-              );
-              setEditingServicio(null);
-              toast.success("Servicio actualizado con éxito");
-            } catch (error) {
-              toast.error("Error actualizando servicio");
-            }
-          }}
-          tiposServicio={tiposServicio}
-        />
-      )}
-
       <CreateServicioModal
-        open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
-        onSave={async (newServicio) => {
-          try {
-            const createdServicio = await servicioDashboardApi.createServicio(
-              newServicio
-            );
-            setServicios([...servicios, createdServicio]);
-            applyFilters([...servicios, createdServicio], filter);
-          } catch (error) {
-            toast.error("Error creando servicio");
-          }
-        }}
-      />
+      open={createModalOpen}
+      onOpenChange={setCreateModalOpen}
+      onSave={async (newServicio) => { 
+        try {
+          const createdServicio = await servicioDashboardApi.createServicio(newServicio);
+          setServicios(prev => [...prev, createdServicio]);
+          applyFilters([...servicios, createdServicio], filter);
+        } catch (error) {
+          toast.error("Error creando servicio");
+        }
+      }}
+    />
+
+
+{editingServicio && (
+  <EditServicioModal
+    open={!!editingServicio}
+    onOpenChange={(open) => {
+      if (!open) {
+        setEditingServicio(null); 
+      }
+    }}
+    servicio={editingServicio}
+    tiposServicio={tiposServicio}
+    onSave={async (updatedServicio) => {
+      try {
+        const updated = await servicioDashboardApi.editServicio(
+          updatedServicio.id,
+          updatedServicio
+        );
+        setServicios(prev => 
+          prev.map(s => s.id === updated.id ? updated : s)
+        );
+        setFilteredServicios(prev => 
+          prev.map(s => s.id === updated.id ? updated : s)
+        );
+        setEditingServicio(null);
+        toast.success("Servicio actualizado con éxito");
+      } catch (error) {
+        toast.error("Error actualizando servicio");
+      }
+    }}
+  />
+)}
     </div>
   );
 }

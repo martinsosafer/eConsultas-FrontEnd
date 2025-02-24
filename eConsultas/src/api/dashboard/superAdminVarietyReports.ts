@@ -5,7 +5,7 @@ export const dashboardApi = {
   async getTotalNumberOfPacientes(): Promise<string> {
     try {
       const response = await api.get(
-        "/api/usuarios/pacientes/totao-pacientes",
+        "/usuarios/pacientes/totao-pacientes",
         {
           headers: {
             Accept: "*/*",
