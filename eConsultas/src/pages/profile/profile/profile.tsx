@@ -10,19 +10,22 @@ import {
   EditIcon as IconEdit,
   FolderIcon as IconFolder,
   CalendarIcon as IconCalendar,
+  ClockIcon as IconClock, 
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Paciente, Medico } from "@/api/models/personaModels";
 import { useEffect, useState } from "react";
 import { personaApi } from "@/api/classes apis/personaApi";
 import { extractErrorMessage } from "@/api/misc/errorHandler";
-import { useAuth } from "@/context/AuthProvider"; 
+import { useAuth } from "@/context/AuthProvider";
+import { MedicalScheduleModal } from "./seeProfileMedicalSchedule"; 
 
 export default function Profile({ patient }: { patient: Medico | Paciente }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loadingImage, setLoadingImage] = useState(true);
-  const { personaData } = useAuth(); 
+  const { personaData } = useAuth();
   const navigate = useNavigate();
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false); 
 
   // Verificamos si el usuario está viendo su propio perfil
   const isOwnProfile = personaData?.credenciales.email === patient.credenciales?.email;
@@ -104,7 +107,7 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
                 <span className="font-semibold">Ver archivos</span>
               </Link>
 
-              {/* Botón  consultas */}
+              {/* Botón consultas */}
               <button
                 onClick={() => navigate(`/profile/${patient.credenciales.email}/consultas`)}
                 className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 transform duration-300"
@@ -112,6 +115,17 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
                 <IconCalendar className="w-5 h-5" />
                 <span className="font-semibold">Ver consultas</span>
               </button>
+
+              {/* Botón horario (solo para médicos) */}
+              {patient?.tipoPersona === "MEDICO" && (
+                <button
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 transform duration-300"
+                >
+                  <IconClock className="w-5 h-5" />
+                  <span className="font-semibold">Ver horario</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -180,6 +194,14 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
           </div>
         </section>
       </CardContent>
+
+      {/* Modal del horario del médico */}
+      {isScheduleModalOpen && (
+        <MedicalScheduleModal
+          medicoEmail={patient.credenciales.email}
+          onClose={() => setIsScheduleModalOpen(false)}
+        />
+      )}
     </Card>
   );
 }

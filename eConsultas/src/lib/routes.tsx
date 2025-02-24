@@ -22,8 +22,6 @@ import NotAllowed from "@/components/errors/NotAllowedPage.tsx";
 // Importaciones lazy para el resto de componentes : D
 const Home = lazy(() => import("../pages"));
 const About = lazy(() => import("../pages/about.tsx"));
-const BloquePaciente = lazy(() => import("../pages/paciente/index.tsx"));
-const DatosPaciente = lazy(() => import("../pages/paciente/[id].tsx"));
 const ColorSystemShowcase = lazy(() => import("../pages/colorshowcase/index.tsx"));
 const PasswordCreate = lazy(() => import("@/pages/passwordManagement/index.tsx"));
 const Login = lazy(() => import("@/pages/login/index.tsx"));
@@ -86,27 +84,7 @@ export const router = createBrowserRouter([
           },
         ],
       },
-      {
-        path: "paciente",
-        children: [
-          {
-            index: true,
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <BloquePaciente />
-              </Suspense>
-            ),
-          },
-          {
-            path: ":id",
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <DatosPaciente />
-              </Suspense>
-            ),
-          },
-        ],
-      },
+
       {
         path: "colorshowcase",
         element: (
