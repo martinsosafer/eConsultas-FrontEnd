@@ -37,7 +37,7 @@ export default function CreatePersonaModal({
     fechaNacimiento: "",
     credenciales: {
       email: "",
-      codigoDeLlamada: "54",
+      codigoDeLlamada: "+54",
       celular: "",
     },
     obraSocial: false,

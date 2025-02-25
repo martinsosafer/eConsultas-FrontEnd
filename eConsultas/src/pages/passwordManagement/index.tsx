@@ -38,8 +38,11 @@ const PasswordCreate: React.FC<PasswordCreateProps> = ({ isChangeMode = false })
   
       try {
         await passwordManagement.createPassword(email, password, code);
-        toast.success("Contraseña creada exitosamente.");
-        navigate("/login");
+        toast.success("Contraseña cambiada correctamente, redirijiendo en 3 segundos...");
+        
+        setTimeout(() => {
+          navigate("/login");
+        }, 3000); 
       } catch (error) {
         const errorMessage = extractErrorMessage(error);
         toast.error("Error: " + errorMessage);

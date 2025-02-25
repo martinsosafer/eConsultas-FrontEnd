@@ -231,6 +231,15 @@ export default function PersonaTable() {
     }
   };
 
+  const handleCopyUserEmail = async (user: Medico | Paciente) => {
+    try {
+      await navigator.clipboard.writeText(user.credenciales.email);
+      toast.success("Email del usuario copiado al portapapeles");
+    } catch (error) {
+      toast.error("Error copiando el email");
+    }
+  };
+
   // Vemos perfil
   const handleViewProfile = (email: string) => {
     navigate(`/profile/${email}`);
@@ -377,7 +386,7 @@ export default function PersonaTable() {
                     <TableCell>{user.apellido}</TableCell>
                     <TableCell>{user.nombre}</TableCell>
                     <TableCell>{user.dni}</TableCell>
-                    <TableCell>{user.credenciales.email}</TableCell>
+                    <TableCell>{user.credenciales.email.slice(0, 9) + "..."}</TableCell>
                     <TableCell>
                       {user.tipoPersona === "PACIENTE"
                         ? (user as Paciente).obraSocial
@@ -449,6 +458,13 @@ export default function PersonaTable() {
                             >
                               <Copy className="mr-2 h-4 w-4" />
                               Copiar ID
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleCopyUserEmail(user)}
+                              title="Copiar email del usuario"
+                            >
+                              <Copy className="mr-2 h-4 w-4" />
+                              Copiar Email
                             </DropdownMenuItem>
                             {(isSuperAdmin ||
                               (isAdmin && !isTargetSuperAdmin)) && (
