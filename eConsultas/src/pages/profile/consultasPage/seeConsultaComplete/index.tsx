@@ -220,9 +220,7 @@ export default function ConsultaDetailPage() {
                 >
                   {consulta.paciente.nombre} {consulta.paciente.apellido}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  {consulta.paciente.credenciales.email}
-                </p>
+
               </div>
             </div>
           </motion.div>
@@ -262,9 +260,7 @@ export default function ConsultaDetailPage() {
                 >
                   {consulta.medico.nombre} {consulta.medico.apellido}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  {consulta.medico.credenciales.email}
-                </p>
+
               </div>
             </div>
           </motion.div>
