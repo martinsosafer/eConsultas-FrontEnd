@@ -75,7 +75,7 @@ Este proyecto participa en el concurso [HackaCode](https://hackacode.todocodeaca
   _Todo extra que se encuentre dentro de esta carpeta de API son o los archivos axios, o verificación de contraseña, etc._
 
 ### Components
-  - Animations: Animaciones.
+  - Animations: Animaciones dinámicas.
   - Classes components: Componentes de clases de la consigna (Ya sea como selectors o cards de estos).
   - errors: Componentes de páginas de errores como NotAllowedPage (error 401) o NotFoundPage (error404).
   - Home: Componentes del home.
