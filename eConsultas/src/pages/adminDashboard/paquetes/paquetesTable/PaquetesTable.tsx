@@ -51,7 +51,6 @@ export default function PaqueteTable() {
     (role) => role.id === 3
   );
 
-
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -78,7 +77,6 @@ export default function PaqueteTable() {
 
     loadInitialData();
   }, [isAnimating]);
-
 
   const refreshPaquetes = async () => {
     try {
@@ -171,7 +169,7 @@ export default function PaqueteTable() {
   return (
     <div
       ref={tableRef}
-      className="container mx-auto p-6 space-y-6"
+      className="w-full max-w-[100vw] overflow-x-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6"
       style={{
         opacity: initialLoad ? 0 : 1,
         transition: "opacity 0.2s ease",
@@ -199,8 +197,8 @@ export default function PaqueteTable() {
         }}
       />
 
-      <div className="flex justify-between items-center">
-        <div className="relative w-64">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="w-full sm:w-64 relative">
           <Input
             placeholder="Buscar paquetes..."
             value={searchTerm}
@@ -213,100 +211,106 @@ export default function PaqueteTable() {
           />
         </div>
 
-        <Select value={filter} onValueChange={handleFilterChange}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filtrar por tipo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            {tiposServicio.map((tipo) => (
-              <SelectItem key={tipo.id} value={tipo.nombre}>
-                {tipo.nombre}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <Select value={filter} onValueChange={handleFilterChange}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <SelectValue placeholder="Filtrar por tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {tiposServicio.map((tipo) => (
+                <SelectItem key={tipo.id} value={tipo.nombre}>
+                  {tipo.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        <Button
-          className="bg-primary hover:bg-primary-hover text-white"
-          onClick={() => setCreateModalOpen(true)}
-        >
-          <PlusCircle className="mr-2" size={20} />
-          Nuevo Paquete
-        </Button>
+          <Button
+            className="bg-primary hover:bg-primary-hover text-white w-full sm:w-auto"
+            onClick={() => setCreateModalOpen(true)}
+          >
+            <PlusCircle className="mr-2" size={20} />
+            Nuevo Paquete
+          </Button>
+        </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ID</TableHead>
-            <TableHead>Precio</TableHead>
-            <TableHead>Servicios</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredPaquetes.map((paquete) => (
-            <TableRow key={paquete.id}>
-              <TableCell>#{paquete.id}</TableCell>
-              <TableCell>${paquete.precio.toFixed(2)}</TableCell>
-              <TableCell>
-                <div className="flex flex-col">
-                  <span>{paquete.servicios.length} servicios</span>
-                  <span className="text-sm text-muted-foreground">
-                    ({getUniqueServiceTypes(paquete)})
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={paquete.enabled}
-                    onCheckedChange={(enabled) =>
-                      handleToggleEnabled(paquete, enabled)
-                    }
-                  />
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      paquete.enabled
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {paquete.enabled ? "Activo" : "Inactivo"}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleCopyId(paquete.id)}>
-                      <Copy className="mr-2 h-4 w-4" />
-                      Copiar ID
-                    </DropdownMenuItem>
-                    {isSuperAdmin && (
-                      <>
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteClick(paquete)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>ID</TableHead>
+              <TableHead>Precio</TableHead>
+              <TableHead>Servicios</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Acciones</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredPaquetes.map((paquete) => (
+              <TableRow key={paquete.id}>
+                <TableCell>#{paquete.id}</TableCell>
+                <TableCell>${paquete.precio.toFixed(2)}</TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span>{paquete.servicios.length} servicios</span>
+                    <span className="text-sm text-muted-foreground">
+                      ({getUniqueServiceTypes(paquete)})
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={paquete.enabled}
+                      onCheckedChange={(enabled) =>
+                        handleToggleEnabled(paquete, enabled)
+                      }
+                    />
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${
+                        paquete.enabled
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {paquete.enabled ? "Activo" : "Inactivo"}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleCopyId(paquete.id)}
+                      >
+                        <Copy className="mr-2 h-4 w-4" />
+                        Copiar ID
+                      </DropdownMenuItem>
+                      {isSuperAdmin && (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteClick(paquete)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

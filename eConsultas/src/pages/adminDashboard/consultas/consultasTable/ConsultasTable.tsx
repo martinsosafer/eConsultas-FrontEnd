@@ -17,7 +17,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, MoreVertical, Trash2, Copy, PlusCircle, DollarSign } from "lucide-react";
+import {
+  Search,
+  MoreVertical,
+  Trash2,
+  Copy,
+  PlusCircle,
+  DollarSign,
+} from "lucide-react";
 import { toast, Toaster } from "sonner";
 import { consultaDashboardApi } from "@/api/dashboard/consultaDashboardApi";
 import type { ConsultaDTO } from "@/api/models/consultaModels";
@@ -43,11 +50,15 @@ export default function ConsultasTable() {
   const { isAnimating } = useOutletContext<{ isAnimating: boolean }>();
   const [initialLoad, setInitialLoad] = useState(true);
   const navigate = useNavigate();
-  const [dateOrder, setDateOrder] = useState<"asc" | "desc">("asc"); 
+  const [dateOrder, setDateOrder] = useState<"asc" | "desc">("asc");
   setDateOrder;
-  const [idOrder, setIdOrder] = useState<"asc" | "desc">("asc"); 
-  const isSuperAdmin = personaData?.credenciales.roles.some((role) => role.id === 3);
-  const isAdmin = personaData?.credenciales.roles.some(r => [1, 3].includes(r.id));
+  const [idOrder, setIdOrder] = useState<"asc" | "desc">("asc");
+  const isSuperAdmin = personaData?.credenciales.roles.some(
+    (role) => role.id === 3
+  );
+  const isAdmin = personaData?.credenciales.roles.some((r) =>
+    [1, 3].includes(r.id)
+  );
   // Cargar consultas
   useEffect(() => {
     const fetchConsultas = async () => {
@@ -57,7 +68,10 @@ export default function ConsultasTable() {
         applyFilters(consultasData);
 
         if (!isAnimating && tableRef.current) {
-          tableRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+          tableRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
         }
       } catch (error) {
         toast.error("Error cargando consultas");
@@ -161,7 +175,7 @@ export default function ConsultasTable() {
   return (
     <div
       ref={tableRef}
-      className="container mx-auto p-6 space-y-6"
+      className="w-full max-w-[100vw] overflow-x-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6"
       style={{
         opacity: initialLoad ? 0 : 1,
         transition: "opacity 0.2s ease",
@@ -188,8 +202,8 @@ export default function ConsultasTable() {
         }}
       />
 
-      <div className="flex justify-between items-center">
-        <div className="relative w-64">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="w-full sm:w-64 relative">
           <Input
             placeholder="Buscar consultas..."
             value={searchTerm}
@@ -202,10 +216,9 @@ export default function ConsultasTable() {
           />
         </div>
 
-        <div className="flex items-center gap-4">
-
+        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           <Select value={idOrder} onValueChange={handleIdOrderChange}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Ordenar por ID" />
             </SelectTrigger>
             <SelectContent>
@@ -215,7 +228,7 @@ export default function ConsultasTable() {
           </Select>
 
           <Button
-            className="bg-primary hover:bg-primary-hover text-white"
+            className="bg-primary hover:bg-primary-hover text-white w-full sm:w-auto"
             onClick={() => setCreateModalOpen(true)}
           >
             <PlusCircle className="mr-2" size={20} />
@@ -224,86 +237,90 @@ export default function ConsultasTable() {
         </div>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Médico</TableHead>
-            <TableHead>Especialidad</TableHead>
-            <TableHead>Paciente</TableHead>
-            <TableHead>Fecha</TableHead>
-            <TableHead>Paquete</TableHead>
-            <TableHead>Servicio</TableHead>
-            <TableHead>Total</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredConsultas.map((consulta) => (
-            <TableRow key={consulta.id}>
-              <TableCell>
-                {consulta.medico.nombre} {consulta.medico.apellido}
-              </TableCell>
-              <TableCell>
-                {consulta.medico.especialidad || "Sin especialidad"}
-              </TableCell>
-              <TableCell>
-                {consulta.paciente.nombre} {consulta.paciente.apellido}
-              </TableCell>
-              <TableCell>{consulta.fecha}</TableCell>
-              <TableCell>#{consulta.idPaquete || "N/A"}</TableCell>
-              <TableCell>#{consulta.idServicioMedico || "N/A"}</TableCell>
-              <TableCell>${consulta.total.toFixed(2)}</TableCell>
-              <TableCell>
-                <span
-                  className={`px-2 py-1 rounded-full text-xs ${
-                    consulta.pagado
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {consulta.pagado ? "Pagado" : "Pendiente"}
-                </span>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  {!consulta.pagado && isAdmin && (
-                    <Button
-                      variant="ghost"
-                      className="h-8 w-8 p-0 bg-green-100 hover:bg-green-200"
-                      onClick={() => handleRegisterPayment(consulta.id)}
-                      title="Registrar pago"
-                    >
-                      <DollarSign className="h-4 w-4 text-green-600" />
-                    </Button>
-                  )}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleCopyId(consulta.id)}>
-                        <Copy className="mr-2 h-4 w-4" />
-                        Copiar ID
-                      </DropdownMenuItem>
-                      {isSuperAdmin && !consulta.pagado && (
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteClick(consulta)}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </TableCell>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Médico</TableHead>
+              <TableHead>Especialidad</TableHead>
+              <TableHead>Paciente</TableHead>
+              <TableHead>Fecha</TableHead>
+              <TableHead>Paquete</TableHead>
+              <TableHead>Servicio</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Acciones</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredConsultas.map((consulta) => (
+              <TableRow key={consulta.id}>
+                <TableCell>
+                  {consulta.medico.nombre} {consulta.medico.apellido}
+                </TableCell>
+                <TableCell>
+                  {consulta.medico.especialidad || "Sin especialidad"}
+                </TableCell>
+                <TableCell>
+                  {consulta.paciente.nombre} {consulta.paciente.apellido}
+                </TableCell>
+                <TableCell>{consulta.fecha}</TableCell>
+                <TableCell>#{consulta.idPaquete || "N/A"}</TableCell>
+                <TableCell>#{consulta.idServicioMedico || "N/A"}</TableCell>
+                <TableCell>${consulta.total.toFixed(2)}</TableCell>
+                <TableCell>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      consulta.pagado
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {consulta.pagado ? "Pagado" : "Pendiente"}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    {!consulta.pagado && isAdmin && (
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 bg-green-100 hover:bg-green-200"
+                        onClick={() => handleRegisterPayment(consulta.id)}
+                        title="Registrar pago"
+                      >
+                        <DollarSign className="h-4 w-4 text-green-600" />
+                      </Button>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleCopyId(consulta.id)}
+                        >
+                          <Copy className="mr-2 h-4 w-4" />
+                          Copiar ID
+                        </DropdownMenuItem>
+                        {isSuperAdmin && !consulta.pagado && (
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteClick(consulta)}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
