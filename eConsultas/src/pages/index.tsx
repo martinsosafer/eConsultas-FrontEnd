@@ -9,7 +9,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { MedicosModal } from "./homeDialogs/MedicosModal";
 import { ServiciosModal } from "./homeDialogs/ServicioModal";
 import { PaquetesModal } from "./homeDialogs/PaqueteModal";
-
+import Logo from "../../public/logo.png";
 const Home = () => {
   const navigate = useNavigate();
   const { personaData, isAuthenticated, isLoading } = useAuth();
@@ -37,7 +37,7 @@ const Home = () => {
         <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 text-center">
           <div className="w-full max-w-xs sm:max-w-4xl bg-background/90 backdrop-blur-xl rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-lg sm:shadow-2xl border border-white/10 transform hover:scale-[1.01] transition-transform duration-300">
             <img 
-              src="../public/logo.png" 
+              src={Logo}
               alt="eConsultas Logo"
               className="w-32 h-32 sm:w-48 sm:h-48 mb-4 sm:mb-8 rounded-full shadow-xl sm:shadow-2xl border-2 sm:border-4 border-white mx-auto animate-fade-in"
             />

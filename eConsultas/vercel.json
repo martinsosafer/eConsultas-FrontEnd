@@ -5,6 +5,10 @@
       "destination": "http://vps-4708093-x.dattaweb.com:8080/api/$1"
     },
     {
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
