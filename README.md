@@ -39,7 +39,7 @@ Este proyecto participa en el concurso [HackaCode](https://hackacode.todocodeaca
   Vite es nuestra herramienta de build, que optimiza el proceso de desarrollo gracias a su rapidez y eficiencia en la compilación.
 
 - **Vercel**  
-  La aplicación se despliega en [Vercel](https://vercel.com), lo que garantiza un entorno de producción rápido y seguro.
+  La aplicación se despliega en [Vercel](https://vercel.com), lo que garantiza un entorno de producción rápido y seguro.Adecuado y optimizado para trabajar React con typescript
 
 ---
 
