@@ -376,6 +376,17 @@ export const CreateConsultaModal = ({
                   selectedDate={selectedDate}
                   onDateSelect={setSelectedDate}
                 />
+                {selectedDate && selectedTime && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-medium">Horario seleccionado:</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Fecha: {selectedDate.toLocaleDateString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Hora: {selectedTime}
+                  </p>
+                </div>
+              )}
               </TabsContent>
             )}
           </ScrollArea>

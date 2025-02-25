@@ -205,7 +205,7 @@ export default function EditPersonaModal({
                       </div>
                     ) : (
                       <>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <Label>Nombre</Label>
                             <Input
@@ -226,7 +226,7 @@ export default function EditPersonaModal({
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <Label>DNI</Label>
                             <Input
@@ -266,7 +266,7 @@ export default function EditPersonaModal({
                         )}
 
                         {persona.tipoPersona === "MEDICO" && (
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid sm:grid-cols-2 grid-cols-1 gap-4">
                             <div>
                               <Label>Sueldo</Label>
                               <Input

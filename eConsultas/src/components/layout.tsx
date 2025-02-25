@@ -1,19 +1,13 @@
-import { useState } from "react";
-import { Menu, User, LogOut, UserCircle } from "lucide-react";
-import { Outlet, Link, useLocation } from "react-router-dom";
-import Sidebar from "./sidebar";
+import { User, LogOut, UserCircle } from "lucide-react";
+import { Outlet, Link } from "react-router-dom";
 import logo from "../../public/logo.png";
 import { useAuth } from "@/context/AuthProvider";
 
 export default function Layout() {
-  const [isOpen, setIsOpen] = useState(false);
   const { isAuthenticated, personaData, logout } = useAuth();
-  const location = useLocation();
 
-  // Determinar si la ruta actual es pública
-  const isPublicRoute = ["/", "/about", "/login", "/password/forgot"].includes(
-    location.pathname
-  );
+
+
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -29,16 +23,7 @@ export default function Layout() {
             >
               <img src={logo} alt="App Logo" className="w-10 h-8" title="Logo" />
             </Link>
-            {isAuthenticated && !isPublicRoute && (
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                aria-label="Toggle menu"
-                title="sidebar"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-            )}
+
           </div>
 
           <div className="flex items-center gap-4">
@@ -74,9 +59,6 @@ export default function Layout() {
         </div>
       </header>
 
-      {isAuthenticated && !isPublicRoute && (
-        <Sidebar isOpen={isOpen} onClose={() => setIsOpen(false)} />
-      )}
 
       <main className="w-full h-full mx-auto">
         <Outlet />

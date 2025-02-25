@@ -192,7 +192,7 @@ const EditProfile = () => {
   const handleImageUpload = async (file: File) => {
     try {
       if (!file.type.startsWith('image/')) {
-        toast.error("Solo se permiten archivos de imagen (JPEG, PNG)");
+        toast.error("Solo se permiten archivos de imagen (JPEG, PNG, webp)");
         return;
       }
 
@@ -248,7 +248,7 @@ const EditProfile = () => {
               type="file"
               ref={fileInputRef}
               className="hidden"
-              accept="image/jpeg, image/png"
+              accept="image/jpeg, image/png, image/webp"
               onChange={(e) => e.target.files?.[0] && handleImageUpload(e.target.files[0])}
             />
             <CardTitle className="text-3xl font-bold text-primary-dark">

@@ -65,7 +65,7 @@ export const ServicioSelectionSlider = ({
 
   return (
     <div className={cn(
-      "fixed top-0 right-0 h-screen w-[400px] bg-background border-l shadow-xl transform transition-transform duration-300 z-[1000]",
+      "fixed top-0 right-0 h-screen sm:w-[400px] bg-background border-l shadow-xl transform transition-transform duration-300 z-[1000]",
       open ? "translate-x-0" : "translate-x-full"
     )}>
       <div className="p-6 h-full flex flex-col">

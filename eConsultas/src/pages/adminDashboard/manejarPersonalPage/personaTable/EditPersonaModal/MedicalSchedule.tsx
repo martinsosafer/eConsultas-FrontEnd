@@ -89,7 +89,7 @@ export const MedicalSchedule = ({ medicoEmail }: MedicalScheduleProps) => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+      <div className="grid grid-cols-4 sm:grid-cols-2 gap-4 p-4">
         {[...Array(6)].map((_, i) => (
           <div key={i} className="space-y-2">
             <Skeleton className="h-12 w-full rounded-lg" />
@@ -105,7 +105,7 @@ export const MedicalSchedule = ({ medicoEmail }: MedicalScheduleProps) => {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 p-4">
       {Object.values(groupedTurnos).map(group => (
         <div key={group.horario} className="space-y-2">
           <Button

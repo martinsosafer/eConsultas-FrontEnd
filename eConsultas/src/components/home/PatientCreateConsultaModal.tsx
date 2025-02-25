@@ -104,6 +104,7 @@ export const PatientCreateConsultaModal = ({
     
     return { originalPrice, finalPrice, hasDiscount };
   };
+
   const handleCreateConsulta = async () => {
     if (!validateCurrentTab()) {
       toast.error("Completa todos los campos requeridos");
@@ -131,8 +132,10 @@ export const PatientCreateConsultaModal = ({
       };
 
       await consultaDashboardApi.createConsulta(payload);
-      toast.success("Tu consulta fue registrada con éxito"); // Updated message
-      onOpenChange(false);
+      toast.success("Tu consulta fue registrada con éxito");
+      setTimeout(() => {
+        onOpenChange(false);
+      }, 2000); // Cerrar el modal después de 2 segundos
       await onCreated();
     } catch (error) {
       toast.error("Error al crear consulta");
@@ -180,7 +183,7 @@ export const PatientCreateConsultaModal = ({
         }
       }}
     >
-      <DialogContent className="max-w-[90vw] w-[800px] h-[85vh] flex flex-col fixed left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 overflow-y-auto  overflow-x-hidden">
+      <DialogContent className="max-w-[90vw] w-[800px] h-[85vh] flex flex-col fixed left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 overflow-y-auto overflow-x-hidden">
         <Toaster
           theme="system"
           toastOptions={{
@@ -390,39 +393,47 @@ export const PatientCreateConsultaModal = ({
                 selectedDate={selectedDate}
                 onDateSelect={setSelectedDate}
               />
+              {selectedDate && selectedTime && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-medium">Horario seleccionado:</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Fecha: {selectedDate.toLocaleDateString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Hora: {selectedTime}
+                  </p>
+                </div>
+              )}
             </TabsContent>
           </ScrollArea>
 
-
-      <div className="flex justify-between pt-4 px-4 pb-2">
-        <div className="flex items-center gap-4">
-          {(selectedServicio || selectedPaquete) && (
-            <div className="flex flex-col items-start">
-              {calculatePrice().hasDiscount ? (
-                <>
-                  <span className="text-sm text-gray-500 line-through">
-                    ${calculatePrice().originalPrice.toFixed(2)}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-600 font-semibold">
-                      ${calculatePrice().finalPrice.toFixed(2)}
+          <div className="flex justify-between pt-4 px-4 pb-2">
+            <div className="flex items-center gap-4">
+              {(selectedServicio || selectedPaquete) && (
+                <div className="flex flex-col items-start">
+                  {calculatePrice().hasDiscount ? (
+                    <>
+                      <span className="text-sm text-gray-500 line-through">
+                        ${calculatePrice().originalPrice.toFixed(2)}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-600 font-semibold">
+                          ${calculatePrice().finalPrice.toFixed(2)}
+                        </span>
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                          -20% obra social
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <span className="font-semibold">
+                      ${calculatePrice().originalPrice.toFixed(2)}
                     </span>
-                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                      -20% obra social
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <span className="font-semibold">
-                  ${calculatePrice().originalPrice.toFixed(2)}
-                </span>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
-        </div>
-          
-          <div className="flex justify-between pt-4 px-4 pb-2">
+
             <Button
               variant="outline"
               disabled={activeTab === "medico"}
