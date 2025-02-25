@@ -10,7 +10,7 @@ eConsultas es una aplicación web diseñada para gestionar de manera integral la
 
 ## Concurso HackaCode y TodoCode
 
-Este proyecto participa en el concurso [HackaCode](https://hackacode.todocodeacademy.com/) orientado a desarrolladores semisenior, junior y trainees. La iniciativa busca brindar a los nuevos talentos la oportunidad de trabajar en proyectos reales y adquirir experiencia práctica en desarrollo y trabajo en equipo. Asimismo, contamos con el apoyo y guía de el magnífico canal de [TodoCode](https://youtube.com/TodoCode) y a la profesora [Luisina de Paula](https://www.linkedin.com/in/luisinaadp/?originalSubdomain=ar) que nos inspira a superar desafíos y aprender en cada paso.
+Este proyecto participa en el concurso de [HackaCode](https://hackacode.todocodeacademy.com/) orientado a desarrolladores semisenior, junior y trainees. La iniciativa busca brindar a los nuevos talentos la oportunidad de trabajar en proyectos reales y adquirir experiencia práctica en desarrollo y trabajo en equipo. Asimismo, contamos con el apoyo y guía de el magnífico canal de [TodoCode](https://youtube.com/TodoCode) y a la profesora [Luisina de Paula](https://www.linkedin.com/in/luisinaadp/?originalSubdomain=ar) que nos inspira a superar desafíos y aprender en cada paso.
 
 ---
 
