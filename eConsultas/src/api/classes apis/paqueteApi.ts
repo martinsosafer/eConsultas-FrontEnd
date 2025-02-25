@@ -22,7 +22,7 @@ export const paqueteApi = {
 
   async searchByMultipleServiciosIds(serviciosIds: number[]): Promise<Paquete[]> {
     try {
-      console.log(serviciosIds);
+      // console.log(serviciosIds);
       const token = Cookies.get("access_token");
       const response = await api.get("/consultas/paquetes", {
         headers: {

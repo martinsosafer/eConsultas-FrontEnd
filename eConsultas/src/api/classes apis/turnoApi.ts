@@ -85,7 +85,7 @@ export const turnoApi = {
     if (!token) throw new Error("No authentication token found");
   
     try {
-      console.log("Fetching all turnos...");
+      // console.log("Fetching all turnos...");
       const response = await api.get("/usuarios/turnos/get-all", {
         headers: {
           Accept: "*/*",
@@ -93,7 +93,7 @@ export const turnoApi = {
         },
       });
       
-      console.log("Respuesta de getAllTurnos:", response.data);
+      // console.log("Respuesta de getAllTurnos:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching all turnos:", error);

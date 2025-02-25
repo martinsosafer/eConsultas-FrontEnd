@@ -39,7 +39,8 @@ export default function ConsultasPage() {
     const loadData = async () => {
       try {
         setLoading(true);
-        console.log(loading);
+        // console.log(loading);
+        loading;
         
         // Obtenemos datos del usuario objetivo
         const userData = username === personaData?.credenciales?.username

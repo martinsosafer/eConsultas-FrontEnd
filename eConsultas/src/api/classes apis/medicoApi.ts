@@ -125,7 +125,7 @@ export const medicoApi = {
       }
 
       const fullUrl = `/usuarios/persona/get-all/MEDICO?${params}`;
-      console.log("Constructed URL:", fullUrl); 
+      // console.log("Constructed URL:", fullUrl); 
 
       const response = await api.get(fullUrl, {
         headers: {
@@ -134,7 +134,7 @@ export const medicoApi = {
         },
       });
 
-      console.log("API Response:", response);
+      // console.log("API Response:", response);
       return response.data;
     } catch (error) {
       console.error(

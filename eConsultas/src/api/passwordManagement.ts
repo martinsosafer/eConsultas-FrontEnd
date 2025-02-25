@@ -21,7 +21,7 @@ export const passwordManagement = {
     const formatedDate = formatParameter(fechaFormateada);
 
     try {
-      console.log(`/usuarios/usuarios/agregar-password/${formatedEmail}?password=${password}&codigo=${formatedCode}&fecha=${formatedDate}`);
+      // console.log(`/usuarios/usuarios/agregar-password/${formatedEmail}?password=${password}&codigo=${formatedCode}&fecha=${formatedDate}`);
       await api.put(
         `/usuarios/usuarios/agregar-password/${formatedEmail}?password=${password}&codigo=${formatedCode}&fecha=${formatedDate}`,
         null,

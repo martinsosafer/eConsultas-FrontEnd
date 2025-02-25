@@ -15,6 +15,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  isButtonDisabled;
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -27,13 +28,14 @@ export default function SignInPage() {
     setTimeout(() => {
       setIsButtonDisabled(false);
     }, 5000);
-    console.log(isButtonDisabled);
+    // console.log(isButtonDisabled);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log(isLoading);
+    // console.log(isLoading);
+    isLoading;
 
     try {
       await login(username, password);

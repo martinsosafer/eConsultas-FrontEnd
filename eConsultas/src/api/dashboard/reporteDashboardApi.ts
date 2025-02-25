@@ -64,7 +64,7 @@ export const reportesApi = {
   async getReportesByManyParams(params: ReportParams): Promise<DetailedServiceReport[]> {
 
     try {
-        console.log(params)
+        // console.log(params)
       const queryParams = new URLSearchParams();
       if (params.fechaInicio) queryParams.append('fechaInicio', params.fechaInicio);
       if (params.fechaFin) queryParams.append('fechaFin', params.fechaFin);

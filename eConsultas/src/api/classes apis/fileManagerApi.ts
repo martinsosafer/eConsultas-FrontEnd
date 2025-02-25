@@ -58,14 +58,14 @@ export const fileManagerApi = {
     if (!token) throw new Error("No authentication token found");
 
     try {
-        console.log(userIdentifier)
+        // console.log(userIdentifier)
       const response = await api.get(`/files/files/${userIdentifier}/files-paths`, {
         headers: {
           Accept: "*/*",
           Authorization: `Bearer ${token}`,
         },
       });
-      console.log(response.data);
+      // console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching files paths:", error);
