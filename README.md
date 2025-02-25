@@ -84,7 +84,7 @@ Este proyecto participa en el concurso [HackaCode](https://hackacode.todocodeaca
 ### Hooks
   Hooks varios como useAuth.
 ### Lib
-  Archivos o componentes de utilidades como util.ts o routes.tsx (Con carpeta de sus subrutas protegidas).
+  Archivos o componentes de utilidades como util.ts o routes.tsx (Con carpeta de sus subrutas protegidas adecuadamente).
 ### Pages
   Resto de páginas de la aplicación.
 
