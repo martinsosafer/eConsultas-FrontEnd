@@ -38,6 +38,7 @@ import ServiceTypeChart from "./ServiceTypeChart";
 import { exportToCSV } from "@/api/misc/csvExporter";
 import ServicePieChart from "./components/ServicePieChart";
 import AdvancedBarChart from "./components/AdvancedBarChart";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 // Componente principal para la gestión de reportes
 export default function ReportesManagement() {
@@ -92,7 +93,8 @@ export default function ReportesManagement() {
           serviceType: false,
         }));
       } catch (error) {
-        toast.error("Error inicializando datos");
+        const errorMessage = extractErrorMessage(error);
+        toast.error("Error inicializando datos: " + errorMessage);
         setLoading((prev) => ({
           ...prev,
           general: false,
@@ -132,7 +134,8 @@ export default function ReportesManagement() {
 
       setSpecificData(combinedResults);
     } catch (error) {
-      toast.error("Error en búsqueda específica");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error en búsqueda específica: " + errorMessage);
     } finally {
       setLoading((prev) => ({ ...prev, specific: false }));
     }

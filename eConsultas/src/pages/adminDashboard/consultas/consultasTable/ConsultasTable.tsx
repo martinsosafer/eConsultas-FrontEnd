@@ -74,7 +74,8 @@ export default function ConsultasTable() {
           });
         }
       } catch (error) {
-        toast.error("Error cargando consultas");
+        const errorMessage = extractErrorMessage(error);
+        toast.error("Error cargando consultas: " + errorMessage);
         console.error("Loading error:", error);
       } finally {
         setInitialLoad(false);
@@ -91,7 +92,8 @@ export default function ConsultasTable() {
       setConsultas(consultasData);
       applyFilters(consultasData);
     } catch (error) {
-      toast.error("Error actualizando consultas");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error actualizando consultas: " + errorMessage );
     }
   };
 

@@ -10,7 +10,8 @@ import {
   EditIcon as IconEdit,
   FolderIcon as IconFolder,
   CalendarIcon as IconCalendar,
-  ClockIcon as IconClock, 
+  ClockIcon as IconClock,
+  CopyIcon as IconCopy,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Paciente, Medico } from "@/api/models/personaModels";
@@ -27,7 +28,6 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
   const navigate = useNavigate();
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false); 
 
-  // Verificamos si el usuario está viendo su propio perfil
   const isOwnProfile = personaData?.credenciales.email === patient.credenciales?.email;
 
   useEffect(() => {
@@ -79,7 +79,6 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
           <div>
             <CardTitle className="text-3xl font-bold text-primary-dark">
               {patient.nombre} {patient.apellido}
-              {/* Mostramos botón de editar SOLO y solo si es el propio perfil */}
               {isOwnProfile && (
                 <Link
                   to={`edit`}
@@ -96,9 +95,7 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
               {patient.tipoPersona}
             </Badge>
 
-            {/* Contenedor para los botones */}
             <div className="flex flex-col gap-4 mt-4">
-              {/* Botón archivos */}
               <Link
                 to={`files`}
                 className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 transform duration-300"
@@ -107,7 +104,6 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
                 <span className="font-semibold">Ver archivos</span>
               </Link>
 
-              {/* Botón consultas */}
               <button
                 onClick={() => navigate(`/profile/${patient.credenciales.email}/consultas`)}
                 className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 transform duration-300"
@@ -116,7 +112,6 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
                 <span className="font-semibold">Ver consultas</span>
               </button>
 
-              {/* Botón horario (solo para médicos) */}
               {patient?.tipoPersona === "MEDICO" && (
                 <button
                   onClick={() => setIsScheduleModalOpen(true)}
@@ -132,8 +127,6 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
       </CardHeader>
 
       <CardContent className="space-y-8 mt-6">
-        {/* Información! */}
-
         <section className="bg-background rounded-xl p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-secondary-dark mb-4 flex items-center">
             <IconHome className="mr-2" /> Dirección
@@ -195,7 +188,6 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
         </section>
       </CardContent>
 
-      {/* Modal del horario del médico */}
       {isScheduleModalOpen && (
         <MedicalScheduleModal
           medicoEmail={patient.credenciales.email}
@@ -215,14 +207,38 @@ function InfoItem({
   value: string | number | null;
   icon?: React.ReactNode;
 }) {
+  const handleCopy = () => {
+    if (typeof value === 'string') {
+      navigator.clipboard.writeText(value);
+    }
+  };
+
+  const isTruncatable = typeof value === 'string' && value.length > 25;
+  const displayedValue = isTruncatable ? `${value.substring(0, 25)}...` : value;
+
   return (
     <div className="flex items-start">
       {icon && <div className="mr-3 mt-1">{icon}</div>}
       <div>
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <p className="text-base font-semibold text-foreground">
-          {value || "N/A"}
-        </p>
+        <div className="text-base font-semibold text-foreground flex items-center gap-1">
+          {value ? (
+            <>
+              {displayedValue}
+              {isTruncatable && (
+                <button
+                  onClick={handleCopy}
+                  className="text-primary hover:text-primary-dark transition-colors"
+                  title="Copiar"
+                >
+                  <IconCopy className="w-4 h-4" />
+                </button>
+              )}
+            </>
+          ) : (
+            "N/A"
+          )}
+        </div>
       </div>
     </div>
   );

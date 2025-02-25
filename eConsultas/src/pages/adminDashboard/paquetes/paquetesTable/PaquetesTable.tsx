@@ -34,6 +34,7 @@ import {
 import { CreatePaqueteModal } from "./CreatePaqueteModal/CreatePaqueteModal";
 import { Switch } from "@/components/ui/switch";
 import { TipoServicio } from "@/api/models/servicioModels";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 export default function PaqueteTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -129,7 +130,8 @@ export default function PaqueteTable() {
       setFilteredPaquetes((prev) => prev.filter((p) => p.id !== paquete.id));
       toast.success("Paquete eliminado exitosamente");
     } catch (error) {
-      toast.error("Error eliminando paquete");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error eliminando paquete: " + errorMessage);
     }
   };
 
@@ -144,7 +146,8 @@ export default function PaqueteTable() {
       applyFilters(updatedPaquetes, filter);
       toast.success(`Paquete ${enabled ? "activado" : "desactivado"}`);
     } catch (error) {
-      toast.error("Error actualizando estado del paquete");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error actualizando estado del paquete: " + errorMessage);
     }
   };
 

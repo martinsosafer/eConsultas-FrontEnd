@@ -148,6 +148,7 @@ export const TimeSlotPicker = ({
   }, [selectedHorario, selectedDate, medicoEmail]);
 
   const handleSelectSubHorario = (horario: string, subHorario: string) => {
+    horario;
     if (!selectedDate) return;
 
     if (selectedSubHorario === subHorario) {

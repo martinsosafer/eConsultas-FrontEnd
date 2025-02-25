@@ -45,6 +45,7 @@ import {
 import { useOutletContext, useNavigate } from "react-router-dom";
 import CreatePersonaModal from "./CreatePersonaModal/CreatePersonaModal";
 import { Switch } from "@/components/ui/switch";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 export default function PersonaTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -81,7 +82,8 @@ export default function PersonaTable() {
           });
         }
       } catch (error) {
-        toast.error("Error cargando usuarios");
+        const errorMessage = extractErrorMessage(error);
+        toast.error("Error cargando usuarios: " + errorMessage);
       } finally {
         setInitialLoad(false);
       }
@@ -159,7 +161,8 @@ export default function PersonaTable() {
       applyFilters(updatedUsers, filter, searchTerm, roleFilter);
       toast.success("Usuario creado con éxito");
     } catch (error) {
-      toast.error("Error al crear el usuario");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error al crear el usuario: " + errorMessage);
     }
   };
 
@@ -186,7 +189,8 @@ export default function PersonaTable() {
       setEditingUser(null);
       toast.success("Usuario actualizado con éxito");
     } catch (error) {
-      toast.error("Error guardando usuario");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error guardando usuario: " + errorMessage);
     }
   };
 
@@ -212,7 +216,8 @@ export default function PersonaTable() {
       applyFilters(updatedUsers, filter, searchTerm, roleFilter);
       toast.success("Usuario eliminado con éxito");
     } catch (error) {
-      toast.error("Error al eliminar el usuario");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error al eliminar el usuario: " + errorMessage);
     }
   };
 

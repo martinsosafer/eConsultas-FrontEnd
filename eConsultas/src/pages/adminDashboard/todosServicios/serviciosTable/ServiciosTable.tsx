@@ -41,6 +41,7 @@ import {
 import CreateServicioModal from "./CreateServicioModal/CreateServicioModal";
 import { servicioApi } from "@/api/classes apis/servicioApi";
 import EditServicioModal from "./EditServicioModal/EditServicioModal";
+import { extractErrorMessage } from "@/api/misc/errorHandler";
 
 export default function ServicioTable() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,7 +70,8 @@ export default function ServicioTable() {
         setTiposServicio(tiposData);
         applyFilters(serviciosData, filter);
       } catch (error) {
-        toast.error("Error cargando datos iniciales");
+        const errorMessage = extractErrorMessage(error);
+        toast.error("Error cargando datos iniciales: " + errorMessage);
       } finally {
         setInitialLoad(false);
       }
@@ -121,7 +123,8 @@ export default function ServicioTable() {
       );
       toast.success(`Servicio ${enabled ? "activado" : "desactivado"}`);
     } catch (error) {
-      toast.error("Error actualizando servicio");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error actualizando servicio: " + errorMessage);
     }
   };
 
@@ -133,7 +136,8 @@ export default function ServicioTable() {
       setFilteredServicios((prev) => prev.filter((s) => s.id !== servicio.id));
       toast.success("Servicio eliminado");
     } catch (error) {
-      toast.error("Error eliminando servicio");
+      const errorMessage = extractErrorMessage(error);
+      toast.error("Error eliminando servicio: " + errorMessage);
     }
   };
 
@@ -300,7 +304,8 @@ export default function ServicioTable() {
             setServicios((prev) => [...prev, createdServicio]);
             applyFilters([...servicios, createdServicio], filter);
           } catch (error) {
-            toast.error("Error creando servicio");
+            const errorMessage = extractErrorMessage(error);
+            toast.error("Error creando servicio: " + errorMessage);
           }
         }}
       />
@@ -330,7 +335,8 @@ export default function ServicioTable() {
               setEditingServicio(null);
               toast.success("Servicio actualizado con éxito");
             } catch (error) {
-              toast.error("Error actualizando servicio");
+              const errorMessage = extractErrorMessage(error);
+              toast.error("Error actualizando servicio: " + errorMessage);
             }
           }}
         />

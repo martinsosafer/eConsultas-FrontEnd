@@ -104,7 +104,7 @@ export default function AdminDashboard() {
                       }
                     />
                     <MetricCard
-                      title="Turnos hoy"
+                      title="Consultas hoy"
                       value={turnosHoy}
                       icon={
                         <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-secondary" />
