@@ -80,7 +80,7 @@ Este proyecto participa en el concurso [HackaCode](https://hackacode.todocodeaca
   - errors: Componentes de páginas de errores como NotAllowedPage (error 401) o NotFoundPage (error404).
   - Home: Componentes del home.
 ### Context
-  Configuración del AuthProvider.
+  Configuración importante del AuthProvider.
 ### Hooks
   Hooks varios como useAuth.
 ### Lib
