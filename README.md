@@ -68,7 +68,7 @@ Este proyecto participa en el concurso [HackaCode](https://hackacode.todocodeaca
 - **Dashboard:**  
   Sección donde se encuentran los archivos TS del dashboard de nuestra aplicación, con otras solicitudes API, aparte de las originales de las consigna, podemos encontrar unas extras (Reporte y Variedad).
   - **Misc:**  
-  Sección donde se encuentran los archivos TS de miscalneo, ya sea manejo de errores, csvExporter o templateEmail.
+  Sección donde se encuentran los archivos TS de miscalneo, ya sea manejo de errores, csvExporter (Para analistas de datos) o templateEmail.
   - **Models**  
   Sección donde se encuentran los archivos TS de nuestras clases y modelos, aparte de los modelos originales de la consigna, podemos encontrar extras (turnoModels y reporteModels).
 
