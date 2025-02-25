@@ -182,7 +182,7 @@ export default function ConsultasPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <Select onValueChange={setEspecialidadFilter}>
           <SelectTrigger>
             <SelectValue placeholder="Especialidad" />
@@ -218,7 +218,7 @@ export default function ConsultasPage() {
       {filteredConsultas.length > 0 ? (
         <motion.div
           layout
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid sm:grid-cols-3 grid-cols-1 gap-6"
         >
           {filteredConsultas.map((consulta, i) => (
             <ConsultaCard 

@@ -157,7 +157,7 @@ export default function Profile({ patient }: { patient: Medico | Paciente }) {
             <IconPhone className="mr-2" /> Contacto
           </h3>
           <Separator className="mb-4" />
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid sm:grid-cols-2 gap-6 grid-row">
             <InfoItem
               label="Teléfono"
               value={`${patient.credenciales.codigoDeLlamada} ${patient.credenciales.celular}`}

@@ -142,7 +142,7 @@ export default function ConsultaDetailPage() {
         </motion.div>
 
         {/* Información básica */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -184,7 +184,7 @@ export default function ConsultaDetailPage() {
         </div>
 
         {/* Participantes */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -310,7 +310,7 @@ export default function ConsultaDetailPage() {
                     </div>
                     <div>
                       <p className="font-medium">Total</p>
-                      <p>${servicio.total}</p>
+                      <p>${(servicio.total).toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
